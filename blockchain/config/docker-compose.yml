@@ -1,24 +1,28 @@
 version: '3.8'
 
 services:
-  # Simple blockchain simulator for development
-  blockchain-simulator:
-    image: node:18-alpine
-    container_name: taxguard-blockchain-sim
-    working_dir: /app
-    volumes:
-      - ../:/app
+  # TaxGuard Blockchain API
+  blockchain-api:
+    build: 
+      context: ../
+      dockerfile: Dockerfile
+    container_name: taxguard-blockchain
     ports:
       - "3001:3001"
-    command: npm start
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
+      - PORT=3001
+    volumes:
+      - blockchain_data:/app/data
     networks:
       - taxguard-network
+    depends_on:
+      - postgres
+    restart: unless-stopped
 
-  # PostgreSQL for storing off-chain data
+  # PostgreSQL for off-chain data
   postgres:
-    image: postgres:13
+    image: postgres:13-alpine
     container_name: taxguard-postgres
     environment:
       POSTGRES_DB: taxguard
@@ -30,6 +34,35 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - taxguard-network
+    restart: unless-stopped
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: taxguard-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - taxguard-network
+    restart: unless-stopped
+
+  # Blockchain Explorer UI
+  explorer:
+    build:
+      context: ../explorer
+      dockerfile: Dockerfile
+    container_name: taxguard-explorer
+    ports:
+      - "3002:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:3001
+    networks:
+      - taxguard-network
+    depends_on:
+      - blockchain-api
+    restart: unless-stopped
 
 networks:
   taxguard-network:
@@ -37,3 +70,5 @@ networks:
 
 volumes:
   postgres_data:
+  redis_data:
+  blockchain_data:

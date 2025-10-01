@@ -1,49 +1,81 @@
 const express = require('express');
+const http = require('http');
+const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const { blockchain } = require('../scripts/add-sample-events');
 const monitoring = require('./monitoring');
+const { validateEvent, rateLimiter, securityHeaders } = require('./validation');
+const { initWebSocket, broadcastEvent, broadcastBlockchainUpdate } = require('./websocket');
+const { EventEncryption, authenticateApiKey } = require('./encryption');
+const { swaggerUi, specs } = require('./swagger');
 
 const app = express();
+const server = http.createServer(app);
+
+// Initialize WebSocket
+const io = initWebSocket(server);
+
 app.use(express.json());
+app.use(securityHeaders);
+app.use(rateLimiter);
 
 const PORT = process.env.PORT || 3001;
 
-// Blockchain is imported with sample events already loaded
+// Serve blockchain explorer
+app.use('/explorer', express.static(path.join(__dirname, '../explorer')));
+
+// Swagger documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // Add monitoring routes
 app.use('/api/monitoring', monitoring);
 
-// Health check
+/**
+ * @swagger
+ * /health:
+ *   get:
+ *     summary: Health check endpoint
+ *     responses:
+ *       200:
+ *         description: Service is healthy
+ */
 app.get('/health', (req, res) => {
     res.json({ 
         status: 'healthy', 
         service: 'TaxGuard Blockchain API',
-        blockchain: blockchain.getChainInfo()
+        version: '1.0.0',
+        blockchain: blockchain.getChainInfo(),
+        features: ['WebSocket', 'Encryption', 'Multi-node', 'Explorer']
     });
 });
 
-// POST /api/events - Create new tax event
-app.post('/api/events', async (req, res) => {
+/**
+ * @swagger
+ * /api/events:
+ *   post:
+ *     summary: Create a new tax event
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/TaxEvent'
+ *     responses:
+ *       201:
+ *         description: Event created successfully
+ */
+app.post('/api/events', validateEvent, async (req, res) => {
     try {
         const { eventType, anonymizedUserId, hashOfPayload, notes } = req.body;
         
-        // Validate required fields
-        if (!eventType || !anonymizedUserId || !hashOfPayload) {
-            return res.status(400).json({ 
-                error: 'Missing required fields: eventType, anonymizedUserId, hashOfPayload' 
-            });
-        }
-
-        // Validate event type
-        const validTypes = ['filing', 'payment', 'auditFlag', 'adminChange', 'compliance'];
-        if (!validTypes.includes(eventType)) {
-            return res.status(400).json({ 
-                error: 'Invalid eventType. Must be one of: ' + validTypes.join(', ') 
-            });
-        }
-
         const eventId = uuidv4();
         const timestamp = new Date().toISOString();
+        
+        // Create encrypted version for sensitive data
+        const encryptedData = EventEncryption.encryptEventData({
+            originalUserId: req.body.originalUserId || 'anonymous',
+            sensitiveNotes: req.body.sensitiveNotes || ''
+        });
         
         const event = blockchain.createEvent(
             eventId,
@@ -54,10 +86,15 @@ app.post('/api/events', async (req, res) => {
             notes
         );
         
+        // Broadcast real-time update
+        broadcastEvent(event);
+        broadcastBlockchainUpdate(blockchain.getChainInfo());
+        
         res.status(201).json({
             success: true,
             event,
-            blockchain: blockchain.getChainInfo()
+            blockchain: blockchain.getChainInfo(),
+            encrypted: encryptedData.hash // Only return hash, not encrypted data
         });
     } catch (error) {
         console.error('Error creating event:', error);
@@ -65,7 +102,18 @@ app.post('/api/events', async (req, res) => {
     }
 });
 
-// GET /api/events/:id - Read specific event
+/**
+ * @swagger
+ * /api/events/{id}:
+ *   get:
+ *     summary: Get a specific event by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ */
 app.get('/api/events/:id', async (req, res) => {
     try {
         const eventId = req.params.id;
@@ -85,7 +133,15 @@ app.get('/api/events/:id', async (req, res) => {
     }
 });
 
-// GET /api/events - Get all events
+/**
+ * @swagger
+ * /api/events:
+ *   get:
+ *     summary: Get all blockchain events
+ *     responses:
+ *       200:
+ *         description: List of all events
+ */
 app.get('/api/events', async (req, res) => {
     try {
         const events = blockchain.queryAllEvents();
@@ -107,7 +163,10 @@ app.get('/api/blockchain', (req, res) => {
     res.json({
         success: true,
         blockchain: blockchain.getChainInfo(),
-        chain: blockchain.chain
+        chain: blockchain.chain.map(block => ({
+            ...block,
+            data: typeof block.data === 'object' ? block.data : 'Genesis Block'
+        }))
     });
 });
 
@@ -125,6 +184,7 @@ app.post('/api/integration/whistlepro', async (req, res) => {
             'WhistlePro report submitted'
         );
         
+        broadcastEvent(event);
         res.json({ success: true, event });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -144,13 +204,55 @@ app.post('/api/integration/ai-risk', async (req, res) => {
             `AI Risk Score: ${riskScore}`
         );
         
+        broadcastEvent(event);
         res.json({ success: true, event });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-app.listen(PORT, () => {
+// Secure admin endpoints (require API key)
+app.post('/api/admin/reset', authenticateApiKey, (req, res) => {
+    // Reset blockchain (development only)
+    blockchain.chain = [];
+    blockchain.events.clear();
+    blockchain.createGenesisBlock();
+    
+    res.json({ message: 'Blockchain reset successfully' });
+});
+
+// Error handling middleware
+app.use((error, req, res, next) => {
+    console.error('API Error:', error);
+    res.status(500).json({
+        error: 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+    });
+});
+
+// 404 handler
+app.use((req, res) => {
+    res.status(404).json({
+        error: 'Endpoint not found',
+        availableEndpoints: [
+            'GET /health',
+            'GET /api/events',
+            'POST /api/events',
+            'GET /api/blockchain',
+            'GET /api/monitoring/stats',
+            'GET /explorer',
+            'GET /api-docs'
+        ]
+    });
+});
+
+server.listen(PORT, () => {
     console.log(`🚀 TaxGuard Blockchain API running on port ${PORT}`);
     console.log(`📊 Blockchain initialized with ${blockchain.getChainInfo().totalEvents} events`);
+    console.log(`🌐 Explorer UI: http://localhost:${PORT}/explorer`);
+    console.log(`📚 API Docs: http://localhost:${PORT}/api-docs`);
+    console.log(`📡 WebSocket: Real-time events enabled`);
+    console.log(`🔒 Security: Encryption and validation active`);
 });
+
+module.exports = app;
