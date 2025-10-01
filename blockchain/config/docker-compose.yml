@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # Simple blockchain simulator for development
+  blockchain-simulator:
+    image: node:18-alpine
+    container_name: taxguard-blockchain-sim
+    working_dir: /app
+    volumes:
+      - ../:/app
+    ports:
+      - "3001:3001"
+    command: npm start
+    environment:
+      - NODE_ENV=development
+    networks:
+      - taxguard-network
+
+  # PostgreSQL for storing off-chain data
+  postgres:
+    image: postgres:13
+    container_name: taxguard-postgres
+    environment:
+      POSTGRES_DB: taxguard
+      POSTGRES_USER: taxguard
+      POSTGRES_PASSWORD: taxguard123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - taxguard-network
+
+networks:
+  taxguard-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
