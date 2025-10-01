@@ -1,14 +1,17 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
-const { TaxGuardBlockchain } = require('../scripts/deploy');
+const { blockchain } = require('../scripts/add-sample-events');
+const monitoring = require('./monitoring');
 
 const app = express();
 app.use(express.json());
 
 const PORT = process.env.PORT || 3001;
 
-// Initialize blockchain
-const blockchain = new TaxGuardBlockchain();
+// Blockchain is imported with sample events already loaded
+
+// Add monitoring routes
+app.use('/api/monitoring', monitoring);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -32,7 +35,7 @@ app.post('/api/events', async (req, res) => {
         }
 
         // Validate event type
-        const validTypes = ['filing', 'payment', 'auditFlag', 'adminChange'];
+        const validTypes = ['filing', 'payment', 'auditFlag', 'adminChange', 'compliance'];
         if (!validTypes.includes(eventType)) {
             return res.status(400).json({ 
                 error: 'Invalid eventType. Must be one of: ' + validTypes.join(', ') 

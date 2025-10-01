@@ -1,0 +1,60 @@
+✅ Genesis block created
+🚀 Deploying TaxGuard Blockchain...
+✅ Event evt-001 added to blockchain
+✅ Event evt-002 added to blockchain
+✅ Event evt-003 added to blockchain
+
+📊 Blockchain Status:
+{
+  length: 4,
+  latestBlock: {
+    index: 3,
+    timestamp: '2025-10-01T23:01:00.827Z',
+    data: {
+      eventId: 'evt-003',
+      eventType: 'auditFlag',
+      timestamp: '2025-10-01T12:15:00Z',
+      anonymizedUserId: 'user-ghi789',
+      hashOfPayload: 'd2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2',
+      notes: 'Flagged for unusual VAT filing variance',
+      blockIndex: 3
+    },
+    previousHash: 'cd124cb85a28b1f36fb2436ac5a794110c94ae7619725c3dd5afc072da0c3788',
+    hash: 'ce309888886ea3d0abbff4fae88d535f529d4e9331c7e4548c38cb8b7511684c'
+  },
+  totalEvents: 3
+}
+
+📋 All Events:
+[
+  {
+    eventId: 'evt-001',
+    eventType: 'filing',
+    timestamp: '2025-10-01T10:30:00Z',
+    anonymizedUserId: 'user-abc123',
+    hashOfPayload: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+    notes: 'VAT return for September 2025',
+    blockIndex: 1
+  },
+  {
+    eventId: 'evt-002',
+    eventType: 'payment',
+    timestamp: '2025-10-01T11:00:00Z',
+    anonymizedUserId: 'user-def456',
+    hashOfPayload: '5d41402abc4b2a76b9719d911017c592',
+    notes: 'Income tax payment',
+    blockIndex: 2
+  },
+  {
+    eventId: 'evt-003',
+    eventType: 'auditFlag',
+    timestamp: '2025-10-01T12:15:00Z',
+    anonymizedUserId: 'user-ghi789',
+    hashOfPayload: 'd2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2',
+    notes: 'Flagged for unusual VAT filing variance',
+    blockIndex: 3
+  }
+]
+✅ Genesis block created
+🚀 TaxGuard Blockchain API running on port 3001
+📊 Blockchain initialized with 0 events
