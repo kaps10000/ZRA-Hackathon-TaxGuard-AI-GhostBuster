@@ -13,7 +13,7 @@
   length: 4,
   latestBlock: {
     index: 3,
-    timestamp: '2025-10-02T09:00:50.063Z',
+    timestamp: '2025-10-02T15:44:45.262Z',
     data: {
       eventId: 'evt-003',
       eventType: 'auditFlag',
@@ -23,8 +23,8 @@
       notes: 'Flagged for unusual VAT filing variance',
       blockIndex: 3
     },
-    previousHash: 'a87451fb366d4662b9308667c6e8f80696008a3af35cec9dc513199d1b677e97',
-    hash: 'dada4e495a212c04d9ab237a33fe428a58177bdc127342baee4c526e4e39aed9'
+    previousHash: '1a962e2b0da62c3567063d5eb89bff37af465a0bd70499592aae70119cbee114',
+    hash: '99bb006e120412d69bad5429d06d11e64db363426051da32c49d8023c60a6155'
   },
   totalEvents: 3
 }
@@ -73,7 +73,7 @@
   length: 7,
   latestBlock: {
     index: 6,
-    timestamp: '2025-10-02T09:00:50.066Z',
+    timestamp: '2025-10-02T15:44:45.265Z',
     data: {
       eventId: 'evt-admin-006',
       eventType: 'adminChange',
@@ -83,8 +83,8 @@
       notes: 'System Update - Tax Rate Changed | VAT Rate: 16% → 18% | Effective Date: 2025-11-01 | Updated By: Tax Admin',
       blockIndex: 6
     },
-    previousHash: '77ceecd38a50486f2db558606c207716919c482d2f529c4d160b342b3eb1c84f',
-    hash: '75205b475387173b11f2cd508c790125baecc995c2a795455304d6ce7d0838ab'
+    previousHash: 'e6192412065cb0cae727512b261bed602ef9a217a0f027751fb5e9987801df5e',
+    hash: 'c48bc08cad6ea61d3f5ba837c0ded12823030e65444734689fcb0045196771b2'
   },
   totalEvents: 6
 }
@@ -138,9 +138,7 @@
 📚 API Docs: http://localhost:3001/api-docs
 📡 WebSocket: Real-time events enabled
 🔒 Security: Encryption and validation active
-📡 Client connected: KrKXfr1nM9h4k5iaAAAB
-🔔 Client KrKXfr1nM9h4k5iaAAAB subscribed to events: [ 'filing', 'payment', 'compliance', 'auditFlag', 'adminChange' ]
-📡 Client disconnected: KrKXfr1nM9h4k5iaAAAB
-✅ Event 466926a5-20d0-4671-9e0c-21d670f9ffa0 added to blockchain
-(node:36214) [DEP0106] DeprecationWarning: crypto.createCipher is deprecated.
+✅ Event 9f83528f-2ddf-4706-87a9-58fe21c5df3d added to blockchain
+(node:47792) [DEP0106] DeprecationWarning: crypto.createCipher is deprecated.
 (Use `node --trace-deprecation ...` to show where the warning was created)
+✅ Event e33a16eb-95c5-4058-9f9b-927bdff2fbf1 added to blockchain
