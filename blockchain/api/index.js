@@ -230,11 +230,32 @@ app.use((error, req, res, next) => {
     });
 });
 
+// Root endpoint
+app.get('/', (req, res) => {
+    res.json({
+        service: 'TaxGuard Blockchain API',
+        version: '1.0.0',
+        status: 'running',
+        endpoints: {
+            'GET /health': 'Server health check',
+            'GET /api/events': 'Get all tax events',
+            'POST /api/events': 'Create new tax event',
+            'GET /api/blockchain': 'Get full blockchain',
+            'GET /api/monitoring/stats': 'Get system statistics',
+            'GET /explorer': 'Blockchain explorer interface',
+            'GET /api-docs': 'API documentation'
+        },
+        features: ['WebSocket', 'Encryption', 'Multi-node', 'Explorer'],
+        timestamp: new Date().toISOString()
+    });
+});
+
 // 404 handler
 app.use((req, res) => {
     res.status(404).json({
         error: 'Endpoint not found',
         availableEndpoints: [
+            'GET /',
             'GET /health',
             'GET /api/events',
             'POST /api/events',

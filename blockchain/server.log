@@ -13,7 +13,7 @@
   length: 4,
   latestBlock: {
     index: 3,
-    timestamp: '2025-10-02T08:15:44.092Z',
+    timestamp: '2025-10-02T09:00:50.063Z',
     data: {
       eventId: 'evt-003',
       eventType: 'auditFlag',
@@ -23,8 +23,8 @@
       notes: 'Flagged for unusual VAT filing variance',
       blockIndex: 3
     },
-    previousHash: '0f115be80dc943d1e06b1aed2f3531ddf93351ce04f4dda62fec2b2f4d39c2b6',
-    hash: '2733a520cb04d59a7fe85435f6e633534cebef5e47e02746145edb7541e60f72'
+    previousHash: 'a87451fb366d4662b9308667c6e8f80696008a3af35cec9dc513199d1b677e97',
+    hash: 'dada4e495a212c04d9ab237a33fe428a58177bdc127342baee4c526e4e39aed9'
   },
   totalEvents: 3
 }
@@ -73,7 +73,7 @@
   length: 7,
   latestBlock: {
     index: 6,
-    timestamp: '2025-10-02T08:15:44.096Z',
+    timestamp: '2025-10-02T09:00:50.066Z',
     data: {
       eventId: 'evt-admin-006',
       eventType: 'adminChange',
@@ -83,8 +83,8 @@
       notes: 'System Update - Tax Rate Changed | VAT Rate: 16% → 18% | Effective Date: 2025-11-01 | Updated By: Tax Admin',
       blockIndex: 6
     },
-    previousHash: '7d812f044cb6e1188cea743e066e3c2c62aa0d2ffbc35e1cadf8b6f6ef9fe127',
-    hash: '5cd8a99925e2ad9a991838bb73cec3d7cf83e2f02d6b66351faf6ef3aa0f4208'
+    previousHash: '77ceecd38a50486f2db558606c207716919c482d2f529c4d160b342b3eb1c84f',
+    hash: '75205b475387173b11f2cd508c790125baecc995c2a795455304d6ce7d0838ab'
   },
   totalEvents: 6
 }
@@ -138,3 +138,9 @@
 📚 API Docs: http://localhost:3001/api-docs
 📡 WebSocket: Real-time events enabled
 🔒 Security: Encryption and validation active
+📡 Client connected: KrKXfr1nM9h4k5iaAAAB
+🔔 Client KrKXfr1nM9h4k5iaAAAB subscribed to events: [ 'filing', 'payment', 'compliance', 'auditFlag', 'adminChange' ]
+📡 Client disconnected: KrKXfr1nM9h4k5iaAAAB
+✅ Event 466926a5-20d0-4671-9e0c-21d670f9ffa0 added to blockchain
+(node:36214) [DEP0106] DeprecationWarning: crypto.createCipher is deprecated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
