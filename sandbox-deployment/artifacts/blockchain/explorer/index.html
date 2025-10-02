@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaxGuard Blockchain Explorer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        .header { background: #2c3e50; color: white; padding: 1rem; text-align: center; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .stat-number { font-size: 2rem; font-weight: bold; color: #3498db; }
+        .stat-label { color: #7f8c8d; margin-top: 0.5rem; }
+        .events { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .events-header { background: #34495e; color: white; padding: 1rem; border-radius: 8px 8px 0 0; }
+        .event { padding: 1rem; border-bottom: 1px solid #ecf0f1; }
+        .event:last-child { border-bottom: none; }
+        .event-type { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .filing { background: #e8f5e8; color: #27ae60; }
+        .payment { background: #e8f4fd; color: #3498db; }
+        .compliance { background: #fff3cd; color: #f39c12; }
+        .auditFlag { background: #f8d7da; color: #e74c3c; }
+        .adminChange { background: #e2e3e5; color: #6c757d; }
+        .event-details { margin-top: 0.5rem; color: #7f8c8d; }
+        .real-time { position: fixed; top: 20px; right: 20px; background: #27ae60; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; }
+        .offline { background: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔗 TaxGuard Blockchain Explorer</h1>
+        <p>Real-time Tax Event Monitoring System</p>
+    </div>
+
+    <div id="status" class="real-time offline">⚫ Connecting...</div>
+
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card">
+                <div id="totalEvents" class="stat-number">0</div>
+                <div class="stat-label">Total Events</div>
+            </div>
+            <div class="stat-card">
+                <div id="totalBlocks" class="stat-number">0</div>
+                <div class="stat-label">Total Blocks</div>
+            </div>
+            <div class="stat-card">
+                <div id="filingCount" class="stat-number">0</div>
+                <div class="stat-label">Tax Filings</div>
+            </div>
+            <div class="stat-card">
+                <div id="paymentCount" class="stat-number">0</div>
+                <div class="stat-label">Payments</div>
+            </div>
+        </div>
+
+        <div class="events">
+            <div class="events-header">
+                <h2>📋 Recent Blockchain Events</h2>
+            </div>
+            <div id="eventsList">
+                <div style="padding: 2rem; text-align: center; color: #7f8c8d;">
+                    Loading events...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const statusEl = document.getElementById('status');
+        const eventsListEl = document.getElementById('eventsList');
+
+        // Connection status
+        socket.on('connect', () => {
+            statusEl.textContent = '🟢 Connected';
+            statusEl.className = 'real-time';
+            socket.emit('subscribe-events', ['filing', 'payment', 'compliance', 'auditFlag', 'adminChange']);
+            loadEvents();
+        });
+
+        socket.on('disconnect', () => {
+            statusEl.textContent = '⚫ Disconnected';
+            statusEl.className = 'real-time offline';
+        });
+
+        // Real-time events
+        socket.on('new-event', (data) => {
+            showNotification(`New ${data.event.eventType} event!`);
+            loadEvents();
+        });
+
+        socket.on('blockchain-update', (data) => {
+            updateStats(data);
+        });
+
+        // Load events from API
+        async function loadEvents() {
+            try {
+                const response = await fetch('/api/events');
+                const data = await response.json();
+                
+                updateStats(data.blockchain);
+                displayEvents(data.events);
+                
+                // Update event type counts
+                const counts = {};
+                data.events.forEach(event => {
+                    counts[event.eventType] = (counts[event.eventType] || 0) + 1;
+                });
+                
+                document.getElementById('filingCount').textContent = counts.filing || 0;
+                document.getElementById('paymentCount').textContent = counts.payment || 0;
+            } catch (error) {
+                console.error('Failed to load events:', error);
+            }
+        }
+
+        function updateStats(blockchain) {
+            document.getElementById('totalEvents').textContent = blockchain.totalEvents || 0;
+            document.getElementById('totalBlocks').textContent = blockchain.length || 0;
+        }
+
+        function displayEvents(events) {
+            if (!events || events.length === 0) {
+                eventsListEl.innerHTML = '<div style="padding: 2rem; text-align: center; color: #7f8c8d;">No events found</div>';
+                return;
+            }
+
+            eventsListEl.innerHTML = events.slice(-10).reverse().map(event => `
+                <div class="event">
+                    <div>
+                        <span class="event-type ${event.eventType}">${event.eventType.toUpperCase()}</span>
+                        <strong>${event.eventId}</strong>
+                        <span style="float: right; color: #7f8c8d;">${new Date(event.timestamp).toLocaleString()}</span>
+                    </div>
+                    <div class="event-details">
+                        <strong>User:</strong> ${event.anonymizedUserId}<br>
+                        <strong>Details:</strong> ${event.notes || 'No additional details'}<br>
+                        <strong>Hash:</strong> ${event.hashOfPayload.substring(0, 32)}...
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showNotification(message) {
+            // Simple notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed; top: 80px; right: 20px; background: #27ae60; color: white;
+                padding: 1rem; border-radius: 4px; z-index: 1000; animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Load initial data
+        loadEvents();
+        setInterval(loadEvents, 30000); // Refresh every 30 seconds
+    </script>
+</body>
+</html>

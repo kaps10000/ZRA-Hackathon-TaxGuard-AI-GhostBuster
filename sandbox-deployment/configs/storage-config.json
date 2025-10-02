@@ -1,0 +1,18 @@
+{
+  "type": "hybrid",
+  "hashOnlyMode": true,
+  "ipfs": {
+    "gateway": "http://sandbox-ipfs.zra.gov.zm:5001",
+    "timeout": 30000
+  },
+  "onChain": {
+    "maxSize": 256,
+    "hashAlgorithm": "sha256"
+  },
+  "offChain": {
+    "storage": "ipfs",
+    "encryption": true,
+    "compression": true,
+    "retention": "7years"
+  }
+}
