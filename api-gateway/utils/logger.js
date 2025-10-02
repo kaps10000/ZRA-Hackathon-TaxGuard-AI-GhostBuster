@@ -24,6 +24,11 @@ class SIEMTransport extends winston.Transport {
     }
 
     async sendToSIEM(logData) {
+        // Only try to send if SIEM endpoint is configured
+        if (!this.siemEndpoint) {
+            return; // Silently skip if no SIEM endpoint configured
+        }
+        
         try {
             const siemPayload = {
                 timestamp: new Date().toISOString(),
@@ -43,8 +48,11 @@ class SIEMTransport extends winston.Transport {
                 }
             });
         } catch (error) {
-            // Fail silently to avoid breaking the application
-            console.error('SIEM logging failed:', error.message);
+            // Fail silently - don't show SIEM errors in console
+            // Only log if explicitly in debug mode
+            if (process.env.DEBUG_SIEM === 'true') {
+                console.error('SIEM logging failed:', error.message);
+            }
         }
     }
 }

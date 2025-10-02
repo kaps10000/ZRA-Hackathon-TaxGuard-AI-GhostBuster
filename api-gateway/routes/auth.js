@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const logger = require('../utils/logger');
 const { authenticateToken, authorizeRole } = require('../middleware/auth');
+const { trackAuthAttempt } = require('../middleware/monitoring');
 
 const router = express.Router();
 
@@ -73,6 +74,7 @@ router.post('/login', [
         // Verify password
         const isValidPassword = await bcrypt.compare(password, user.password);
         if (!isValidPassword) {
+            trackAuthAttempt(false, user.role);
             logger.security.authFailure({
                 reason: 'invalid_password',
                 username,
@@ -85,6 +87,9 @@ router.post('/login', [
                 message: 'Username or password is incorrect'
             });
         }
+
+        // Track successful authentication
+        trackAuthAttempt(true, user.role);
 
         // Generate JWT token
         const token = jwt.sign(

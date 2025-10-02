@@ -1,33 +1,39 @@
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32);
+// Use a 32-byte key for AES-256
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY
+    ? (process.env.ENCRYPTION_KEY.length === 32
+        ? process.env.ENCRYPTION_KEY
+        : crypto.createHash('sha256').update(process.env.ENCRYPTION_KEY).digest())
+    : crypto.randomBytes(32);
 const IV_LENGTH = 16;
 
 class EventEncryption {
-    
+
     // Encrypt sensitive event data
     static encryptEventData(data) {
         const iv = crypto.randomBytes(IV_LENGTH);
-        const cipher = crypto.createCipher('aes-256-cbc', ENCRYPTION_KEY);
-        
+        const cipher = crypto.createCipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);
+
         let encrypted = cipher.update(JSON.stringify(data), 'utf8', 'hex');
         encrypted += cipher.final('hex');
-        
+
         return {
             encrypted: encrypted,
             iv: iv.toString('hex'),
             hash: crypto.createHash('sha256').update(encrypted).digest('hex')
         };
     }
-    
+
     // Decrypt event data
-    static decryptEventData(encryptedData, iv) {
-        const decipher = crypto.createDecipher('aes-256-cbc', ENCRYPTION_KEY);
-        
+    static decryptEventData(encryptedData, ivHex) {
+        const iv = Buffer.from(ivHex, 'hex');
+        const decipher = crypto.createDecipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);
+
         let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
         decrypted += decipher.final('utf8');
-        
+
         return JSON.parse(decrypted);
     }
     

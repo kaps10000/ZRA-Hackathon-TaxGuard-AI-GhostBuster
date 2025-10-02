@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
+const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const { blockchain } = require('../scripts/add-sample-events');
 const monitoring = require('./monitoring');
@@ -14,6 +15,14 @@ const server = http.createServer(app);
 
 // Initialize WebSocket
 const io = initWebSocket(server);
+
+// Enable CORS for frontend
+app.use(cors({
+    origin: ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:44371'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'X-User-ID', 'X-User-Role']
+}));
 
 app.use(express.json());
 app.use(securityHeaders);
@@ -193,13 +202,16 @@ app.get('/api/events', async (req, res) => {
 
 // GET /api/blockchain - Get blockchain info
 app.get('/api/blockchain', (req, res) => {
+    const chainInfo = blockchain.getChainInfo();
     res.json({
         success: true,
-        blockchain: blockchain.getChainInfo(),
-        chain: blockchain.chain.map(block => ({
-            ...block,
-            data: typeof block.data === 'object' ? block.data : 'Genesis Block'
-        }))
+        blockchain: {
+            ...chainInfo,
+            chain: blockchain.chain.map(block => ({
+                ...block,
+                data: typeof block.data === 'object' ? block.data : 'Genesis Block'
+            }))
+        }
     });
 });
 

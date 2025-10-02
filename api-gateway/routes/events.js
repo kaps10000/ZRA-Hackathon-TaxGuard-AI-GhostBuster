@@ -3,6 +3,7 @@ const axios = require('axios');
 const { body, param, validationResult } = require('express-validator');
 const { authenticateToken, authorizeRole } = require('../middleware/auth');
 const logger = require('../utils/logger');
+const { trackBlockchainEvent, trackError } = require('../middleware/monitoring');
 
 const router = express.Router();
 
@@ -67,6 +68,9 @@ router.post('/events', authenticateToken, [
             }
         });
 
+        // Track metric
+        trackBlockchainEvent(eventType, req.user.role);
+
         // Log successful submission
         logger.info('Event Submitted Successfully', {
             userId: req.user.id,
@@ -80,6 +84,8 @@ router.post('/events', authenticateToken, [
         res.status(201).json({
             success: true,
             message: 'Event submitted successfully',
+            eventId: blockchainResponse.data.event?.eventId,
+            blockIndex: blockchainResponse.data.event?.blockIndex,
             event: blockchainResponse.data.event,
             blockchain: {
                 length: blockchainResponse.data.blockchain?.length,
@@ -88,6 +94,8 @@ router.post('/events', authenticateToken, [
         });
 
     } catch (error) {
+        trackError('event_submission_failed', req.path);
+
         logger.error('Event Submission Failed', {
             userId: req.user?.id,
             error: error.message,
