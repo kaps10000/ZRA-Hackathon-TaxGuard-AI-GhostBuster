@@ -1,0 +1,93 @@
+
+> taxguard-api-gateway@1.0.0 start
+> node server.js
+
+[32minfo[39m: Server Started {"environment":"development","port":"4000","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:34:18.367Z","version":"1.0.0"}
+🚀 TaxGuard API Gateway running on port 4000
+📚 API Documentation: http://localhost:4000/api-docs
+🏥 Health Check: http://localhost:4000/health
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:34:27.008Z","url":"/health","userAgent":"curl/8.15.0","version":"1.0.0"}
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:39:00.195Z","url":"/health","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:39:00.250Z","url":"/favicon.ico","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+[33mwarn[39m: 404 Not Found {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:39:00.254Z","url":"/favicon.ico","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:39:15.009Z","url":"/api-docs","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:39:15.053Z","url":"/favicon.ico","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+[33mwarn[39m: 404 Not Found {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:39:15.055Z","url":"/favicon.ico","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:39:41.339Z","url":"/api/auth/login","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+[33mwarn[39m: 404 Not Found {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:39:41.349Z","url":"/api/auth/login","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:39:41.386Z","url":"/favicon.ico","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+[33mwarn[39m: 404 Not Found {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:39:41.390Z","url":"/favicon.ico","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:40:49.750Z","url":"/api-docs","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:40:49.793Z","url":"/favicon.ico","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+[33mwarn[39m: 404 Not Found {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:40:49.797Z","url":"/favicon.ico","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:40:58.520Z","url":"/api/auth/register","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+[33mwarn[39m: 404 Not Found {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:40:58.522Z","url":"/api/auth/register","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:40:58.554Z","url":"/favicon.ico","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+[33mwarn[39m: 404 Not Found {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:40:58.557Z","url":"/favicon.ico","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:41:44.541Z","url":"/api/auth/profile","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+[33mwarn[39m: Authentication Failed - No Token {"ip":"::ffff:127.0.0.1","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:41:44.546Z","url":"/profile","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:41:44.597Z","url":"/favicon.ico","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+[33mwarn[39m: 404 Not Found {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:41:44.599Z","url":"/favicon.ico","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:42:03.701Z","url":"/api/auth/logout","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+[33mwarn[39m: 404 Not Found {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:42:03.705Z","url":"/api/auth/logout","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:42:03.742Z","url":"/favicon.ico","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+[33mwarn[39m: 404 Not Found {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:42:03.743Z","url":"/favicon.ico","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:42:34.338Z","url":"/api/events","userAgent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","version":"1.0.0"}
+[33mwarn[39m: Authentication Failed - No Token {"ip":"::1","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:42:34.342Z","url":"/events","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:42:34.407Z","url":"/favicon.ico","userAgent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","version":"1.0.0"}
+[33mwarn[39m: 404 Not Found {"ip":"::1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:42:34.408Z","url":"/favicon.ico","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:42:52.422Z","url":"/api/events","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+[33mwarn[39m: Authentication Failed - No Token {"ip":"::ffff:127.0.0.1","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:42:52.425Z","url":"/events","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:42:52.462Z","url":"/favicon.ico","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+[33mwarn[39m: 404 Not Found {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:42:52.464Z","url":"/favicon.ico","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:43:04.726Z","url":"/api/events","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+[33mwarn[39m: Authentication Failed - No Token {"ip":"::ffff:127.0.0.1","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:43:04.732Z","url":"/events","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:43:04.775Z","url":"/favicon.ico","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+[33mwarn[39m: 404 Not Found {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:43:04.777Z","url":"/favicon.ico","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:43:13.066Z","url":"/api/events/:id","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+[33mwarn[39m: Authentication Failed - No Token {"ip":"::ffff:127.0.0.1","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:43:13.069Z","url":"/events/:id","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error
+[32minfo[39m: API Request {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:43:13.106Z","url":"/favicon.ico","userAgent":"Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0","version":"1.0.0"}
+[33mwarn[39m: 404 Not Found {"ip":"::ffff:127.0.0.1","method":"GET","service":"taxguard-api-gateway","timestamp":"2025-10-02T17:43:13.107Z","url":"/favicon.ico","version":"1.0.0"}
+SIEM logging failed: Error
+SIEM logging failed: Error

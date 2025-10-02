@@ -40,6 +40,13 @@ const complianceTriggers = require('./compliance-triggers');
 const multisig = require('./multisig');
 const realtimeDashboard = require('./realtime-dashboard');
 
+// Add team integration routes
+const ghostbusterIntegration = require('./integrations/ghostbuster');
+const whistleproIntegration = require('./integrations/whistlepro');
+const aiRiskIntegration = require('./integrations/ai-risk');
+const predictiveIntegration = require('./integrations/predictive-analytics');
+const dashboardFeed = require('./integrations/dashboard-feed');
+
 app.use('/api/stats', statistics);
 app.use('/api/siem', siemExport);
 app.use('/api/verify', verification);
@@ -48,6 +55,13 @@ app.use('/api/analytics', analyticsEngine);
 app.use('/api/triggers', complianceTriggers);
 app.use('/api/multisig', multisig);
 app.use('/api/dashboard', realtimeDashboard);
+
+// Team integration endpoints
+app.use('/api/ghostbuster', ghostbusterIntegration);
+app.use('/api/whistlepro', whistleproIntegration);
+app.use('/api/ai-risk', aiRiskIntegration);
+app.use('/api/predictive', predictiveIntegration);
+app.use('/api/dashboard-feed', dashboardFeed);
 
 /**
  * @swagger
@@ -269,6 +283,11 @@ app.get('/', (req, res) => {
             'POST /api/triggers/evaluate': 'Evaluate compliance triggers',
             'POST /api/multisig/create': 'Create multi-signature event',
             'GET /api/dashboard/overview': 'Real-time monitoring dashboard',
+            'POST /api/ghostbuster/detection': 'GhostBuster phantom detection',
+            'POST /api/whistlepro/report': 'WhistlePro whistleblower report',
+            'POST /api/ai-risk/assessment': 'AI Risk Score assessment',
+            'POST /api/predictive/forecast': 'Predictive Analytics forecast',
+            'GET /api/dashboard-feed/live': 'Dashboard live event feed',
             'GET /explorer': 'Blockchain explorer interface',
             'GET /api-docs': 'API documentation'
         },
@@ -281,9 +300,20 @@ app.get('/', (req, res) => {
             'Compliance Automation',
             'Pattern Detection',
             'Live Dashboard',
+            'GhostBuster Integration',
+            'WhistlePro Integration',
+            'Predictive Analytics',
+            'Team Dashboard Feed',
             'Encryption',
             'Multi-node'
         ],
+        teamIntegrations: {
+            ghostbuster: 'Ezra - Phantom employee/ghost company detection',
+            whistlepro: 'Kelvin & Ephraim - Anonymous whistleblower reports',
+            aiRisk: 'Shuan - ML-based risk scoring',
+            predictive: 'Emmanuel - Forecasting & trend analysis',
+            dashboard: 'Thomas - Central monitoring dashboard'
+        },
         timestamp: new Date().toISOString()
     });
 });
