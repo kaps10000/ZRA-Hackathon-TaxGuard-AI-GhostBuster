@@ -42,6 +42,14 @@ export default function SettingsPanel({ demoMode, setDemoMode, apiBaseUrl, setAp
       </div>
 
       <div style={{ marginTop: 8 }}>
+        {/* GhostBuster runtime config */}
+        <GhostBusterConfig />
+      </div>
+
+      
+      
+      
+      <div style={{ marginTop: 8 }}>
         <div style={{ fontSize: 12, color: '#444', marginBottom: 6 }}>Live API Base URL</div>
         <input value={localUrl} onChange={e=>setLocalUrl(e.target.value)} style={{ width: '100%', padding: 8, border: '1px solid #ddd', borderRadius: 6 }} />
         <div style={{ display: 'flex', gap: 8, marginTop: 8, alignItems: 'center' }}>
@@ -56,6 +64,49 @@ export default function SettingsPanel({ demoMode, setDemoMode, apiBaseUrl, setAp
         </div>
       </div>
 
+    </div>
+  );
+}
+
+function GhostBusterConfig(){
+  const [ghostMode, setGhostMode] = React.useState('mock');
+  const [ghostUrl, setGhostUrl] = React.useState('');
+  const [ghostMsg, setGhostMsg] = React.useState('');
+
+  React.useEffect(()=>{
+    (async()=>{
+      try{
+        const res = await fetch('/api/_ghost-config');
+        if(!res.ok) return;
+        const j = await res.json();
+        if(j && j.config){ setGhostMode(j.config.mode||'mock'); setGhostUrl(j.config.url||''); }
+      }catch(e){ /* ignore */ }
+    })();
+  },[]);
+
+  async function saveGhostConfig(){
+    try{
+      const res = await fetch('/api/_ghost-config', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ mode: ghostMode, url: ghostUrl }) });
+      if(!res.ok) throw new Error('status ' + res.status);
+      setGhostMsg('Saved');
+      setTimeout(()=>setGhostMsg(''),2000);
+    }catch(e){ setGhostMsg('Failed to save: ' + e.message); }
+  }
+
+  return (
+    <div style={{ marginBottom: 8 }}>
+      <div style={{ fontSize: 12, color: '#444', marginBottom: 6 }}>GhostBuster runtime (mock/proxy)</div>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>
+        <select value={ghostMode} onChange={e=>setGhostMode(e.target.value)}>
+          <option value="mock">mock</option>
+          <option value="proxy">proxy</option>
+        </select>
+        <input value={ghostUrl} onChange={e=>setGhostUrl(e.target.value)} placeholder="Proxy URL (e.g. https://api.example/ghost-check)" style={{ flex: 1, padding: 8, border: '1px solid #ddd', borderRadius: 6 }} />
+      </div>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <button onClick={saveGhostConfig} style={{ padding: '6px 10px' }}>Save ghost config</button>
+        <div style={{ fontSize: 12, color: '#666' }}>{ghostMsg}</div>
+      </div>
     </div>
   );
 }
