@@ -1,0 +1,5 @@
+[
+  { "taxpayer_id": "TP-001", "name": "Acme Mining Ltd", "score": 92, "sector": "Mining" },
+  { "taxpayer_id": "TP-002", "name": "Sunrise Trading", "score": 88, "sector": "Trading" },
+  { "taxpayer_id": "TP-003", "name": "Green Farms", "score": 85, "sector": "Agriculture" }
+]

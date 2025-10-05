@@ -1,0 +1,4 @@
+[
+  { "alert_id": "G-1001", "company_id": "C-9001", "company_name": "Phantom Corp", "ghost_score": 95, "issues": ["Director mismatch","Duplicate NRC"], "timestamp": "2025-10-01T10:23:00Z" },
+  { "alert_id": "G-1002", "company_id": "C-9002", "company_name": "GhostWorks", "ghost_score": 78, "issues": ["Shared TPIN","Missing NAPSA"], "timestamp": "2025-10-02T14:12:00Z" }
+]
