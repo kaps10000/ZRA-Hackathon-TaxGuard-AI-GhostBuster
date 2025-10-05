@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import ReportModal from './ReportModal';
+import ReportHistory from './ReportHistory';
 
 export default function GhostCheckForm({ demoMode, apiBaseUrl }) {
   const [companyId, setCompanyId] = useState('');
@@ -10,6 +11,13 @@ export default function GhostCheckForm({ demoMode, apiBaseUrl }) {
   const [creatingReport, setCreatingReport] = useState(false);
   const [reportResult, setReportResult] = useState(null);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [modalReport, setModalReport] = useState(null);
+  const [sessionReports, setSessionReports] = useState(()=>{
+    try{
+      const raw = localStorage.getItem('taxguard:reports');
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  });
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -59,6 +67,15 @@ export default function GhostCheckForm({ demoMode, apiBaseUrl }) {
                   const client = axios.create({ baseURL: demoMode ? '' : apiBaseUrl });
                   const rr = await client.post('/api/report', { alert: result, company_id: companyId });
                   setReportResult(rr.data);
+                  // persist report to session history
+                  try{
+                    const saved = { ...(rr.data||{}), created_at: Date.now() };
+                    const next = [saved, ...sessionReports].slice(0,50);
+                    setSessionReports(next);
+                    localStorage.setItem('taxguard:reports', JSON.stringify(next));
+                    // ensure modal shows the same object we persisted
+                    setModalReport(saved);
+                  }catch(e){ /* ignore storage errors */ }
                   setShowReportModal(true);
                 }catch(e){
                   setError('Failed to create report: ' + (e.message||e));
@@ -69,13 +86,18 @@ export default function GhostCheckForm({ demoMode, apiBaseUrl }) {
               <div className="mt-2 p-2 bg-white border rounded">
                 <div><span className="font-semibold">Case ID:</span> {reportResult.case_id}</div>
                 <div><span className="font-semibold">Proof Hash:</span> {reportResult.proof_hash}</div>
-                <div className="mt-2"><button onClick={()=>setShowReportModal(true)} className="px-3 py-1 border rounded">Open report</button></div>
+                <div className="mt-2"><button onClick={()=>{ setModalReport(reportResult); setShowReportModal(true); }} className="px-3 py-1 border rounded">Open report</button></div>
               </div>
             )}
           </div>
         )}
       </form>
-      <ReportModal open={showReportModal} onClose={()=>setShowReportModal(false)} report={reportResult||{}} />
+      <ReportModal open={showReportModal} onClose={()=>setShowReportModal(false)} report={modalReport||reportResult||{}} />
+      <ReportHistory
+        reports={sessionReports}
+        onOpen={(r)=>{ setModalReport(r); setShowReportModal(true); }}
+        onClear={()=>{ setSessionReports([]); localStorage.removeItem('taxguard:reports'); }}
+      />
     </div>
   );
 }
