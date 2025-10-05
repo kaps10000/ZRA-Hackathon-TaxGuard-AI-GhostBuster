@@ -1,17 +1,81 @@
 import React from 'react';
 
+const FOCUSABLE_SELECTORS = [
+  'a[href]',
+  'button:not([disabled])',
+  'textarea:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])'
+].join(',');
+
 export default function ReportModal({ open, onClose, report }){
   if(!open) return null;
 
   const [copied, setCopied] = React.useState(false);
+  const dialogRef = React.useRef(null);
+  const previouslyFocused = React.useRef(null);
 
   React.useEffect(() => {
+    if (!open) return;
+
+    // save previously focused element so we can restore focus later
+    previouslyFocused.current = document.activeElement;
+
     function handleKey(e){
-      if(e.key === 'Escape') onClose && onClose();
+      if(e.key === 'Escape'){
+        onClose && onClose();
+      }
+
+      if(e.key === 'Tab'){
+        const dialog = dialogRef.current;
+        if(!dialog) return;
+        const nodes = Array.from(dialog.querySelectorAll(FOCUSABLE_SELECTORS)).filter(n => n.offsetParent !== null);
+        if(nodes.length === 0){
+          // nothing to focus, keep focus on dialog
+          e.preventDefault();
+          dialog.focus();
+          return;
+        }
+        const first = nodes[0];
+        const last = nodes[nodes.length - 1];
+
+        if(e.shiftKey){
+          if(document.activeElement === first || document.activeElement === dialog){
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if(document.activeElement === last){
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
     }
+
     window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [onClose]);
+
+    // focus the first focusable element or dialog itself
+    const dialog = dialogRef.current;
+    if(dialog){
+      const nodes = Array.from(dialog.querySelectorAll(FOCUSABLE_SELECTORS)).filter(n => n.offsetParent !== null);
+      if(nodes.length) nodes[0].focus();
+      else dialog.focus();
+    }
+
+    // prevent background from being keyboard-focusable by setting inert-like attributes (best-effort)
+    const bodyChildren = Array.from(document.body.children).filter(c => !dialog || !dialog.contains(c));
+    bodyChildren.forEach(el => el.setAttribute('aria-hidden', 'true'));
+
+    return () => {
+      window.removeEventListener('keydown', handleKey);
+      // restore aria-hidden
+      bodyChildren.forEach(el => el.removeAttribute('aria-hidden'));
+      // restore previous focus
+      try{ previouslyFocused.current && previouslyFocused.current.focus(); }catch(e){}
+    };
+  }, [open, onClose]);
 
   async function copyHash(){
     try{
@@ -28,9 +92,16 @@ export default function ReportModal({ open, onClose, report }){
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="w-[420px] bg-white rounded-lg p-4">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="report-modal-title"
+        tabIndex={-1}
+        className="w-[420px] bg-white rounded-lg p-4"
+      >
         <div className="flex justify-between items-center">
-          <div className="font-semibold">Report Created</div>
+          <div id="report-modal-title" className="font-semibold">Report Created</div>
         </div>
         <div className="mt-3">
           <div><strong>Case ID:</strong> {report.case_id || '(none)'}</div>
