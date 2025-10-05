@@ -39,3 +39,53 @@ Icon?
 .env
 .env.local
 .env.*.local
+
+# Package manager lockfiles (ignore in node_modules, keep top-level lockfiles if desired)
+**/package-lock.json
+**/yarn.lock
+**/pnpm-lock.yaml
+
+# Editor backups and caches
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# JetBrains IDE
+.idea/
+*.iml
+
+# Visual Studio
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Windows thumbnail cache
+Thumbs.db
+
+# npm cache
+.npm
+.cache
+
+# pnpm store
+.pnpm-store
+
+# node-repl history
+.node_repl_history
+
+# Test output
+/coverage
+
+# Build artifact folders
+/dist
+/build
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# GitHub Actions artifacts
+.github/workflows/*.local
+.artifacts
+
