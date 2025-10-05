@@ -1,0 +1,41 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Dependency directories
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+coverage/
+*.tgz
+
+# Vite cache
+.vite/
+
+# Mac / Windows
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-workspace
+
+# OS files
+ehthumbs.db
+Icon?
+
+# env files
+.env
+.env.local
+.env.*.local
