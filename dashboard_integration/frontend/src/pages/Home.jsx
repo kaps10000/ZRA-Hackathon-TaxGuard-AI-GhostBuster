@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Placeholder from '../components/Placeholder';
 import ExampleChart from '../charts/ExampleChart';
+import GhostCheckForm from '../components/GhostCheckForm';
 import axios from 'axios';
 
-export default function Home({ demoMode = true }){
+export default function Home({ demoMode = true, apiBaseUrl = 'http://localhost:4000' }){
   const [riskTop, setRiskTop] = useState(null);
   const [ghostAlerts, setGhostAlerts] = useState(null);
   const [forecast, setForecast] = useState(null);
@@ -13,7 +14,7 @@ export default function Home({ demoMode = true }){
     let mounted = true;
     async function fetchAll(){
       try {
-        const client = axios.create({ baseURL: demoMode ? '' : 'http://localhost:4000' });
+        const client = axios.create({ baseURL: demoMode ? '' : apiBaseUrl });
         const [r1, r2, r3] = await Promise.all([
           client.get('/api/risk-top'),
           client.get('/api/ghost-alerts'),
@@ -34,6 +35,7 @@ export default function Home({ demoMode = true }){
 
   return (
     <div className="space-y-6">
+      <GhostCheckForm demoMode={demoMode} apiBaseUrl={apiBaseUrl} />
       <Placeholder title="Overview">
         {error && <div className="text-red-600">Error: {error}</div>}
         {!riskTop && !error && <div>Loading overview…</div>}

@@ -7,6 +7,11 @@ import SettingsPanel from './components/SettingsPanel';
 function App() {
   const [demoMode, setDemoMode] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [apiBaseUrl, setApiBaseUrl] = useState(() => {
+    try {
+      return localStorage.getItem('taxguard:apiBaseUrl') || 'http://localhost:4000';
+    } catch (e) { return 'http://localhost:4000'; }
+  });
 
   useEffect(() => {
     const stored = localStorage.getItem('taxguard:demoMode');
@@ -25,6 +30,9 @@ function App() {
             <div className="px-3 py-1 rounded border text-sm">
               Mode: <span className="font-semibold">{demoMode ? 'Mock' : 'Live'}</span>
             </div>
+            <div className="px-3 py-1 rounded border text-sm">
+              Connected: <span className="font-semibold">{demoMode ? 'Mock' : `Live (${apiBaseUrl})`}</span>
+            </div>
             <button
               className="px-3 py-1 border rounded text-sm bg-gray-50"
               onClick={() => setShowSettings(s => !s)}
@@ -36,10 +44,10 @@ function App() {
       </header>
 
       <main className="max-w-7xl mx-auto p-6">
-        <Home demoMode={demoMode} />
+        <Home demoMode={demoMode} apiBaseUrl={apiBaseUrl} />
         {showSettings && (
           <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999 }}>
-            <SettingsPanel demoMode={demoMode} setDemoMode={setDemoMode} onClose={() => setShowSettings(false)} />
+            <SettingsPanel demoMode={demoMode} setDemoMode={setDemoMode} apiBaseUrl={apiBaseUrl} setApiBaseUrl={(url)=>{setApiBaseUrl(url); try{localStorage.setItem('taxguard:apiBaseUrl', url)}catch(e){}}} onClose={() => setShowSettings(false)} />
           </div>
         )}
       </main>
