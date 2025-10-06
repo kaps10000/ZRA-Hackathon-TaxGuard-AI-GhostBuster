@@ -1,0 +1,28 @@
+{
+  "sampleEvents": [
+    {
+      "eventId": "evt-001",
+      "eventType": "filing",
+      "timestamp": "2025-10-01T10:30:00Z",
+      "anonymizedUserId": "user-abc123",
+      "hashOfPayload": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "VAT return for September 2025"
+    },
+    {
+      "eventId": "evt-002",
+      "eventType": "payment",
+      "timestamp": "2025-10-01T11:00:00Z",
+      "anonymizedUserId": "user-def456",
+      "hashOfPayload": "5d41402abc4b2a76b9719d911017c592",
+      "notes": "Income tax payment"
+    },
+    {
+      "eventId": "evt-003",
+      "eventType": "auditFlag",
+      "timestamp": "2025-10-01T12:15:00Z",
+      "anonymizedUserId": "user-ghi789",
+      "hashOfPayload": "d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2",
+      "notes": "Flagged for unusual VAT filing variance"
+    }
+  ]
+}

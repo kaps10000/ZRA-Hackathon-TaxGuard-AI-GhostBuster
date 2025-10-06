@@ -1,0 +1,28 @@
+{
+  "title": "TaxGuard Sandbox Deployment Guide",
+  "version": "1.0.0",
+  "generatedAt": "2025-10-02T16:41:14.093Z",
+  "environment": "sandbox",
+  "sections": {
+    "overview": "Complete deployment guide for TaxGuard sandbox environment",
+    "prerequisites": [
+      "Docker installed and running",
+      "Access to ZRA sandbox network",
+      "Valid deployment credentials",
+      "Network connectivity to sandbox endpoints"
+    ],
+    "deploymentSteps": [
+      "validateEnvironment",
+      "prepareDeployment",
+      "deploySmartContracts",
+      "deployAPIGateway",
+      "configureNetworkProfiles",
+      "setupOffChainStorage",
+      "runEndToEndTests",
+      "generateDocumentation"
+    ],
+    "configuration": "See configs/ directory for all configuration files",
+    "testing": "See logs/ directory for test results and validation",
+    "troubleshooting": "Common issues and solutions documented in TROUBLESHOOTING.md"
+  }
+}

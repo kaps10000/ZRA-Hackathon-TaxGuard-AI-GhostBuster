@@ -1,0 +1,33 @@
+{
+  "deployment": {
+    "status": "SUCCESS",
+    "environment": "sandbox",
+    "timestamp": "2025-10-02T16:41:14.093Z",
+    "duration": "5 minutes"
+  },
+  "services": {
+    "smartContracts": {
+      "status": "deployed",
+      "network": "http://sandbox.zra.gov.zm:8545"
+    },
+    "apiGateway": {
+      "status": "running",
+      "url": "http://sandbox-api.zra.gov.zm:4000"
+    },
+    "offChainStorage": {
+      "status": "configured",
+      "mode": "hash-only"
+    }
+  },
+  "endpoints": {
+    "apiGateway": "http://sandbox-api.zra.gov.zm:4000",
+    "healthCheck": "http://sandbox-api.zra.gov.zm:4000/health",
+    "documentation": "http://sandbox-api.zra.gov.zm:4000/api-docs"
+  },
+  "nextSteps": [
+    "Verify all services are running",
+    "Run integration tests",
+    "Configure monitoring and alerting",
+    "Set up backup and recovery procedures"
+  ]
+}
