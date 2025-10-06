@@ -1,0 +1,528 @@
+{
+	"info": {
+		"_postman_id": "taxguard-blockchain-api",
+		"name": "TaxGuard Blockchain API - Complete Collection",
+		"description": "Complete API collection for TaxGuard Blockchain API including all endpoints tested and verified on 2025-10-05",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health & Info",
+			"item": [
+				{
+					"name": "Root - API Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": [""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["health"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Blockchain Events",
+			"item": [
+				{
+					"name": "Get All Events",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/events",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "events"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Event by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/events/evt-filing-001",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "events", "evt-filing-001"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Tax Event - Filing",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"eventType\": \"filing\",\n  \"anonymizedUserId\": \"test-user-001\",\n  \"hashOfPayload\": \"a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456\",\n  \"notes\": \"Test VAT filing for Q4 2025\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/events",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "events"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Tax Event - Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"eventType\": \"payment\",\n  \"anonymizedUserId\": \"taxpayer-abc456\",\n  \"hashOfPayload\": \"def123456789abcdef123456789abcdef123456789abcdef123456789abcdef1\",\n  \"notes\": \"Income tax payment for fiscal year 2025\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/events",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "events"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Tax Event - Audit Flag",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"eventType\": \"auditFlag\",\n  \"anonymizedUserId\": \"taxpayer-xyz789\",\n  \"hashOfPayload\": \"abc987654321fedcba987654321fedcba987654321fedcba987654321fedcba\",\n  \"notes\": \"Flagged for revenue mismatch - requires investigation\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/events",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "events"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Full Blockchain",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/blockchain",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "blockchain"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "GhostBuster Integration",
+			"item": [
+				{
+					"name": "Submit Phantom Detection",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"detectionType\": \"phantom_employee\",\n  \"entityId\": \"EMP-12345\",\n  \"confidenceScore\": 92,\n  \"evidenceHash\": \"a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2\",\n  \"severity\": \"CRITICAL\",\n  \"detectionMethod\": \"pattern_analysis\",\n  \"indicators\": [\n    \"No payroll records\",\n    \"Ghost bank account\",\n    \"Duplicate identity\"\n  ],\n  \"investigatorId\": \"ghostbuster-ai-v2\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/ghostbuster/detection",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "ghostbuster", "detection"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Submit Ghost Company Detection",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"detectionType\": \"ghost_company\",\n  \"entityId\": \"COMP-98765\",\n  \"confidenceScore\": 87,\n  \"evidenceHash\": \"fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210\",\n  \"severity\": \"HIGH\",\n  \"detectionMethod\": \"cross_reference\",\n  \"indicators\": [\n    \"No physical address\",\n    \"Shell company structure\",\n    \"Tax haven registration\"\n  ]\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/ghostbuster/detection",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "ghostbuster", "detection"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Detections",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/ghostbuster/detections",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "ghostbuster", "detections"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Detections by Type",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/ghostbuster/detections?detectionType=phantom_employee&severity=CRITICAL",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "ghostbuster", "detections"],
+							"query": [
+								{
+									"key": "detectionType",
+									"value": "phantom_employee"
+								},
+								{
+									"key": "severity",
+									"value": "CRITICAL"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get GhostBuster Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/ghostbuster/stats",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "ghostbuster", "stats"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "WhistlePro Integration",
+			"item": [
+				{
+					"name": "Submit Whistleblower Report",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reportType\": \"tax_evasion\",\n  \"targetEntity\": \"XYZ Corp\",\n  \"evidenceHash\": \"b1c2d3e4f5a6b1c2d3e4f5a6b1c2d3e4f5a6b1c2d3e4f5a6b1c2d3e4f5a6b1c2\",\n  \"severity\": \"HIGH\",\n  \"description\": \"Under-reporting of revenue by approximately 40%\",\n  \"estimatedAmount\": 500000,\n  \"location\": \"Lusaka\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/whistlepro/report",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "whistlepro", "report"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Track Report by Case Code",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/whistlepro/track/WP-2025-B8ABE6",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "whistlepro", "track", "WP-2025-B8ABE6"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Reports (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/whistlepro/reports",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "whistlepro", "reports"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get WhistlePro Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/whistlepro/stats",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "whistlepro", "stats"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "AI Risk Scoring",
+			"item": [
+				{
+					"name": "Submit Risk Assessment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"taxpayerId\": \"taxpayer-xyz123\",\n  \"riskScore\": 78,\n  \"dataHash\": \"c1d2e3f4a5b6c1d2e3f4a5b6c1d2e3f4a5b6c1d2e3f4a5b6c1d2e3f4a5b6c1d2\",\n  \"modelVersion\": \"v2.0\",\n  \"confidence\": 87,\n  \"riskFactors\": [\n    \"Inconsistent filing pattern\",\n    \"High variance in reported income\",\n    \"Multiple business entity changes\"\n  ],\n  \"recommendations\": [\n    \"Schedule compliance review\",\n    \"Request additional documentation\"\n  ]\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/ai-risk/assessment",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "ai-risk", "assessment"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Risk Assessments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/ai-risk/assessments",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "ai-risk", "assessments"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get High Risk Assessments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/ai-risk/assessments?riskLevel=HIGH&limit=10",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "ai-risk", "assessments"],
+							"query": [
+								{
+									"key": "riskLevel",
+									"value": "HIGH"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get AI Risk Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/ai-risk/stats",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "ai-risk", "stats"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Statistics & Analytics",
+			"item": [
+				{
+					"name": "Get Comprehensive Statistics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/stats",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "stats"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Real-time Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/dashboard/overview",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "dashboard", "overview"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Legacy Integrations",
+			"item": [
+				{
+					"name": "WhistlePro Legacy Integration",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reportId\": \"report-12345\",\n  \"reportHash\": \"1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/integration/whistlepro",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "integration", "whistlepro"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AI Risk Legacy Integration",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"user-abc123\",\n  \"riskScore\": 85,\n  \"riskHash\": \"abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/integration/ai-risk",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "integration", "ai-risk"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3001",
+			"type": "string"
+		}
+	]
+}

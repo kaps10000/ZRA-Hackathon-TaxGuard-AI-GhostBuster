@@ -1,4 +1,6 @@
-# WhistlePro Backend
+# ZRA Hackathon - TaxGuard AI GhostBuster
+
+## WhistlePro Backend
 
 **Secure Anonymous Reporting System for ZRA TaxGuard AI**
 
