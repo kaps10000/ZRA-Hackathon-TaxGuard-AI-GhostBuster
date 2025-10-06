@@ -1,0 +1,369 @@
+# *Developers  Roadmaps*
+
+---
+
+## *Ezra — GhostBuster Module (Phantom Detection)*
+
+*Task 1 — Environment Setup*
+
+- Install Python, Pandas, SQL libraries.
+- Set up Git repo + branching strategy.
+- Create virtual environment.
+- Document setup instructions.
+
+*Task 2 — Data Preparation*
+
+- Collect payroll, PACRA, NAPSA, NRC mock data.
+- Standardize into CSV/JSON schemas.
+- Anonymize sensitive fields.
+- Store datasets in /data/ folder.
+
+*Task 3 — Detection Logic*
+
+- Implement missing NRC/ID detection.
+- Detect duplicate IDs across companies.
+- Cross-check payroll ↔ PACRA for invalid entities.
+- Assign “ghost score” per anomaly.
+
+*Task 4 — API Service*
+
+- Build Flask/FastAPI service.
+- Endpoint: POST /ghost-check (upload dataset).
+- Endpoint: GET /ghost-report/:company_id.
+- Output JSON + CSV reports.
+
+*Task 5 — Testing*
+
+- Write unit tests for matching logic.
+- Run API integration tests.
+- Benchmark detection on large dataset.
+- Validate against sample anomalies.
+
+*Task 6 — Documentation*
+
+- API usage guide (inputs/outputs).
+- Detection rulebook.
+- Test cases + results.
+- Integration notes for dashboard (Thomas).
+
+---
+
+## *Shuan — AI Risk Scoring*
+
+*Task 1 — ML Environment Setup*
+
+- Install Python ML stack (scikit-learn, XGBoost).
+- Prepare project repo with /models/, /notebooks/.
+- Enable Jupyter Notebook for experiments.
+- Write setup README.
+
+*Task 2 — Data Engineering*
+
+- Load taxpayer compliance dataset.
+- Handle missing values, normalize features.
+- Feature engineering (delays, anomalies, sector risk).
+- Split train/test datasets.
+
+*Task 3 — Model Training*
+
+- Train Logistic Regression baseline.
+- Train XGBoost advanced model.
+- Run hyperparameter tuning.
+- Evaluate accuracy/F1/AUC.
+
+*Task 4 — Risk Scoring API*
+
+- Build Flask API (/risk-score).
+- Input: taxpayer_id, features.
+- Output: JSON {id, score, category}.
+- Save models as .pkl.
+
+*Task 5 — Testing & Validation*
+
+- Unit tests for ML pipeline.
+- Test API with dummy taxpayers.
+- Validate categories (low/med/high).
+- Stress-test with batch predictions.
+
+*Task 6 — Documentation*
+
+- Document features used.
+- Record model metrics.
+- Write API usage guide.
+- Create sample requests & outputs.
+
+---
+
+## *Ephraim — WhistlePro Frontend*
+
+*Task 1 — Project Setup*
+
+- Initialize React Native + PWA build.
+- Install UI libraries (Material UI/Tailwind).
+- Configure routing & navigation.
+- Create repo structure /screens, /components.
+
+*Task 2 — Reporting UI*
+
+- Build anonymous submission form.
+- File upload field (images/docs).
+- Add category dropdown (fraud, evasion, etc).
+- Auto case code display after submit.
+
+*Task 3 — Security Features*
+
+- Strip metadata from uploaded files.
+- Add warning banners (“Stay anonymous”).
+- No cookies / local storage usage.
+- End-to-end encryption with backend.
+
+*Task 4 — API Integration*
+
+- Connect form to Kelvin’s API.
+- Submit report → receive case code.
+- Fetch status by case code.
+- Handle error responses gracefully.
+
+*Task 5 — Testing & QA*
+
+- Test offline → online submission sync.
+- Run mobile emulator tests.
+- Browser compatibility checks (PWA).
+- Usability testing for whistleblowers.
+
+*Task 6 — Documentation & Handover*
+
+- User guide (screenshots, workflows).
+- API integration doc.
+- Security checklist.
+- Demo prep slides for final showcase.
+
+---
+
+## *Kelvin — WhistlePro Backend*
+
+*Task 1 — Environment Setup*
+
+- Initialize Django/Node.js project.
+- Configure PostgreSQL database.
+- Set up Docker containers.
+- Define environment variables.
+
+*Task 2 — Data Model Design*
+
+- Create Report table (case_id, payload, timestamp).
+- Add Investigator table (roles, access).
+- Implement audit logs.
+- Set indexing for fast queries.
+
+*Task 3 — Secure API Development*
+
+- POST /report for submissions.
+- GET /report/:id for investigators.
+- Encryption middleware.
+- Metadata scrubbing logic.
+
+*Task 4 — Authentication & Access Control*
+
+- JWT token system.
+- Role-based access (reporter vs investigator).
+- Rate limiting & IP throttling.
+- Audit trail storage.
+
+*Task 5 — Testing & Security*
+
+- Unit tests for API endpoints.
+- Security pen-tests (SQLi, XSS).
+- Integration with Ephraim’s frontend.
+- Test large submissions.
+
+*Task 6 — Documentation & Ops*
+
+- API reference doc.
+- Database schema diagram.
+- Setup guide for deployment.
+- Integration notes for blockchain (Kaps).
+
+---
+
+## *Kaps — Blockchain Ledger*
+
+*Task 1 — Setup & Network*
+
+- Install Hyperledger Fabric.
+- Configure local dev network.
+- Create chaincode folder structure.
+- Document setup instructions.
+
+*Task 2 — Smart Contract Development*
+
+- Function storeHash(case_id, hash).
+- Function getHash(case_id).
+- Implement role-based ACL.
+- Test on local Fabric.
+
+*Task 3 — API Gateway*
+
+- Expose chaincode functions via REST.
+- POST /ledger/store → add hash.
+- GET /ledger/:id → fetch hash.
+- Middleware for request signing.
+
+*Task 4 — Integration with Backend*
+
+- Connect Kelvin’s API → blockchain.
+- Trigger hash storage on new report.
+- Verify blockchain proof retrieval.
+- Ensure performance is lightweight.
+
+*Task 5 — Testing & Performance*
+
+- Unit test chaincode.
+- Load test 1,000 transactions.
+- Verify immutability of stored hashes.
+- Compare on-chain vs off-chain consistency.
+
+*Task 6 — Documentation*
+
+- Smart contract spec.
+- API reference doc.
+- Deployment guide (sandbox + prod).
+- Demo script for final review.
+
+---
+
+## *Emmanuel — Predictive Analytics*
+
+*Task 1 — Setup & Data Collection*
+
+- Gather historical tax revenue.
+- Collect copper price & macroeconomic data.
+- Clean & merge datasets.
+- Save dataset in /data/.
+
+*Task 2 — Data Exploration*
+
+- Plot revenue vs copper prices.
+- Correlation analysis.
+- Identify key predictors.
+- Save findings in Jupyter notebook.
+
+*Task 3 — Forecast Model*
+
+- Train ARIMA/Prophet model.
+- Validate with test split.
+- Implement scenario simulation.
+- Save trained model.
+
+*Task 4 — Simulation Scenarios*
+
+- Copper price drop 10%.
+- Copper price rise 15%.
+- GDP contraction scenario.
+- Export results JSON.
+
+*Task 5 — Visualization*
+
+- Generate charts (Matplotlib/D3).
+- Output revenue projections.
+- Format data for Thomas’ dashboard.
+- Save chart exports.
+
+*Task 6 — Documentation & API*
+
+- API endpoint (/forecast).
+- Document inputs/outputs.
+- Write model notes.
+- Demo sample charts.
+
+---
+
+## *Thomas — Dashboard & Integration*
+
+*Task 1 — Environment Setup*
+
+- Initialize React dashboard.
+- Install Chart.js/D3.js.
+- Configure Tailwind CSS.
+- Create layout skeleton.
+
+*Task 2 — GhostBuster Integration*
+
+- Call Ezra’s API.
+- Display ghost anomalies (table).
+- Show % ghost score trend.
+- Add company-level filters.
+
+*Task 3 — Risk Scoring Integration*
+
+- Connect Shuan’s API.
+- Show risk scores (Low/Med/High).
+- Add heatmap for taxpayer categories.
+- Downloadable PDF reports.
+
+*Task 4 — WhistlePro Integration*
+
+- Connect Kelvin + Ephraim’s modules.
+- Display reports timeline.
+- Investigator dashboard view.
+- Notifications for new cases.
+
+*Task 5 — Predictive Analytics Integration*
+
+- Pull Emmanuel’s forecasts.
+- Show charts (baseline vs scenarios).
+- Add dropdown for scenario selection.
+- Export charts to PNG.
+
+*Task 6 — Final Polish & Security*
+
+- Add user login system.
+- Role-based access (investigator/admin).
+- Ensure all API traffic is logged for SIEM.
+- Create walkthrough demo flow.
+
+---
+
+## *Mubanga — Data & QA Manager*
+
+*Task 1 — Data Management*
+
+- Collect datasets (payroll, tax, copper).
+- Clean and anonymize.
+- Version datasets with Git.
+- Distribute to devs.
+
+*Task 2 — QA Planning*
+
+- Create test plans for each module.
+- Write acceptance criteria.
+- Track test cases in spreadsheet.
+- Assign testers to modules.
+
+*Task 3 — Integration Testing*
+
+- Test API connections across modules.
+- Verify data flows end-to-end.
+- Check schema consistency.
+- Document issues found.
+
+*Task 4 — Performance Testing*
+
+- Simulate high-volume data for GhostBuster.
+- Stress-test AI Risk Scoring with 1k+ taxpayers.
+- Check dashboard load times.
+- Record results.
+
+*Task 5 — Security Validation*
+
+- Ensure no PII leaks in datasets.
+- Confirm encryption in WhistlePro.
+- Validate blockchain immutability.
+- Document compliance results.
+
+*Task 6 — Final QA & Sign-off*
+
+- Run full system test.
+- Verify all APIs return correct data.
+- Approve demo dataset.
+- Sign off final deliverables.
