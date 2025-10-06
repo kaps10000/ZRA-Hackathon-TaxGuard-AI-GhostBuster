@@ -1,0 +1,570 @@
+{
+  "info": {
+    "_postman_id": "zra-verification-engine-001",
+    "name": "ZRA Verification Engine - Task 3 API Collection",
+    "description": "API endpoints for ZRA TaxGuard verification and cross-referencing engine",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Verification Endpoints",
+      "item": [
+        {
+          "name": "1. Verify Complete Document",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Has verification result', function () {",
+                  "    pm.expect(pm.response.json()).to.have.property('verification');",
+                  "});",
+                  "pm.test('Has verification status', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification).to.have.property('status');",
+                  "});",
+                  "pm.test('Has risk flags', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification).to.have.property('riskFlags');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"extractedData\": {\n    \"invoiceNumber\": \"INV-2025-12345\",\n    \"importerName\": \"ABC Technology Corporation\",\n    \"hsCode\": \"8471.30.00\",\n    \"totalValue\": 112500,\n    \"quantity\": 250,\n    \"unitPrice\": 450,\n    \"currency\": \"USD\",\n    \"originCountry\": \"China\",\n    \"declarationId\": \"DECL-ZM-2025-789\"\n  }\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/verification/document",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "verification", "document"]
+            },
+            "description": "Comprehensive document verification with all extracted data"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Verify Company (Valid)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Company is verified', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification.verified).to.be.true;",
+                  "});",
+                  "pm.test('Has company details', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification).to.have.property('companyDetails');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyName\": \"ABC Technology Corporation\",\n  \"tpin\": \"1000123456\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/verification/company",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "verification", "company"]
+            },
+            "description": "Verify a registered company in ZRA registry"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Verify Company (Suspicious)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Company is flagged', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification.status).to.eql('SUSPICIOUS');",
+                  "});",
+                  "pm.test('Has risk flags', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification.riskFlags).to.be.an('array').that.is.not.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyName\": \"Suspicious Trading Co\",\n  \"tpin\": \"1000999888\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/verification/company",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "verification", "company"]
+            },
+            "description": "Verify a flagged/suspicious company"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Verify HS Code (Normal Price)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('HS Code is verified', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification.verified).to.be.true;",
+                  "});",
+                  "pm.test('Has HS code details', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification).to.have.property('hsCodeDetails');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hsCode\": \"8471.30.00\",\n  \"unitPrice\": 450,\n  \"currency\": \"USD\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/verification/hscode",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "verification", "hscode"]
+            },
+            "description": "Verify HS code with normal pricing"
+          },
+          "response": []
+        },
+        {
+          "name": "5. Verify HS Code (Undervalued)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Detects undervaluation', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification.status).to.eql('SUSPICIOUS');",
+                  "});",
+                  "pm.test('Has undervaluation flag', function () {",
+                  "    const json = pm.response.json();",
+                  "    const flags = json.verification.riskFlags || [];",
+                  "    pm.expect(flags).to.include.oneOf(['SIGNIFICANT_UNDERVALUATION', 'POSSIBLE_UNDERVALUATION']);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hsCode\": \"8471.30.00\",\n  \"unitPrice\": 50,\n  \"currency\": \"USD\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/verification/hscode",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "verification", "hscode"]
+            },
+            "description": "Test undervaluation detection ($50 for computers worth $200-1500)"
+          },
+          "response": []
+        },
+        {
+          "name": "6. Verify Declaration (Existing)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Declaration is verified', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification.verified).to.be.true;",
+                  "});",
+                  "pm.test('Has declaration details', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification).to.have.property('declarationDetails');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"declarationId\": \"DECL-ZM-2025-789\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/verification/declaration",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "verification", "declaration"]
+            },
+            "description": "Verify an existing declaration in ZRA system"
+          },
+          "response": []
+        },
+        {
+          "name": "7. Verify Declaration (Unknown)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Declaration is not found', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification.status).to.eql('SUSPICIOUS');",
+                  "});",
+                  "pm.test('Has unknown declaration flag', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification.riskFlags).to.include('UNKNOWN_DECLARATION');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"declarationId\": \"DECL-FAKE-999\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/verification/declaration",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "verification", "declaration"]
+            },
+            "description": "Test unknown declaration detection"
+          },
+          "response": []
+        },
+        {
+          "name": "8. Verify Country Risk (Low)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Country is verified', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification.verified).to.be.true;",
+                  "});",
+                  "pm.test('Has country profile', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification).to.have.property('countryProfile');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"country\": \"Zambia\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/verification/country",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "verification", "country"]
+            },
+            "description": "Verify low-risk country"
+          },
+          "response": []
+        },
+        {
+          "name": "9. Verify Country Risk (High)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Country has high risk', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification.status).to.eql('SUSPICIOUS');",
+                  "});",
+                  "pm.test('Has high risk flag', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification.riskFlags).to.include('HIGH_RISK_ORIGIN_COUNTRY');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"country\": \"Nigeria\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/verification/country",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "verification", "country"]
+            },
+            "description": "Verify high-risk country (should trigger flags)"
+          },
+          "response": []
+        },
+        {
+          "name": "10. Reload ZRA Database",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Database reloaded', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.success).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/verification/database/reload",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "verification", "database", "reload"]
+            },
+            "description": "Reload ZRA mock database (development only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Integration Tests",
+      "item": [
+        {
+          "name": "11. Full Document Verification (Valid)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Overall status is VALID', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification.status).to.eql('VALID');",
+                  "});",
+                  "pm.test('Has all verification components', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification).to.have.property('companyCheck');",
+                  "    pm.expect(json.verification).to.have.property('hsCodeCheck');",
+                  "    pm.expect(json.verification).to.have.property('declarationCheck');",
+                  "    pm.expect(json.verification).to.have.property('countryCheck');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"extractedData\": {\n    \"invoiceNumber\": \"INV-2025-12345\",\n    \"importerName\": \"XYZ Imports Ltd\",\n    \"hsCode\": \"8471.30.00\",\n    \"totalValue\": 112500,\n    \"quantity\": 250,\n    \"unitPrice\": 450,\n    \"currency\": \"USD\",\n    \"originCountry\": \"China\",\n    \"declarationId\": \"DECL-ZM-2025-789\"\n  }\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/verification/document",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "verification", "document"]
+            },
+            "description": "Test complete valid document verification"
+          },
+          "response": []
+        },
+        {
+          "name": "12. Full Document Verification (Suspicious)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Overall status is SUSPICIOUS', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification.status).to.eql('SUSPICIOUS');",
+                  "});",
+                  "pm.test('Has multiple risk flags', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification.riskFlags).to.be.an('array').that.is.not.empty;",
+                  "});",
+                  "pm.test('Has recommendations', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.verification.recommendations).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"extractedData\": {\n    \"invoiceNumber\": \"INV-FAKE-001\",\n    \"importerName\": \"Suspicious Trading Co\",\n    \"hsCode\": \"8471.30.00\",\n    \"totalValue\": 5000,\n    \"quantity\": 250,\n    \"unitPrice\": 20,\n    \"currency\": \"USD\",\n    \"originCountry\": \"Nigeria\"\n  }\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/verification/document",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "verification", "document"]
+            },
+            "description": "Test suspicious document with multiple red flags"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
