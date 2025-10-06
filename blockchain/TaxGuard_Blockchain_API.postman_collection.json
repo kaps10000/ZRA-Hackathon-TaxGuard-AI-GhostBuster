@@ -1,0 +1,285 @@
+{
+	"info": {
+		"_postman_id": "taxguard-blockchain-api",
+		"name": "TaxGuard Blockchain API - Complete Collection",
+		"description": "Complete API collection for TaxGuard Blockchain API including all endpoints tested and verified",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health & Info",
+			"item": [
+				{
+					"name": "Root - API Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": [""]
+						}
+					}
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["health"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Blockchain Events",
+			"item": [
+				{
+					"name": "Get All Events",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/events",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "events"]
+						}
+					}
+				},
+				{
+					"name": "Get Event by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/events/evt-filing-001",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "events", "evt-filing-001"]
+						}
+					}
+				},
+				{
+					"name": "Create Tax Event - Filing",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"eventType\": \"filing\",\n  \"anonymizedUserId\": \"test-user-001\",\n  \"hashOfPayload\": \"a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456\",\n  \"notes\": \"Test VAT filing for Q4 2025\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/events",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "events"]
+						}
+					}
+				},
+				{
+					"name": "Create Tax Event - Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"eventType\": \"payment\",\n  \"anonymizedUserId\": \"taxpayer-abc456\",\n  \"hashOfPayload\": \"def123456789abcdef123456789abcdef123456789abcdef123456789abcdef1\",\n  \"notes\": \"Income tax payment for fiscal year 2025\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/events",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "events"]
+						}
+					}
+				},
+				{
+					"name": "Get Full Blockchain",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/blockchain",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "blockchain"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "GhostBuster Integration",
+			"item": [
+				{
+					"name": "Submit Phantom Detection",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"detectionType\": \"phantom_employee\",\n  \"entityId\": \"EMP-12345\",\n  \"confidenceScore\": 92,\n  \"evidenceHash\": \"a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2\",\n  \"severity\": \"CRITICAL\",\n  \"detectionMethod\": \"pattern_analysis\",\n  \"indicators\": [\n    \"No payroll records\",\n    \"Ghost bank account\",\n    \"Duplicate identity\"\n  ],\n  \"investigatorId\": \"ghostbuster-ai-v2\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/ghostbuster/detection",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "ghostbuster", "detection"]
+						}
+					}
+				},
+				{
+					"name": "Get All Detections",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/ghostbuster/detections",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "ghostbuster", "detections"]
+						}
+					}
+				},
+				{
+					"name": "Get Detection Statistics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/ghostbuster/stats",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "ghostbuster", "stats"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "OCR Verification",
+			"item": [
+				{
+					"name": "Store OCR Verification",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"docId\": \"DOC-20251007-001\",\n  \"docHash\": \"sha256:abc123def456ghi789jkl012mno345pqr678stu901vwx234yz567\",\n  \"extractedData\": {\n    \"importerName\": \"ABC Corporation\",\n    \"importerTpin\": \"1234567890\",\n    \"invoiceAmount\": 50000,\n    \"currency\": \"ZMW\"\n  },\n  \"riskScore\": 25.5,\n  \"aiMetadata\": {\n    \"confidence\": 0.95,\n    \"processingTime\": 1200,\n    \"ocrEngine\": \"tesseract\"\n  },\n  \"verificationStatus\": \"VALID\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/ocr-verification/store",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "ocr-verification", "store"]
+						}
+					}
+				},
+				{
+					"name": "Get OCR Verification",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/ocr-verification/verify/DOC-20251007-001",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "ocr-verification", "verify", "DOC-20251007-001"]
+						}
+					}
+				},
+				{
+					"name": "Flag OCR Document",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"docId\": \"DOC-20251007-002\",\n  \"reason\": \"High risk score detected - potential fraud\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/ocr-verification/flag",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "ocr-verification", "flag"]
+						}
+					}
+				},
+				{
+					"name": "Get Flagged Documents",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/ocr-verification/flagged",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "ocr-verification", "flagged"]
+						}
+					}
+				},
+				{
+					"name": "OCR Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/ocr-verification/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["api", "ocr-verification", "health"]
+						}
+					}
+				}
+			]
+		}
+	]
+}

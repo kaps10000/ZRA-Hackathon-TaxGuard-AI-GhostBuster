@@ -1,0 +1,459 @@
+{
+	"info": {
+		"_postman_id": "ai-ocr-service-12345",
+		"name": "ZRA AI/OCR Service - Complete API Collection",
+		"description": "Complete API collection for ZRA TaxGuard AI/OCR Document Processing Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "AI Service (Port 5000)",
+			"item": [
+				{
+					"name": "1. Get Service Info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response has success field', function () {",
+									"    pm.expect(pm.response.json()).to.have.property('success', true);",
+									"});",
+									"pm.test('Has endpoints information', function () {",
+									"    pm.expect(pm.response.json()).to.have.property('endpoints');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "5000",
+							"path": [""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Service is healthy', function () {",
+									"    pm.expect(pm.response.json().status).to.eql('healthy');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "5000",
+							"path": ["health"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Get Statistics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Has stats object', function () {",
+									"    pm.expect(pm.response.json()).to.have.property('stats');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/stats",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "5000",
+							"path": ["stats"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Process Document (OCR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Has extracted data', function () {",
+									"    pm.expect(pm.response.json()).to.have.property('extractedData');",
+									"});",
+									"pm.test('Has risk score', function () {",
+									"    pm.expect(pm.response.json()).to.have.property('riskScore');",
+									"});",
+									"pm.test('Has confidence score', function () {",
+									"    pm.expect(pm.response.json()).to.have.property('confidence');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/ai-service/test-invoice.png"
+								},
+								{
+									"key": "metadata",
+									"value": "{\"source\":\"postman_test\"}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:5000/process",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "5000",
+							"path": ["process"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Backend Service (Port 3000)",
+			"item": [
+				{
+					"name": "5. Backend Info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Has endpoints', function () {",
+									"    pm.expect(pm.response.json()).to.have.property('endpoints');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": [""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Backend Health",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Database is connected', function () {",
+									"    pm.expect(pm.response.json().database.connected).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/healthcheck",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["healthcheck"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7. Upload Document",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test('Has document ID', function () {",
+									"    pm.expect(pm.response.json()).to.have.property('documentId');",
+									"    pm.environment.set('documentId', pm.response.json().documentId);",
+									"});",
+									"pm.test('Status is PENDING', function () {",
+									"    pm.expect(pm.response.json().data.status).to.eql('PENDING');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/ai-service/test-invoice.png"
+								},
+								{
+									"key": "metadata",
+									"value": "{\"importerName\":\"Test Corporation\",\"declarationId\":\"DECL-POSTMAN-001\"}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/upload",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "upload"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8. Verify Document",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Has OCR data', function () {",
+									"    pm.expect(pm.response.json().data).to.have.property('ocrData');",
+									"});",
+									"pm.test('Has risk score', function () {",
+									"    pm.expect(pm.response.json().data).to.have.property('riskScore');",
+									"});",
+									"pm.test('Has blockchain transaction', function () {",
+									"    pm.expect(pm.response.json().data.blockchain).to.have.property('transactionId');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/verify/{{documentId}}",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "verify", "{{documentId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "9. Get Document Results",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Has document data', function () {",
+									"    pm.expect(pm.response.json()).to.have.property('document');",
+									"});",
+									"pm.test('Has verification data', function () {",
+									"    pm.expect(pm.response.json()).to.have.property('verification');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/results/{{documentId}}",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "results", "{{documentId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10. Get Statistics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Has statistics', function () {",
+									"    pm.expect(pm.response.json()).to.have.property('statistics');",
+									"});",
+									"pm.test('Has status counts', function () {",
+									"    pm.expect(pm.response.json().statistics).to.have.property('byStatus');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/results/stats/overview",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "results", "stats", "overview"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "11. Get All Documents",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Has documents array', function () {",
+									"    pm.expect(pm.response.json()).to.have.property('documents');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/results?limit=10",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "results"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "12. Get Recent Uploads",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Has documents', function () {",
+									"    pm.expect(pm.response.json()).to.have.property('documents');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/upload/recent?limit=5",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "upload", "recent"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

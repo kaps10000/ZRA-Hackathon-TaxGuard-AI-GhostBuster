@@ -1,0 +1,435 @@
+{
+  "info": {
+    "name": "ZRA TaxGuard - Comprehensive API Tests",
+    "description": "Complete API testing suite for OCR Backend, Blockchain API, and AI Service integration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "ocr_base_url",
+      "value": "http://localhost:3000/api"
+    },
+    {
+      "key": "blockchain_base_url", 
+      "value": "http://localhost:3001/api"
+    },
+    {
+      "key": "ai_base_url",
+      "value": "http://localhost:5000/api"
+    },
+    {
+      "key": "test_doc_id",
+      "value": "{{$randomUUID}}"
+    },
+    {
+      "key": "test_doc_hash",
+      "value": "0x{{$randomHex}}"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Checks",
+      "item": [
+        {
+          "name": "OCR Backend Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/healthcheck",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["healthcheck"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('OCR Backend is healthy', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Blockchain API Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{blockchain_base_url}}/ocr-verification/health",
+              "host": ["{{blockchain_base_url}}"],
+              "path": ["ocr-verification", "health"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Blockchain API is healthy', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "AI Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ai_base_url}}/health",
+              "host": ["{{ai_base_url}}"],
+              "path": ["health"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('AI Service is healthy', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OCR Backend Tests",
+      "item": [
+        {
+          "name": "Store Blockchain Proof",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"docId\": \"{{test_doc_id}}\",\n  \"docHash\": \"{{test_doc_hash}}\",\n  \"extractedData\": {\n    \"invoice\": \"INV-001\",\n    \"amount\": 1000,\n    \"company\": \"Test Corp\"\n  },\n  \"riskScore\": 0.85,\n  \"aiMetadata\": {\n    \"model\": \"tesseract\",\n    \"confidence\": 0.95\n  },\n  \"verificationStatus\": \"Valid\"\n}"
+            },
+            "url": {
+              "raw": "{{ocr_base_url}}/blockchain/store-proof",
+              "host": ["{{ocr_base_url}}"],
+              "path": ["blockchain", "store-proof"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Proof stored successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "    pm.expect(pm.response.json().data.transactionId).to.exist;",
+                  "    pm.collectionVariables.set('transaction_id', pm.response.json().data.transactionId);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Blockchain Proof",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ocr_base_url}}/blockchain/get-proof/{{test_doc_id}}",
+              "host": ["{{ocr_base_url}}"],
+              "path": ["blockchain", "get-proof", "{{test_doc_id}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Proof retrieved successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Blockchain Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ocr_base_url}}/blockchain/health",
+              "host": ["{{ocr_base_url}}"],
+              "path": ["blockchain", "health"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Blockchain service health check', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Blockchain API Tests",
+      "item": [
+        {
+          "name": "Store OCR Verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"docId\": \"blockchain_{{$randomUUID}}\",\n  \"docHash\": \"0x{{$randomHex}}\",\n  \"extractedData\": {\n    \"invoice\": \"BC-001\",\n    \"amount\": 2000,\n    \"company\": \"Blockchain Corp\"\n  },\n  \"riskScore\": 0.75,\n  \"aiMetadata\": {\n    \"model\": \"tesseract\",\n    \"confidence\": 0.90\n  },\n  \"verificationStatus\": \"Valid\"\n}"
+            },
+            "url": {
+              "raw": "{{blockchain_base_url}}/ocr-verification/store",
+              "host": ["{{blockchain_base_url}}"],
+              "path": ["ocr-verification", "store"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('OCR verification stored on blockchain', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "    pm.collectionVariables.set('blockchain_doc_id', JSON.parse(pm.request.body.raw).docId);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify OCR Document",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{blockchain_base_url}}/ocr-verification/verify/{{blockchain_doc_id}}",
+              "host": ["{{blockchain_base_url}}"],
+              "path": ["ocr-verification", "verify", "{{blockchain_doc_id}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('OCR verification retrieved from blockchain', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Flag Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"docId\": \"{{blockchain_doc_id}}\",\n  \"reason\": \"Suspicious activity detected\"\n}"
+            },
+            "url": {
+              "raw": "{{blockchain_base_url}}/ocr-verification/flag",
+              "host": ["{{blockchain_base_url}}"],
+              "path": ["ocr-verification", "flag"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Document flagged successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Flagged Documents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{blockchain_base_url}}/ocr-verification/flagged",
+              "host": ["{{blockchain_base_url}}"],
+              "path": ["ocr-verification", "flagged"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Flagged documents retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "    pm.expect(pm.response.json().data.documents).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Integration Tests",
+      "item": [
+        {
+          "name": "Cross-Service Verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"docId\": \"integration_{{$randomUUID}}\",\n  \"docHash\": \"0x{{$randomHex}}\",\n  \"extractedData\": {\n    \"invoice\": \"INT-001\",\n    \"amount\": 5000,\n    \"company\": \"Integration Corp\"\n  },\n  \"riskScore\": 0.95,\n  \"verificationStatus\": \"Suspicious\"\n}"
+            },
+            "url": {
+              "raw": "{{ocr_base_url}}/blockchain/store-proof",
+              "host": ["{{ocr_base_url}}"],
+              "path": ["blockchain", "store-proof"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Cross-service integration works', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "    ",
+                  "    // Store doc ID for verification",
+                  "    pm.collectionVariables.set('integration_doc_id', JSON.parse(pm.request.body.raw).docId);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify Cross-Service Storage",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{blockchain_base_url}}/ocr-verification/verify/{{integration_doc_id}}",
+              "host": ["{{blockchain_base_url}}"],
+              "path": ["ocr-verification", "verify", "{{integration_doc_id}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Cross-service verification successful', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "    pm.expect(pm.response.json().data.docId).to.equal(pm.collectionVariables.get('integration_doc_id'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Performance Tests",
+      "item": [
+        {
+          "name": "Bulk Storage Test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"docId\": \"bulk_{{$randomUUID}}\",\n  \"docHash\": \"0x{{$randomHex}}\",\n  \"extractedData\": {\n    \"invoice\": \"BULK-{{$randomInt}}\",\n    \"amount\": {{$randomInt}},\n    \"company\": \"Bulk Test Corp\"\n  },\n  \"riskScore\": 0.5,\n  \"verificationStatus\": \"Valid\"\n}"
+            },
+            "url": {
+              "raw": "{{ocr_base_url}}/blockchain/store-proof",
+              "host": ["{{ocr_base_url}}"],
+              "path": ["blockchain", "store-proof"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Bulk storage performance', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
