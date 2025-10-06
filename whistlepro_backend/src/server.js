@@ -115,7 +115,7 @@ app.use('*', (req, res) => {
 });
 
 // Error handling middleware (must be last)
-app.use(errorHandler);
+app.use(errorHandler.errorHandler);
 
 // Graceful shutdown
 process.on('SIGTERM', () => {

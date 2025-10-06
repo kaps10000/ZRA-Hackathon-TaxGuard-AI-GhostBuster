@@ -13,7 +13,7 @@ exports.up = function(knex) {
     table.string('ip_hash', 64); // Hashed IP for security
     table.text('user_agent_hash'); // Hashed user agent
     table.json('metadata'); // Additional context data
-    table.timestamp('created_at').defaultTo(knex.fn.now()).notNullable().index();
+    table.timestamp('created_at').defaultTo(knex.fn.now()).notNullable();
     
     // Foreign key constraints
     table.foreign('actor_id').references('id').inTable('investigators').onDelete('SET NULL');
