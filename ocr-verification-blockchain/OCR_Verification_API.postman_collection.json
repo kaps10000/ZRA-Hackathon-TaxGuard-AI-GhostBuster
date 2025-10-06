@@ -1,0 +1,571 @@
+{
+	"info": {
+		"_postman_id": "ocr-verification-2025",
+		"name": "ZRA OCR Verification API",
+		"description": "Complete API collection for OCR Document Verification System\n\n**Base URL**: http://localhost:3001/api/ocr-verification\n\n**Features**:\n- Document verification storage\n- Risk score classification (VALID/SUSPICIOUS/FRAUDULENT)\n- Document flagging for manual review\n- Query by status\n- Batch processing\n\n**Developer**: Dev 3 (Blockchain Engineer)\n**Branch**: OCR-dev-3\n**Date**: October 5, 2025",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Health Check",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success field\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Service is healthy\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).to.eql('healthy');",
+							"});",
+							"",
+							"console.log(\"Health Check:\", pm.response.json());"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/api/ocr-verification/health",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3001",
+					"path": ["api", "ocr-verification", "health"]
+				},
+				"description": "Check if the OCR Verification API is running and healthy."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Store Valid Document (Low Risk)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Verification stored successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.data.verificationStatus).to.eql('VALID');",
+							"    pm.expect(jsonData.data.riskScore).to.eql(15);",
+							"});",
+							"",
+							"pm.test(\"Transaction ID present\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.have.property('transactionId');",
+							"    pm.expect(jsonData.data.transactionId).to.have.lengthOf.above(10);",
+							"});",
+							"",
+							"// Save docId for later tests",
+							"pm.environment.set(\"validDocId\", pm.response.json().data.docId);",
+							"",
+							"console.log(\"Valid Document Stored:\", pm.response.json());"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"docId\": \"INV-2025-001\",\n  \"docHash\": \"abc123def456\",\n  \"extractedData\": {\n    \"invoiceNumber\": \"INV-2025-001\",\n    \"importerName\": \"ABC Corporation\",\n    \"hsCode\": \"8471.30\",\n    \"value\": 50000,\n    \"currency\": \"USD\",\n    \"origin\": \"China\"\n  },\n  \"riskScore\": 15,\n  \"aiMetadata\": {\n    \"ocrConfidence\": 0.95,\n    \"aiModel\": \"tesseract-v5\",\n    \"processingTime\": 1250,\n    \"documentType\": \"invoice\"\n  }\n}"
+				},
+				"url": {
+					"raw": "http://localhost:3001/api/ocr-verification/store",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3001",
+					"path": ["api", "ocr-verification", "store"]
+				},
+				"description": "Store a valid document with low risk score (15). Should be classified as VALID."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Store Suspicious Document (Medium Risk)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Document classified as SUSPICIOUS\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.data.verificationStatus).to.eql('SUSPICIOUS');",
+							"    pm.expect(jsonData.data.riskScore).to.eql(55);",
+							"});",
+							"",
+							"pm.environment.set(\"suspiciousDocId\", pm.response.json().data.docId);",
+							"",
+							"console.log(\"Suspicious Document Stored:\", pm.response.json());"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"docId\": \"INV-2025-002\",\n  \"docHash\": \"xyz789ghi012\",\n  \"extractedData\": {\n    \"invoiceNumber\": \"INV-2025-002\",\n    \"importerName\": \"XYZ Trading Ltd\",\n    \"hsCode\": \"8528.72\",\n    \"value\": 125000,\n    \"currency\": \"USD\"\n  },\n  \"riskScore\": 55,\n  \"aiMetadata\": {\n    \"ocrConfidence\": 0.78,\n    \"aiModel\": \"tesseract-v5\",\n    \"processingTime\": 2100,\n    \"documentType\": \"invoice\",\n    \"anomalies\": [\n      \"Unusual value for HS code\",\n      \"Low OCR confidence\"\n    ]\n  }\n}"
+				},
+				"url": {
+					"raw": "http://localhost:3001/api/ocr-verification/store",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3001",
+					"path": ["api", "ocr-verification", "store"]
+				},
+				"description": "Store a suspicious document with medium risk score (55). Should be classified as SUSPICIOUS."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Store Fraudulent Document (High Risk)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Document classified as FRAUDULENT\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.data.verificationStatus).to.eql('FRAUDULENT');",
+							"    pm.expect(jsonData.data.riskScore).to.eql(85);",
+							"});",
+							"",
+							"pm.environment.set(\"fraudulentDocId\", pm.response.json().data.docId);",
+							"",
+							"console.log(\"Fraudulent Document Stored:\", pm.response.json());"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"docId\": \"INV-2025-003\",\n  \"docHash\": \"fraud999alert\",\n  \"extractedData\": {\n    \"invoiceNumber\": \"INV-2025-003\",\n    \"importerName\": \"Suspicious Imports Inc\",\n    \"hsCode\": \"9999.99\",\n    \"value\": 1000000,\n    \"currency\": \"USD\"\n  },\n  \"riskScore\": 85,\n  \"aiMetadata\": {\n    \"ocrConfidence\": 0.42,\n    \"aiModel\": \"tesseract-v5\",\n    \"processingTime\": 3500,\n    \"documentType\": \"invoice\",\n    \"anomalies\": [\n      \"Invalid HS code\",\n      \"Extreme value mismatch\",\n      \"Very low OCR confidence\",\n      \"Known fraudulent importer\"\n    ]\n  }\n}"
+				},
+				"url": {
+					"raw": "http://localhost:3001/api/ocr-verification/store",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3001",
+					"path": ["api", "ocr-verification", "store"]
+				},
+				"description": "Store a fraudulent document with high risk score (85). Should be classified as FRAUDULENT."
+			},
+			"response": []
+		},
+		{
+			"name": "5. Get Document by ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Document retrieved successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.data).to.have.property('docId');",
+							"    pm.expect(jsonData.data).to.have.property('extractedData');",
+							"    pm.expect(jsonData.data).to.have.property('riskScore');",
+							"});",
+							"",
+							"console.log(\"Document Retrieved:\", pm.response.json());"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/api/ocr-verification/INV-2025-001",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3001",
+					"path": ["api", "ocr-verification", "INV-2025-001"]
+				},
+				"description": "Retrieve a specific document by its ID."
+			},
+			"response": []
+		},
+		{
+			"name": "6. Flag Document for Review",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Document flagged successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.data).to.have.property('reason');",
+							"    pm.expect(jsonData.data).to.have.property('flaggedBy');",
+							"});",
+							"",
+							"console.log(\"Document Flagged:\", pm.response.json());"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"docId\": \"INV-2025-002\",\n  \"reason\": \"Manual review required - inconsistent HS code classification\",\n  \"flaggedBy\": \"ZRA_Officer_Mwansa\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:3001/api/ocr-verification/flag",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3001",
+					"path": ["api", "ocr-verification", "flag"]
+				},
+				"description": "Flag a document as suspicious and requiring manual review."
+			},
+			"response": []
+		},
+		{
+			"name": "7. Query VALID Documents",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Query returns VALID documents\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.status).to.eql('VALID');",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"});",
+							"",
+							"console.log(\"VALID Documents:\", pm.response.json().data.length);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/api/ocr-verification/query/status/VALID",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3001",
+					"path": ["api", "ocr-verification", "query", "status", "VALID"]
+				},
+				"description": "Query all documents with VALID status (risk score 0-30)."
+			},
+			"response": []
+		},
+		{
+			"name": "8. Query SUSPICIOUS Documents",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Query returns SUSPICIOUS documents\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.status).to.eql('SUSPICIOUS');",
+							"});",
+							"",
+							"console.log(\"SUSPICIOUS Documents:\", pm.response.json().data.length);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/api/ocr-verification/query/status/SUSPICIOUS",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3001",
+					"path": ["api", "ocr-verification", "query", "status", "SUSPICIOUS"]
+				},
+				"description": "Query all documents with SUSPICIOUS status (risk score 31-60)."
+			},
+			"response": []
+		},
+		{
+			"name": "9. Query FRAUDULENT Documents",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Query returns FRAUDULENT documents\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.status).to.eql('FRAUDULENT');",
+							"});",
+							"",
+							"console.log(\"FRAUDULENT Documents:\", pm.response.json().data.length);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/api/ocr-verification/query/status/FRAUDULENT",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3001",
+					"path": ["api", "ocr-verification", "query", "status", "FRAUDULENT"]
+				},
+				"description": "Query all documents with FRAUDULENT status (risk score 61-100)."
+			},
+			"response": []
+		},
+		{
+			"name": "10. Batch Verify Documents",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Batch verification successful\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.data.totalDocuments).to.eql(3);",
+							"    pm.expect(jsonData.data.results).to.be.an('array');",
+							"    pm.expect(jsonData.data.results).to.have.lengthOf(3);",
+							"});",
+							"",
+							"console.log(\"Batch Results:\", pm.response.json().data.results);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"documents\": [\n    {\n      \"docId\": \"BATCH-001\",\n      \"docHash\": \"batch1hash\",\n      \"extractedData\": {\n        \"invoiceNumber\": \"B001\",\n        \"value\": 10000\n      },\n      \"riskScore\": 10,\n      \"aiMetadata\": {\n        \"confidence\": 0.98\n      }\n    },\n    {\n      \"docId\": \"BATCH-002\",\n      \"docHash\": \"batch2hash\",\n      \"extractedData\": {\n        \"invoiceNumber\": \"B002\",\n        \"value\": 20000\n      },\n      \"riskScore\": 25,\n      \"aiMetadata\": {\n        \"confidence\": 0.92\n      }\n    },\n    {\n      \"docId\": \"BATCH-003\",\n      \"docHash\": \"batch3hash\",\n      \"extractedData\": {\n        \"invoiceNumber\": \"B003\",\n        \"value\": 30000\n      },\n      \"riskScore\": 70,\n      \"aiMetadata\": {\n        \"confidence\": 0.65\n      }\n    }\n  ]\n}"
+				},
+				"url": {
+					"raw": "http://localhost:3001/api/ocr-verification/batch",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3001",
+					"path": ["api", "ocr-verification", "batch"]
+				},
+				"description": "Batch verify multiple documents in a single request."
+			},
+			"response": []
+		},
+		{
+			"name": "11. Error Test - Missing Fields",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 (Bad Request)\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Error message present\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    pm.expect(jsonData).to.have.property('error');",
+							"});",
+							"",
+							"console.log(\"Error Response:\", pm.response.json());"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"docId\": \"INVALID-001\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:3001/api/ocr-verification/store",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3001",
+					"path": ["api", "ocr-verification", "store"]
+				},
+				"description": "Test error handling with missing required fields."
+			},
+			"response": []
+		},
+		{
+			"name": "12. Error Test - Invalid Risk Score",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 (Bad Request)\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Validation error for risk score\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    pm.expect(jsonData.error).to.include('Risk score');",
+							"});",
+							"",
+							"console.log(\"Validation Error:\", pm.response.json());"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"docId\": \"INVALID-002\",\n  \"docHash\": \"test\",\n  \"extractedData\": {},\n  \"riskScore\": 150,\n  \"aiMetadata\": {}\n}"
+				},
+				"url": {
+					"raw": "http://localhost:3001/api/ocr-verification/store",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3001",
+					"path": ["api", "ocr-verification", "store"]
+				},
+				"description": "Test validation with invalid risk score (> 100)."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"console.log('Starting OCR Verification API Test...');"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test - log response time",
+					"console.log('Response Time:', pm.response.responseTime + 'ms');"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3001/api/ocr-verification"
+		}
+	]
+}
