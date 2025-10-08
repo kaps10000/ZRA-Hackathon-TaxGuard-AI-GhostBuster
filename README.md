@@ -1,4 +1,6 @@
-# ZRA Fraud EDA, Modeling and Dashboard
+# ZRA Hackathon - TaxGuard AI GhostBuster
+
+## ZRA Fraud EDA, Modeling and Dashboard
 
 This project includes:
 - A Jupyter notebook for EDA and model training that saves the best model and artifacts
