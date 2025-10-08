@@ -1,0 +1,11 @@
+python>=3.9
+pandas
+numpy
+scikit-learn>=1.1
+xgboost
+joblib
+flask
+gunicorn
+python-dotenv
+pytest
+requests
