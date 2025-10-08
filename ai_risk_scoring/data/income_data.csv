@@ -1,0 +1,11 @@
+taxpayer_id,amount,sector,region,risk_label
+T1,5000,Retail,Lusaka,0
+T2,7000,Manufacturing,Ndola,1
+T3,6500,IT,Kitwe,0
+T4,12000,Finance,Lusaka,1
+T5,9000,Transport,Chipata,0
+T6,3000,Retail,Ndola,0
+T7,8000,Energy,Kitwe,1
+T8,15000,Mining,Lusaka,1
+T9,4000,Agriculture,Chipata,0
+T10,11000,Tourism,Ndola,1
