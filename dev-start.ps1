@@ -14,4 +14,4 @@ Start-Sleep -Milliseconds 600
 Write-Host "Starting Frontend (Vite) in new window..."
 Start-Process powershell -ArgumentList "-NoExit","-Command","cd '$frontendFolder'; npm run dev"
 
-Write-Host "Launched both processes. API -> http://localhost:4000, Frontend -> http://localhost:5173"
+Write-Host "Launched both processes. API -> http://localhost:4000, Frontend -> http://localhost:3000"

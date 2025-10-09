@@ -119,8 +119,8 @@ export default function ReportModal({ open, onClose, report }){
           </div>
         </div>
         <div className="mt-3 flex gap-2 items-center">
-          <button onClick={copyHash} className="px-3 py-1 bg-sky-500 text-white rounded">Copy proof hash</button>
-          <button onClick={onClose} className="px-3 py-1">Close</button>
+          <button type="button" onClick={copyHash} className="px-3 py-1 bg-sky-500 text-white rounded">Copy proof hash</button>
+          <button type="button" onClick={onClose} className="px-3 py-1">Close</button>
           <div className="ml-2">
             {copied && <span className="text-sm text-emerald-600">Copied!</span>}
           </div>

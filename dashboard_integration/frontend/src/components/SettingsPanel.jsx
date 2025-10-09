@@ -59,8 +59,10 @@ export default function SettingsPanel({ demoMode, setDemoMode, apiBaseUrl, setAp
     }
 
     setSaveMsg('Saved');
-    setTimeout(()=>setSaveMsg(''), 1800);
-    onClose();
+    setTimeout(()=>{
+      setSaveMsg('');
+      onClose();
+    }, 1200);
   }
 
   return (
