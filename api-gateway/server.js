@@ -81,6 +81,47 @@ app.get('/metrics/json', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api', eventRoutes);
 
+// Reports endpoint with minimal validation (security disabled for testing)
+app.post('/api/reports', async (req, res) => {
+    try {
+        logger.info('Report Submission', {
+            body: req.body,
+            ip: req.ip,
+            timestamp: new Date().toISOString()
+        });
+
+        // Simple validation - accept any valid JSON
+        if (!req.body || typeof req.body !== 'object') {
+            return res.status(400).json({
+                error: 'Invalid request',
+                message: 'Request body must be valid JSON'
+            });
+        }
+
+        // For testing - just return success
+        res.status(201).json({
+            success: true,
+            message: 'Report submitted successfully',
+            reportId: 'TEST-' + Date.now(),
+            data: req.body,
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        logger.error('Report Submission Error', {
+            error: error.message,
+            stack: error.stack,
+            ip: req.ip,
+            timestamp: new Date().toISOString()
+        });
+
+        res.status(500).json({
+            error: 'Report submission failed',
+            message: 'Unable to process report'
+        });
+    }
+});
+
 // Simple API Links Page
 app.get('/apis', (req, res) => {
     res.send(`<!DOCTYPE html>
