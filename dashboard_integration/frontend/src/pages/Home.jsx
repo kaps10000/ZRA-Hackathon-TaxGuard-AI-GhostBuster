@@ -13,6 +13,12 @@ export default function Home({ demoMode = true, apiBaseUrl = 'http://localhost:4
   useEffect(() => {
     let mounted = true;
     async function fetchAll(){
+      // Skip overview data fetching when not in demo mode (API Gateway doesn't have these endpoints yet)
+      if (!demoMode) {
+        setError('Overview data not available in live mode yet');
+        return;
+      }
+      
       try {
         const client = axios.create({ baseURL: demoMode ? '' : apiBaseUrl });
         const [r1, r2, r3] = await Promise.all([
@@ -31,7 +37,7 @@ export default function Home({ demoMode = true, apiBaseUrl = 'http://localhost:4
     }
     fetchAll();
     return () => { mounted = false; };
-  }, []);
+  }, [demoMode, apiBaseUrl]);
 
   return (
     <div className="space-y-6">

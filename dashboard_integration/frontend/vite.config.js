@@ -12,8 +12,11 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      // Proxy API requests to the mock API
-      '/api': 'http://localhost:4000'
+      // Proxy API requests to the Blockchain API
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true
+      }
     }
   }
 })
