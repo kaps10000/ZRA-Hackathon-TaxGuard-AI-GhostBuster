@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env
+.env.local
+
+# Uploads
+uploads/
+temp/
+*.jpg
+*.png
+*.pdf
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+DEV1_ROADMAP_COMPLETE.md
+*.md
+
+# macOS
+.DS_Store
