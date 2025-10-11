@@ -28,7 +28,7 @@ FROM base as dependencies
 COPY package*.json ./
 
 # Install all dependencies
-RUN npm ci --only=production && \
+RUN npm install --only=production && \
     npm cache clean --force
 
 # =====================================================
