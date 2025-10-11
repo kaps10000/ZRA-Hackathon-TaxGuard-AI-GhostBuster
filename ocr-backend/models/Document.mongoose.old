@@ -1,0 +1,282 @@
+const mongoose = require('mongoose');
+
+/**
+ * Document Schema for OCR Verification System
+ * Stores uploaded documents and their verification results
+ */
+const documentSchema = new mongoose.Schema({
+  // Document Identification
+  documentId: {
+    type: String,
+    required: true,
+    unique: true,
+    index: true
+  },
+
+  // File Information
+  filename: {
+    type: String,
+    required: true
+  },
+  originalName: {
+    type: String,
+    required: true
+  },
+  filePath: {
+    type: String,
+    required: true
+  },
+  fileSize: {
+    type: Number,
+    required: true
+  },
+  mimeType: {
+    type: String,
+    required: true
+  },
+  fileHash: {
+    type: String,
+    required: true,
+    index: true
+  },
+
+  // Upload Metadata
+  uploadedAt: {
+    type: Date,
+    default: Date.now,
+    index: true
+  },
+  uploadedBy: {
+    type: String,
+    default: 'anonymous'
+  },
+
+  // Processing Status
+  status: {
+    type: String,
+    enum: ['PENDING', 'PROCESSING', 'VERIFIED', 'FLAGGED', 'ERROR'],
+    default: 'PENDING',
+    index: true
+  },
+
+  // Custom Metadata
+  metadata: {
+    importerName: String,
+    declarationId: String,
+    documentType: String,
+    additionalInfo: mongoose.Schema.Types.Mixed
+  },
+
+  // OCR/AI Processing Results (from Dev 1)
+  ocrData: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
+  },
+  aiMetadata: {
+    model: String,
+    confidence: Number,
+    processingTime: Number,
+    extractionMethod: String
+  },
+
+  // Risk Assessment
+  riskScore: {
+    type: Number,
+    min: 0,
+    max: 100,
+    default: null
+  },
+  verificationStatus: {
+    type: String,
+    enum: ['VALID', 'SUSPICIOUS', 'FRAUDULENT', 'INVALID', null],
+    default: null
+  },
+  riskFlags: [{
+    type: String,
+    reason: String,
+    severity: String,
+    timestamp: Date
+  }],
+
+  // ZRA Verification Result (Dev 2 - Task 3)
+  verificationResult: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
+  },
+
+  // Blockchain Integration (from Dev 3)
+  blockchainTxId: {
+    type: String,
+    default: null,
+    index: true
+  },
+  blockNumber: {
+    type: Number,
+    default: null
+  },
+  blockchainProof: {
+    txId: String,
+    blockNumber: Number,
+    timestamp: Date,
+    verificationHash: String
+  },
+
+  // Processing History
+  processingSteps: [{
+    step: String,
+    status: String,
+    timestamp: Date,
+    duration: Number,
+    result: mongoose.Schema.Types.Mixed,
+    error: String
+  }],
+
+  // Error Handling
+  errorLogs: [{
+    stage: String,
+    message: String,
+    stack: String,
+    timestamp: Date
+  }],
+
+  // Timestamps
+  processedAt: Date,
+  verifiedAt: Date,
+  lastUpdated: {
+    type: Date,
+    default: Date.now
+  }
+}, {
+  timestamps: true,
+  collection: 'documents'
+});
+
+// Indexes for performance
+documentSchema.index({ status: 1, uploadedAt: -1 });
+documentSchema.index({ verificationStatus: 1 });
+documentSchema.index({ 'metadata.importerName': 1 });
+documentSchema.index({ 'metadata.declarationId': 1 });
+
+// Pre-save middleware to update lastUpdated
+documentSchema.pre('save', function(next) {
+  this.lastUpdated = new Date();
+  next();
+});
+
+// Instance Methods
+documentSchema.methods.addProcessingStep = function(step, status, result = null, error = null) {
+  this.processingSteps.push({
+    step,
+    status,
+    timestamp: new Date(),
+    result,
+    error
+  });
+};
+
+documentSchema.methods.addError = function(stage, message, stack = null) {
+  this.errorLogs.push({
+    stage,
+    message,
+    stack,
+    timestamp: new Date()
+  });
+};
+
+documentSchema.methods.markAsProcessing = function() {
+  this.status = 'PROCESSING';
+  this.addProcessingStep('start_processing', 'started');
+};
+
+documentSchema.methods.markAsVerified = function(ocrData, riskScore, verificationStatus) {
+  this.status = 'VERIFIED';
+  this.ocrData = ocrData;
+  this.riskScore = riskScore;
+  this.verificationStatus = verificationStatus;
+  this.verifiedAt = new Date();
+  this.addProcessingStep('verification', 'completed', { riskScore, verificationStatus });
+};
+
+documentSchema.methods.markAsFlagged = function(reason) {
+  this.status = 'FLAGGED';
+  this.riskFlags.push({
+    type: 'manual',
+    reason,
+    severity: 'high',
+    timestamp: new Date()
+  });
+  this.addProcessingStep('flag', 'flagged', { reason });
+};
+
+documentSchema.methods.markAsError = function(stage, error) {
+  this.status = 'ERROR';
+  this.addError(stage, error.message, error.stack);
+  this.addProcessingStep(stage, 'failed', null, error.message);
+};
+
+// Static Methods
+documentSchema.statics.findByDocumentId = function(documentId) {
+  return this.findOne({ documentId });
+};
+
+documentSchema.statics.findByStatus = function(status) {
+  return this.find({ status }).sort({ uploadedAt: -1 });
+};
+
+documentSchema.statics.findByVerificationStatus = function(verificationStatus) {
+  return this.find({ verificationStatus }).sort({ uploadedAt: -1 });
+};
+
+documentSchema.statics.findPending = function() {
+  return this.find({ status: 'PENDING' }).sort({ uploadedAt: 1 });
+};
+
+documentSchema.statics.getStatistics = async function() {
+  const stats = await this.aggregate([
+    {
+      $group: {
+        _id: '$status',
+        count: { $sum: 1 }
+      }
+    }
+  ]);
+
+  const verificationStats = await this.aggregate([
+    {
+      $match: { verificationStatus: { $ne: null } }
+    },
+    {
+      $group: {
+        _id: '$verificationStatus',
+        count: { $sum: 1 },
+        avgRiskScore: { $avg: '$riskScore' }
+      }
+    }
+  ]);
+
+  return {
+    statusCounts: stats,
+    verificationStats
+  };
+};
+
+// Virtual for document age
+documentSchema.virtual('age').get(function() {
+  return Date.now() - this.uploadedAt;
+});
+
+// Virtual for processing duration
+documentSchema.virtual('processingDuration').get(function() {
+  if (this.processedAt && this.uploadedAt) {
+    return this.processedAt - this.uploadedAt;
+  }
+  return null;
+});
+
+// Ensure virtuals are included in JSON
+documentSchema.set('toJSON', { virtuals: true });
+documentSchema.set('toObject', { virtuals: true });
+
+const Document = mongoose.model('Document', documentSchema);
+
+module.exports = Document;

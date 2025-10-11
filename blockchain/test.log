@@ -1,0 +1,144 @@
+
+> taxguard-blockchain@1.0.0 start
+> node api/index.js
+
+✅ Genesis block created
+🚀 Deploying TaxGuard Blockchain...
+✅ Event evt-001 added to blockchain
+✅ Event evt-002 added to blockchain
+✅ Event evt-003 added to blockchain
+
+📊 Blockchain Status:
+{
+  length: 4,
+  latestBlock: {
+    index: 3,
+    timestamp: '2025-10-02T07:48:35.918Z',
+    data: {
+      eventId: 'evt-003',
+      eventType: 'auditFlag',
+      timestamp: '2025-10-01T12:15:00Z',
+      anonymizedUserId: 'user-ghi789',
+      hashOfPayload: 'd2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2',
+      notes: 'Flagged for unusual VAT filing variance',
+      blockIndex: 3
+    },
+    previousHash: '9560851e8ef3b4aa0f6df5058b3e52acd7618d7b9dd54d9c29c10b2678467c7b',
+    hash: '4dad14001963944e8236ada5758e33fb76d790d5cb2008fbcf851572b7030b96'
+  },
+  totalEvents: 3
+}
+
+📋 All Events:
+[
+  {
+    eventId: 'evt-001',
+    eventType: 'filing',
+    timestamp: '2025-10-01T10:30:00Z',
+    anonymizedUserId: 'user-abc123',
+    hashOfPayload: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+    notes: 'VAT return for September 2025',
+    blockIndex: 1
+  },
+  {
+    eventId: 'evt-002',
+    eventType: 'payment',
+    timestamp: '2025-10-01T11:00:00Z',
+    anonymizedUserId: 'user-def456',
+    hashOfPayload: '5d41402abc4b2a76b9719d911017c592',
+    notes: 'Income tax payment',
+    blockIndex: 2
+  },
+  {
+    eventId: 'evt-003',
+    eventType: 'auditFlag',
+    timestamp: '2025-10-01T12:15:00Z',
+    anonymizedUserId: 'user-ghi789',
+    hashOfPayload: 'd2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2',
+    notes: 'Flagged for unusual VAT filing variance',
+    blockIndex: 3
+  }
+]
+✅ Genesis block created
+🚀 Adding detailed sample events...
+✅ Event evt-filing-001 added to blockchain
+✅ Event evt-payment-002 added to blockchain
+✅ Event evt-compliance-003 added to blockchain
+✅ Event evt-audit-004 added to blockchain
+✅ Event evt-whistle-005 added to blockchain
+✅ Event evt-admin-006 added to blockchain
+
+📊 Updated Blockchain Status:
+{
+  length: 7,
+  latestBlock: {
+    index: 6,
+    timestamp: '2025-10-02T07:48:35.922Z',
+    data: {
+      eventId: 'evt-admin-006',
+      eventType: 'adminChange',
+      timestamp: '2025-10-01T15:00:00Z',
+      anonymizedUserId: 'admin-user-001',
+      hashOfPayload: 'admin123hash789',
+      notes: 'System Update - Tax Rate Changed | VAT Rate: 16% → 18% | Effective Date: 2025-11-01 | Updated By: Tax Admin',
+      blockIndex: 6
+    },
+    previousHash: '4d31d647d3ad10be034d34ce986801d3392f91fad4ac2d58571e8a2c8a4ffcd9',
+    hash: '232ef86246dee29c5978e9d7e3b02f549efc7ce78054457faadd30fe5c90a54b'
+  },
+  totalEvents: 6
+}
+
+📋 All Detailed Events:
+
+1. FILING EVENT:
+   ID: evt-filing-001
+   User: taxpayer-abc123
+   Time: 2025-10-01T10:30:00Z
+   Details: VAT Return Filed - Q3 2025 | Amount: K50,000 | Status: Submitted | Deadline: Met
+   Hash: e3b0c44298fc1c14...
+
+2. PAYMENT EVENT:
+   ID: evt-payment-002
+   User: taxpayer-def456
+   Time: 2025-10-01T11:00:00Z
+   Details: Income Tax Payment - K25,000 | Method: Bank Transfer | Reference: PAY2025001 | Status: Confirmed
+   Hash: 5d41402abc4b2a76...
+
+3. COMPLIANCE EVENT:
+   ID: evt-compliance-003
+   User: taxpayer-ghi789
+   Time: 2025-10-01T12:15:00Z
+   Details: Compliance Verification - Business License Valid | VAT Registration Active | Tax Clearance: Current
+   Hash: comp789hash12345...
+
+4. AUDITFLAG EVENT:
+   ID: evt-audit-004
+   User: taxpayer-jkl012
+   Time: 2025-10-01T13:30:00Z
+   Details: Risk Alert - Revenue Mismatch Detected | Declared: K100,000 | Expected: K150,000 | Variance: 33% | Priority: High
+   Hash: audit456hash789...
+
+5. AUDITFLAG EVENT:
+   ID: evt-whistle-005
+   User: anonymous-report-001
+   Time: 2025-10-01T14:45:00Z
+   Details: Anonymous Report - Tax Evasion Suspected | Company: XYZ Ltd | Allegation: Under-reporting sales | Case ID: WB2025001
+   Hash: whistle789hash45...
+
+6. ADMINCHANGE EVENT:
+   ID: evt-admin-006
+   User: admin-user-001
+   Time: 2025-10-01T15:00:00Z
+   Details: System Update - Tax Rate Changed | VAT Rate: 16% → 18% | Effective Date: 2025-11-01 | Updated By: Tax Admin
+   Hash: admin123hash789...
+🚀 TaxGuard Blockchain API running on port 3001
+📊 Blockchain initialized with 6 events
+🌐 Explorer UI: http://localhost:3001/explorer
+📚 API Docs: http://localhost:3001/api-docs
+📡 WebSocket: Real-time events enabled
+🔒 Security: Encryption and validation active
+✅ Event 03e3a635-186a-402e-b86d-751c55081404 added to blockchain
+(node:28416) [DEP0106] DeprecationWarning: crypto.createCipher is deprecated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+✅ Event 56ca6946-2993-45f4-8eb0-ac525be9eb1d added to blockchain

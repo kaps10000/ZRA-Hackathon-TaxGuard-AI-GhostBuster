@@ -1,0 +1,23 @@
+{
+  "image": "registry.zra.gov.zm/taxguard-api-gateway:sandbox-latest",
+  "ports": [
+    "4000:4000"
+  ],
+  "environment": {
+    "NODE_ENV": "sandbox",
+    "BLOCKCHAIN_API_URL": "http://sandbox-blockchain.zra.gov.zm:3001",
+    "JWT_SECRET": "sandbox_jwt_secret_key_2025",
+    "SIEM_ENDPOINT": "http://sandbox-siem.zra.gov.zm:5000/logs"
+  },
+  "healthCheck": {
+    "test": [
+      "CMD",
+      "curl",
+      "-f",
+      "http://localhost:4000/health"
+    ],
+    "interval": "30s",
+    "timeout": "10s",
+    "retries": 3
+  }
+}

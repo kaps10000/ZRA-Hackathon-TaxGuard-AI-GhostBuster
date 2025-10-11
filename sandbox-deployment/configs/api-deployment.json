@@ -1,0 +1,7 @@
+{
+  "service": "taxguard-api-gateway",
+  "url": "http://sandbox-api.zra.gov.zm:4000",
+  "status": "running",
+  "deployedAt": "2025-10-02T16:41:14.089Z",
+  "healthEndpoint": "http://sandbox-api.zra.gov.zm:4000/health"
+}
