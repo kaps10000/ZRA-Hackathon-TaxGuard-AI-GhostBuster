@@ -1,0 +1,210 @@
+version: '3.8'
+
+services:
+  # ========================================
+  # UNIFIED POSTGRESQL DATABASE
+  # Single database for ALL modules
+  # ========================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: zra_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: zra_taxguard
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - zra_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ========================================
+  # BLOCKCHAIN API (Kaps) - Port 3001
+  # ========================================
+  blockchain:
+    build:
+      context: ./blockchain
+      dockerfile: Dockerfile
+    container_name: zra_blockchain
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: zra_taxguard
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - zra_network
+    volumes:
+      - ./blockchain:/app
+      - /app/node_modules
+    command: npm start
+
+  # ========================================
+  # WHISTLEPRO BACKEND (Kelvin) - Port 3000
+  # ========================================
+  whistlepro:
+    build:
+      context: ./whistlepro_backend
+      dockerfile: Dockerfile
+    container_name: zra_whistlepro
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: zra_taxguard
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      BLOCKCHAIN_ENABLED: "true"
+      BLOCKCHAIN_API_URL: http://blockchain:3001
+      JWT_SECRET: your-super-secret-jwt-key-min-32-chars-change-this-in-production
+      ENCRYPTION_KEY: whistlepro-zra-encryption-key-32chars-development-only
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      blockchain:
+        condition: service_started
+    networks:
+      - zra_network
+    volumes:
+      - ./whistlepro_backend:/app
+      - /app/node_modules
+    command: npm start
+
+  # ========================================
+  # OCR BACKEND (Main) - Port 5000
+  # Ready for other team members to integrate
+  # ========================================
+  ocr-backend:
+    build:
+      context: ./ocr-backend
+      dockerfile: Dockerfile
+    container_name: zra_ocr
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: zra_taxguard
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      BLOCKCHAIN_API_URL: http://blockchain:3001
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      blockchain:
+        condition: service_started
+    networks:
+      - zra_network
+    volumes:
+      - ./ocr-backend:/app
+      - /app/node_modules
+    command: npm start
+    profiles:
+      - full  # Optional service - start with: docker-compose --profile full up
+
+  # ========================================
+  # AI SERVICE (Shuan) - Port 8000
+  # Ready for ML risk scoring integration
+  # ========================================
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: zra_ai
+    environment:
+      PORT: 8000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: zra_taxguard
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      BLOCKCHAIN_API_URL: http://blockchain:3001
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      blockchain:
+        condition: service_started
+    networks:
+      - zra_network
+    volumes:
+      - ./ai-service:/app
+    profiles:
+      - full  # Optional service
+
+  # ========================================
+  # API GATEWAY - Port 8080
+  # Central entry point for all services
+  # ========================================
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: zra_gateway
+    environment:
+      PORT: 8080
+      BLOCKCHAIN_URL: http://blockchain:3001
+      WHISTLEPRO_URL: http://whistlepro:3000
+      OCR_URL: http://ocr-backend:5000
+      AI_URL: http://ai-service:8000
+    ports:
+      - "8080:8080"
+    depends_on:
+      - blockchain
+      - whistlepro
+    networks:
+      - zra_network
+    volumes:
+      - ./api-gateway:/app
+      - /app/node_modules
+    command: npm start
+    profiles:
+      - full  # Optional service
+
+  # ========================================
+  # PGADMIN - Database Management UI
+  # Access at: http://localhost:5050
+  # ========================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: zra_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@zra.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - zra_network
+    profiles:
+      - tools  # Start with: docker-compose --profile tools up
+
+networks:
+  zra_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local

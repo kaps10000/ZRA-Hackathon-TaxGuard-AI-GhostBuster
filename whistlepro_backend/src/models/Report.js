@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
 const encryptionService = require('../services/encryptionService');
 const auditService = require('../services/auditService');
+const BlockchainService = require('../services/blockchainService');
 
 class Report {
   static tableName = 'reports';
@@ -63,6 +64,23 @@ class Report {
           priority: report.priority
         }
       });
+
+      // ✨ NEW: Submit to blockchain for immutable storage
+      try {
+        const blockchainResult = await BlockchainService.submitReportToBlockchain(newReport);
+
+        if (blockchainResult.success) {
+          console.log(`🔗 Report ${caseId} linked to blockchain event ${blockchainResult.blockchainEventId}`);
+
+          // Optionally store blockchain reference in database
+          // (Could add a blockchain_event_id column to reports table)
+        } else if (blockchainResult.fallback) {
+          console.warn(`⚠️  Report ${caseId} saved locally, blockchain integration failed`);
+        }
+      } catch (blockchainError) {
+        // Log blockchain error but don't fail the report creation
+        console.error('Blockchain integration error (non-critical):', blockchainError.message);
+      }
 
       return {
         id: newReport.id,
