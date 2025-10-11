@@ -127,10 +127,11 @@ const createReport = asyncHandler(async (req, res) => {
 /**
  * Get report by case ID (investigators only)
  * GET /api/reports/:caseId
+ * NOTE: Temporarily works without authentication for frontend development
  */
 const getReportByCaseId = asyncHandler(async (req, res) => {
   const { caseId } = req.params;
-  
+
   if (!caseId || !caseId.match(/^ZRA-\d{4}-[A-F0-9]{6}$/)) {
     return res.status(400).json({
       success: false,
@@ -141,7 +142,9 @@ const getReportByCaseId = asyncHandler(async (req, res) => {
     });
   }
 
-  const report = await Report.findByCaseId(caseId, req.investigator.id);
+  // Use investigator ID if authenticated, otherwise use null (for frontend dev)
+  const investigatorId = req.investigator ? req.investigator.id : null;
+  const report = await Report.findByCaseId(caseId, investigatorId);
 
   if (!report) {
     return res.status(404).json({
@@ -162,6 +165,7 @@ const getReportByCaseId = asyncHandler(async (req, res) => {
 /**
  * List reports with pagination and filtering (investigators only)
  * GET /api/reports
+ * NOTE: Temporarily works without authentication for frontend development
  */
 const getReports = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
@@ -176,7 +180,7 @@ const getReports = asyncHandler(async (req, res) => {
     status,
     category,
     priority,
-    investigatorId: req.investigator.id
+    investigatorId: req.investigator ? req.investigator.id : null
   };
 
   const result = await Report.list(options);
@@ -196,6 +200,7 @@ const getReports = asyncHandler(async (req, res) => {
 /**
  * Update report status (investigators only)
  * PATCH /api/reports/:caseId/status
+ * NOTE: Temporarily works without authentication for frontend development
  */
 const updateReportStatus = asyncHandler(async (req, res) => {
   const { caseId } = req.params;
@@ -213,10 +218,12 @@ const updateReportStatus = asyncHandler(async (req, res) => {
     });
   }
 
+  // Use investigator ID if authenticated, otherwise use null (for frontend dev)
+  const investigatorId = req.investigator ? req.investigator.id : null;
   const updatedReport = await Report.updateStatus(
     caseId,
     status,
-    req.investigator.id,
+    investigatorId,
     notes
   );
 

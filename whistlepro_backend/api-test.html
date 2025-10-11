@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhistlePro API Test Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .base-url {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .base-url label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .base-url input {
+            width: 300px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .api-section {
+            margin-bottom: 30px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .api-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .api-header:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #6a3f92 100%);
+        }
+
+        .api-header h2 {
+            font-size: 1.3em;
+        }
+
+        .method-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .method-post { background: #28a745; }
+        .method-get { background: #007bff; }
+        .method-patch { background: #ffc107; color: #333; }
+
+        .api-body {
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .form-group small {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .response.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .response.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .response-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-code {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .status-success { background: #28a745; color: white; }
+        .status-error { background: #dc3545; color: white; }
+
+        .response pre {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .copy-btn {
+            background: #6c757d;
+            color: white;
+            padding: 4px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .copy-btn:hover {
+            background: #5a6268;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-card h4 {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .collapsible {
+            display: none;
+        }
+
+        .collapsible.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔔 WhistlePro API Test Suite</h1>
+        <p class="subtitle">Interactive API testing for the Anonymous Reporting Backend</p>
+
+        <div class="base-url">
+            <label for="baseUrl">Base URL:</label>
+            <input type="text" id="baseUrl" value="http://localhost:3000/api/reports" />
+            <small style="display: block; margin-top: 5px;">Change if using different port</small>
+        </div>
+
+        <!-- API 1: Submit Anonymous Report -->
+        <div class="api-section">
+            <div class="api-header" onclick="toggleSection('api1')">
+                <div>
+                    <span class="method-badge method-post">POST</span>
+                    <h2>Submit Anonymous Report</h2>
+                </div>
+                <span id="api1-toggle">▼</span>
+            </div>
+            <div id="api1" class="api-body collapsible">
+                <form id="submitReportForm" onsubmit="submitReport(event)">
+                    <div class="form-group">
+                        <label for="category">Category *</label>
+                        <select id="category" required>
+                            <option value="">Select category</option>
+                            <option value="tax_evasion">Tax Evasion</option>
+                            <option value="fraud">Fraud</option>
+                            <option value="corruption">Corruption</option>
+                            <option value="bribery">Bribery</option>
+                            <option value="ghost_companies">Ghost Companies</option>
+                            <option value="money_laundering">Money Laundering</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="title">Title *</label>
+                        <input type="text" id="title" placeholder="Brief summary (min 10 chars)" required />
+                        <small>Minimum 10 characters</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description *</label>
+                        <textarea id="description" placeholder="Detailed description of the incident (min 50 chars)" required></textarea>
+                        <small>Minimum 50 characters</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="priority">Priority</label>
+                        <select id="priority">
+                            <option value="medium">Medium (default)</option>
+                            <option value="low">Low</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="orgName">Organization Name (Optional)</label>
+                        <input type="text" id="orgName" placeholder="Company or organization involved" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="orgTpin">Organization TPIN (Optional)</label>
+                        <input type="text" id="orgTpin" placeholder="Tax identification number" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="estimatedAmount">Estimated Amount (Optional)</label>
+                        <input type="number" id="estimatedAmount" placeholder="e.g., 1000000" />
+                    </div>
+
+                    <button type="submit" class="btn">
+                        Submit Report
+                        <span id="submit-loading" class="loading" style="display: none;"></span>
+                    </button>
+                </form>
+
+                <div id="submitResponse" class="response"></div>
+            </div>
+        </div>
+
+        <!-- API 2: Get Report by Case ID -->
+        <div class="api-section">
+            <div class="api-header" onclick="toggleSection('api2')">
+                <div>
+                    <span class="method-badge method-get">GET</span>
+                    <h2>Get Report by Case ID</h2>
+                </div>
+                <span id="api2-toggle">▼</span>
+            </div>
+            <div id="api2" class="api-body collapsible">
+                <form id="getReportForm" onsubmit="getReport(event)">
+                    <div class="form-group">
+                        <label for="caseId">Case ID *</label>
+                        <input type="text" id="caseId" placeholder="e.g., ZRA-2025-A1B2C3" required />
+                        <small>Format: ZRA-YYYY-XXXXXX</small>
+                    </div>
+
+                    <button type="submit" class="btn">
+                        Get Report
+                        <span id="get-loading" class="loading" style="display: none;"></span>
+                    </button>
+                </form>
+
+                <div id="getResponse" class="response"></div>
+            </div>
+        </div>
+
+        <!-- API 3: List Reports with Filters -->
+        <div class="api-section">
+            <div class="api-header" onclick="toggleSection('api3')">
+                <div>
+                    <span class="method-badge method-get">GET</span>
+                    <h2>List Reports with Filters</h2>
+                </div>
+                <span id="api3-toggle">▼</span>
+            </div>
+            <div id="api3" class="api-body collapsible">
+                <form id="listReportsForm" onsubmit="listReports(event)">
+                    <div class="form-group">
+                        <label for="filterStatus">Status</label>
+                        <select id="filterStatus">
+                            <option value="">All statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="under_review">Under Review</option>
+                            <option value="investigating">Investigating</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="filterCategory">Category</label>
+                        <select id="filterCategory">
+                            <option value="">All categories</option>
+                            <option value="tax_evasion">Tax Evasion</option>
+                            <option value="fraud">Fraud</option>
+                            <option value="corruption">Corruption</option>
+                            <option value="bribery">Bribery</option>
+                            <option value="ghost_companies">Ghost Companies</option>
+                            <option value="money_laundering">Money Laundering</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="filterPriority">Priority</label>
+                        <select id="filterPriority">
+                            <option value="">All priorities</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="page">Page</label>
+                        <input type="number" id="page" value="1" min="1" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="limit">Limit (max 100)</label>
+                        <input type="number" id="limit" value="20" min="1" max="100" />
+                    </div>
+
+                    <button type="submit" class="btn">
+                        List Reports
+                        <span id="list-loading" class="loading" style="display: none;"></span>
+                    </button>
+                </form>
+
+                <div id="listResponse" class="response"></div>
+            </div>
+        </div>
+
+        <!-- API 4: Update Report Status -->
+        <div class="api-section">
+            <div class="api-header" onclick="toggleSection('api4')">
+                <div>
+                    <span class="method-badge method-patch">PATCH</span>
+                    <h2>Update Report Status</h2>
+                </div>
+                <span id="api4-toggle">▼</span>
+            </div>
+            <div id="api4" class="api-body collapsible">
+                <form id="updateStatusForm" onsubmit="updateStatus(event)">
+                    <div class="form-group">
+                        <label for="updateCaseId">Case ID *</label>
+                        <input type="text" id="updateCaseId" placeholder="e.g., ZRA-2025-A1B2C3" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newStatus">New Status *</label>
+                        <select id="newStatus" required>
+                            <option value="">Select status</option>
+                            <option value="pending">Pending</option>
+                            <option value="under_review">Under Review</option>
+                            <option value="investigating">Investigating</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Notes (Optional)</label>
+                        <textarea id="notes" placeholder="Additional notes about the status change"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn">
+                        Update Status
+                        <span id="update-loading" class="loading" style="display: none;"></span>
+                    </button>
+                </form>
+
+                <div id="updateResponse" class="response"></div>
+            </div>
+        </div>
+
+        <!-- API 5: Get Statistics -->
+        <div class="api-section">
+            <div class="api-header" onclick="toggleSection('api5')">
+                <div>
+                    <span class="method-badge method-get">GET</span>
+                    <h2>Get Report Statistics</h2>
+                </div>
+                <span id="api5-toggle">▼</span>
+            </div>
+            <div id="api5" class="api-body collapsible">
+                <form id="statsForm" onsubmit="getStats(event)">
+                    <div class="form-group">
+                        <label for="startDate">Start Date (Optional)</label>
+                        <input type="date" id="startDate" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="endDate">End Date (Optional)</label>
+                        <input type="date" id="endDate" />
+                    </div>
+
+                    <button type="submit" class="btn">
+                        Get Statistics
+                        <span id="stats-loading" class="loading" style="display: none;"></span>
+                    </button>
+                </form>
+
+                <div id="statsResponse" class="response"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const toggle = document.getElementById(sectionId + '-toggle');
+
+            section.classList.toggle('active');
+            toggle.textContent = section.classList.contains('active') ? '▲' : '▼';
+        }
+
+        function getBaseUrl() {
+            return document.getElementById('baseUrl').value;
+        }
+
+        function showResponse(elementId, data, isError = false) {
+            const responseDiv = document.getElementById(elementId);
+            const statusCode = data.status || (isError ? 'Error' : '200');
+            const statusClass = isError || statusCode >= 400 ? 'status-error' : 'status-success';
+
+            responseDiv.className = `response ${isError || statusCode >= 400 ? 'error' : 'success'}`;
+            responseDiv.style.display = 'block';
+
+            const jsonString = JSON.stringify(data.body || data, null, 2);
+
+            responseDiv.innerHTML = `
+                <div class="response-header">
+                    <span>Response:</span>
+                    <div>
+                        <span class="status-code ${statusClass}">Status: ${statusCode}</span>
+                        <button class="copy-btn" onclick="copyResponse('${elementId}')">Copy</button>
+                    </div>
+                </div>
+                <pre id="${elementId}-json">${jsonString}</pre>
+            `;
+        }
+
+        function copyResponse(elementId) {
+            const jsonElement = document.getElementById(elementId + '-json');
+            navigator.clipboard.writeText(jsonElement.textContent);
+            alert('Response copied to clipboard!');
+        }
+
+        function showLoading(loadingId, show) {
+            document.getElementById(loadingId).style.display = show ? 'inline-block' : 'none';
+        }
+
+        async function submitReport(event) {
+            event.preventDefault();
+            showLoading('submit-loading', true);
+
+            const payload = {
+                category: document.getElementById('category').value,
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                priority: document.getElementById('priority').value,
+                subjects: {
+                    organizations: []
+                },
+                evidence: {
+                    financial_details: {}
+                }
+            };
+
+            const orgName = document.getElementById('orgName').value;
+            const orgTpin = document.getElementById('orgTpin').value;
+            if (orgName || orgTpin) {
+                payload.subjects.organizations.push({
+                    name: orgName,
+                    tpin: orgTpin
+                });
+            }
+
+            const estimatedAmount = document.getElementById('estimatedAmount').value;
+            if (estimatedAmount) {
+                payload.evidence.financial_details.estimated_amount = parseInt(estimatedAmount);
+                payload.evidence.financial_details.currency = 'ZMW';
+            }
+
+            try {
+                const response = await fetch(getBaseUrl(), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                showResponse('submitResponse', { status: response.status, body: data }, !response.ok);
+
+                if (response.ok && data.data && data.data.case_id) {
+                    document.getElementById('caseId').value = data.data.case_id;
+                    document.getElementById('updateCaseId').value = data.data.case_id;
+                }
+            } catch (error) {
+                showResponse('submitResponse', { error: error.message }, true);
+            } finally {
+                showLoading('submit-loading', false);
+            }
+        }
+
+        async function getReport(event) {
+            event.preventDefault();
+            showLoading('get-loading', true);
+
+            const caseId = document.getElementById('caseId').value;
+
+            try {
+                const response = await fetch(`${getBaseUrl()}/${caseId}`);
+                const data = await response.json();
+                showResponse('getResponse', { status: response.status, body: data }, !response.ok);
+            } catch (error) {
+                showResponse('getResponse', { error: error.message }, true);
+            } finally {
+                showLoading('get-loading', false);
+            }
+        }
+
+        async function listReports(event) {
+            event.preventDefault();
+            showLoading('list-loading', true);
+
+            const params = new URLSearchParams();
+
+            const status = document.getElementById('filterStatus').value;
+            if (status) params.append('status', status);
+
+            const category = document.getElementById('filterCategory').value;
+            if (category) params.append('category', category);
+
+            const priority = document.getElementById('filterPriority').value;
+            if (priority) params.append('priority', priority);
+
+            params.append('page', document.getElementById('page').value);
+            params.append('limit', document.getElementById('limit').value);
+
+            try {
+                const url = `${getBaseUrl()}?${params.toString()}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                showResponse('listResponse', { status: response.status, body: data }, !response.ok);
+            } catch (error) {
+                showResponse('listResponse', { error: error.message }, true);
+            } finally {
+                showLoading('list-loading', false);
+            }
+        }
+
+        async function updateStatus(event) {
+            event.preventDefault();
+            showLoading('update-loading', true);
+
+            const caseId = document.getElementById('updateCaseId').value;
+            const payload = {
+                status: document.getElementById('newStatus').value
+            };
+
+            const notes = document.getElementById('notes').value;
+            if (notes) {
+                payload.notes = notes;
+            }
+
+            try {
+                const response = await fetch(`${getBaseUrl()}/${caseId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                showResponse('updateResponse', { status: response.status, body: data }, !response.ok);
+            } catch (error) {
+                showResponse('updateResponse', { error: error.message }, true);
+            } finally {
+                showLoading('update-loading', false);
+            }
+        }
+
+        async function getStats(event) {
+            event.preventDefault();
+            showLoading('stats-loading', true);
+
+            const params = new URLSearchParams();
+
+            const startDate = document.getElementById('startDate').value;
+            if (startDate) params.append('startDate', startDate);
+
+            const endDate = document.getElementById('endDate').value;
+            if (endDate) params.append('endDate', endDate);
+
+            try {
+                const url = `${getBaseUrl()}/stats?${params.toString()}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                showResponse('statsResponse', { status: response.status, body: data }, !response.ok);
+            } catch (error) {
+                showResponse('statsResponse', { error: error.message }, true);
+            } finally {
+                showLoading('stats-loading', false);
+            }
+        }
+
+        // Auto-expand first section on load
+        window.addEventListener('load', () => {
+            toggleSection('api1');
+        });
+    </script>
+</body>
+</html>

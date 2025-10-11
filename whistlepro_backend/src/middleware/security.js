@@ -112,7 +112,7 @@ const detectAttacks = (req, res, next) => {
     /((\%3C)|<)((\%2F)|\/)*[a-z0-9\%]+((\%3E)|>)/gi, // HTML injection
     /((\%27)|(\'))|(--)|(;)/gi, // SQL injection
     /\b(union|select|insert|delete|update|drop|create|alter|exec|execute)\b/gi, // SQL commands
-    /../gi, // Path traversal
+    /(\.\.)+(\/|\\)/gi, // Path traversal (FIXED: now properly matches ../ or ..\)
     /\$\{.*\}/gi // Expression injection
   ];
 

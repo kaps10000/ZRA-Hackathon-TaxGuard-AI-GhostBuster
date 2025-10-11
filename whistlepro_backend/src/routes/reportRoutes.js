@@ -63,14 +63,16 @@ router.post('/',
 );
 
 // PROTECTED ROUTES (Investigators only)
+// NOTE: Authentication temporarily disabled for frontend development
+// TODO: Re-enable authentication before production deployment
 
 /**
  * @route   GET /api/reports
  * @desc    Get paginated list of reports with filtering
- * @access  Private (Investigators)
+ * @access  Public (TEMP - should be Private for Investigators)
  */
 router.get('/',
-  authenticate,
+  // authenticate, // DISABLED FOR FRONTEND DEV
   investigatorLimiter,
   getReports
 );
@@ -78,11 +80,11 @@ router.get('/',
 /**
  * @route   GET /api/reports/stats
  * @desc    Get report statistics
- * @access  Private (Supervisors and Admins only)
+ * @access  Public (TEMP - should be Private for Supervisors/Admins)
  */
 router.get('/stats',
-  authenticate,
-  authorize(['supervisor', 'admin']),
+  // authenticate, // DISABLED FOR FRONTEND DEV
+  // authorize(['supervisor', 'admin']), // DISABLED FOR FRONTEND DEV
   investigatorLimiter,
   getReportStats
 );
@@ -90,10 +92,10 @@ router.get('/stats',
 /**
  * @route   GET /api/reports/:caseId
  * @desc    Get specific report by case ID
- * @access  Private (Investigators)
+ * @access  Public (TEMP - should be Private for Investigators)
  */
 router.get('/:caseId',
-  authenticate,
+  // authenticate, // DISABLED FOR FRONTEND DEV
   investigatorLimiter,
   getReportByCaseId
 );
@@ -101,10 +103,10 @@ router.get('/:caseId',
 /**
  * @route   PATCH /api/reports/:caseId/status
  * @desc    Update report status
- * @access  Private (Investigators)
+ * @access  Public (TEMP - should be Private for Investigators)
  */
 router.patch('/:caseId/status',
-  authenticate,
+  // authenticate, // DISABLED FOR FRONTEND DEV
   investigatorLimiter,
   updateReportStatus
 );

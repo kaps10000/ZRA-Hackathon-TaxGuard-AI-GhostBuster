@@ -43,21 +43,21 @@ class EncryptionService {
     try {
       // Generate random IV
       const iv = crypto.randomBytes(16);
-      
-      // Create cipher
-      const cipher = crypto.createCipher(this.algorithm, this.secretKey);
+
+      // Create cipher with IV (FIXED: using createCipheriv instead of deprecated createCipher)
+      const cipher = crypto.createCipheriv(this.algorithm, this.secretKey, iv);
       cipher.setAAD(Buffer.from('whistlepro-zra-taxguard', 'utf8'));
-      
+
       // Encrypt
       let encrypted = cipher.update(text, 'utf8', 'hex');
       encrypted += cipher.final('hex');
-      
+
       // Get authentication tag
       const authTag = cipher.getAuthTag();
-      
+
       // Combine IV, auth tag, and encrypted data
       const combined = iv.toString('hex') + ':' + authTag.toString('hex') + ':' + encrypted;
-      
+
       return combined;
     } catch (error) {
       throw new Error(`Encryption failed: ${error.message}`);
@@ -76,20 +76,20 @@ class EncryptionService {
       if (parts.length !== 3) {
         throw new Error('Invalid encrypted data format');
       }
-      
+
       const iv = Buffer.from(parts[0], 'hex');
       const authTag = Buffer.from(parts[1], 'hex');
       const encrypted = parts[2];
-      
-      // Create decipher
-      const decipher = crypto.createDecipher(this.algorithm, this.secretKey);
+
+      // Create decipher with IV (FIXED: using createDecipheriv instead of deprecated createDecipher)
+      const decipher = crypto.createDecipheriv(this.algorithm, this.secretKey, iv);
       decipher.setAAD(Buffer.from('whistlepro-zra-taxguard', 'utf8'));
       decipher.setAuthTag(authTag);
-      
+
       // Decrypt
       let decrypted = decipher.update(encrypted, 'hex', 'utf8');
       decrypted += decipher.final('utf8');
-      
+
       return decrypted;
     } catch (error) {
       throw new Error(`Decryption failed: ${error.message}`);
