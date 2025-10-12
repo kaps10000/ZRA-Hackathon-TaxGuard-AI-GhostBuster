@@ -1,0 +1,58 @@
+{
+  "timestamp": "2025-10-06T13:49:36.089Z",
+  "tests": [
+    {
+      "name": "OCR Backend Health Check",
+      "status": "FAILED",
+      "duration": 20,
+      "error": "Error"
+    },
+    {
+      "name": "Blockchain API Health Check",
+      "status": "FAILED",
+      "duration": 3,
+      "error": "Error"
+    },
+    {
+      "name": "AI Service Health Check",
+      "status": "FAILED",
+      "duration": 107,
+      "error": "Request failed with status code 404"
+    },
+    {
+      "name": "OCR-Blockchain Integration",
+      "status": "FAILED",
+      "duration": 8,
+      "error": "Error"
+    },
+    {
+      "name": "Blockchain OCR Endpoints",
+      "status": "FAILED",
+      "duration": 4,
+      "error": "Error"
+    },
+    {
+      "name": "Blockchain Event Storage",
+      "status": "FAILED",
+      "duration": 4,
+      "error": "Error"
+    },
+    {
+      "name": "OCR Verification Flow",
+      "status": "FAILED",
+      "duration": 12,
+      "error": "OCR backend not running"
+    },
+    {
+      "name": "Cross-Service Integration",
+      "status": "FAILED",
+      "duration": 2,
+      "error": "Error"
+    }
+  ],
+  "summary": {
+    "passed": 0,
+    "failed": 8,
+    "total": 8
+  }
+}

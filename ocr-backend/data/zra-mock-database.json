@@ -1,0 +1,182 @@
+{
+  "companies": [
+    {
+      "companyId": "ZRA-REG-001",
+      "companyName": "ABC Technology Corporation",
+      "tpin": "1000123456",
+      "registrationDate": "2020-01-15",
+      "status": "ACTIVE",
+      "businessType": "IMPORTER",
+      "contactEmail": "info@abctech.zm",
+      "contactPhone": "+260-211-123456",
+      "address": "123 Tech Street, Shenzhen, China",
+      "authorizedOfficers": ["John Smith", "Mary Johnson"],
+      "riskRating": "LOW",
+      "verifiedImports": 150,
+      "totalImportValue": 5000000
+    },
+    {
+      "companyId": "ZRA-REG-002",
+      "companyName": "XYZ Imports Ltd",
+      "tpin": "1000234567",
+      "registrationDate": "2019-03-20",
+      "status": "ACTIVE",
+      "businessType": "IMPORTER",
+      "contactEmail": "imports@xyz.zm",
+      "contactPhone": "+260-211-234567",
+      "address": "456 Trade Avenue, Lusaka, Zambia",
+      "authorizedOfficers": ["David Brown"],
+      "riskRating": "LOW",
+      "verifiedImports": 89,
+      "totalImportValue": 3200000
+    },
+    {
+      "companyId": "ZRA-REG-003",
+      "companyName": "Suspicious Trading Co",
+      "tpin": "1000999888",
+      "registrationDate": "2024-11-01",
+      "status": "FLAGGED",
+      "businessType": "IMPORTER",
+      "contactEmail": "contact@suspicious.com",
+      "contactPhone": "+260-000-000000",
+      "address": "Unknown Location",
+      "authorizedOfficers": ["Unknown Person"],
+      "riskRating": "HIGH",
+      "verifiedImports": 2,
+      "totalImportValue": 50000,
+      "flags": ["Recently registered", "Incomplete documentation", "Unusual trading patterns"]
+    },
+    {
+      "companyId": "ZRA-REG-004",
+      "companyName": "Test Corporation",
+      "tpin": "1000345678",
+      "registrationDate": "2021-06-10",
+      "status": "ACTIVE",
+      "businessType": "IMPORTER",
+      "contactEmail": "test@testcorp.zm",
+      "contactPhone": "+260-211-345678",
+      "address": "789 Business Park, Lusaka, Zambia",
+      "authorizedOfficers": ["Sarah Williams"],
+      "riskRating": "LOW",
+      "verifiedImports": 45,
+      "totalImportValue": 1200000
+    }
+  ],
+  "hsCodes": [
+    {
+      "hsCode": "8471.30.00",
+      "description": "Portable automatic data processing machines, weighing not more than 10 kg",
+      "category": "ELECTRONICS",
+      "dutyRate": 15,
+      "vatRate": 16,
+      "restrictions": [],
+      "typicalUnitPrice": {
+        "min": 200,
+        "max": 1500,
+        "currency": "USD"
+      }
+    },
+    {
+      "hsCode": "8471.30",
+      "description": "Computer Equipment - Desktop Computers",
+      "category": "ELECTRONICS",
+      "dutyRate": 15,
+      "vatRate": 16,
+      "restrictions": [],
+      "typicalUnitPrice": {
+        "min": 300,
+        "max": 2000,
+        "currency": "USD"
+      }
+    },
+    {
+      "hsCode": "8517.12.00",
+      "description": "Telephones for cellular networks or for other wireless networks",
+      "category": "TELECOMMUNICATIONS",
+      "dutyRate": 25,
+      "vatRate": 16,
+      "restrictions": ["ICTA certification required"],
+      "typicalUnitPrice": {
+        "min": 100,
+        "max": 1200,
+        "currency": "USD"
+      }
+    },
+    {
+      "hsCode": "8703.23.10",
+      "description": "Motor cars with spark-ignition engine, 1500-3000cc",
+      "category": "VEHICLES",
+      "dutyRate": 30,
+      "vatRate": 16,
+      "restrictions": ["Age limit: max 5 years", "Emission standards required"],
+      "typicalUnitPrice": {
+        "min": 5000,
+        "max": 50000,
+        "currency": "USD"
+      }
+    },
+    {
+      "hsCode": "2710.19.21",
+      "description": "Motor spirit (gasoline)",
+      "category": "PETROLEUM",
+      "dutyRate": 0,
+      "vatRate": 16,
+      "restrictions": ["Import license required", "Quality certificate required"],
+      "typicalUnitPrice": {
+        "min": 0.5,
+        "max": 2.0,
+        "currency": "USD"
+      }
+    }
+  ],
+  "declarations": [
+    {
+      "declarationId": "DECL-ZM-2025-789",
+      "importerName": "XYZ Imports Ltd",
+      "importerTpin": "1000234567",
+      "declarationDate": "2025-10-05",
+      "status": "CLEARED",
+      "invoiceNumber": "INV-2025-12345",
+      "totalValue": 112500,
+      "currency": "USD",
+      "hsCode": "8471.30.00",
+      "quantity": 250,
+      "originCountry": "China"
+    },
+    {
+      "declarationId": "DECL-POSTMAN-001",
+      "importerName": "Test Corporation",
+      "importerTpin": "1000345678",
+      "declarationDate": "2025-10-05",
+      "status": "PENDING",
+      "invoiceNumber": "INV-TEST-001",
+      "totalValue": 50000,
+      "currency": "USD",
+      "hsCode": "8471.30",
+      "quantity": 100,
+      "originCountry": "China"
+    }
+  ],
+  "countryRiskProfiles": {
+    "China": {
+      "riskLevel": "MEDIUM",
+      "commonFraudTypes": ["Undervaluation", "Misdeclaration of quantity"],
+      "requiresAdditionalChecks": true
+    },
+    "Zambia": {
+      "riskLevel": "LOW",
+      "commonFraudTypes": [],
+      "requiresAdditionalChecks": false
+    },
+    "Nigeria": {
+      "riskLevel": "HIGH",
+      "commonFraudTypes": ["Document forgery", "Phantom shipments"],
+      "requiresAdditionalChecks": true
+    },
+    "South Africa": {
+      "riskLevel": "LOW",
+      "commonFraudTypes": [],
+      "requiresAdditionalChecks": false
+    }
+  }
+}
