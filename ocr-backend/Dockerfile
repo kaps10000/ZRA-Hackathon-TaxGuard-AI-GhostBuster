@@ -79,8 +79,9 @@ COPY database/ ./database/
 RUN mkdir -p uploads logs temp
 
 # Create non-root user for security
-RUN addgroup -g 1000 ocruser && \
-    adduser -D -u 1000 -G ocruser -s /bin/sh ocruser && \
+# Node Alpine already has node user with uid/gid 1000, use different id
+RUN addgroup -g 1001 ocruser && \
+    adduser -D -u 1001 -G ocruser -s /bin/sh ocruser && \
     chown -R ocruser:ocruser /app
 
 # Switch to non-root user
