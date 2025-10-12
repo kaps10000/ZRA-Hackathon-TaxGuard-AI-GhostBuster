@@ -80,7 +80,7 @@ RUN mkdir -p uploads logs temp
 
 # Create non-root user for security
 RUN addgroup -g 1000 ocruser && \
-    adduser -D -u 1000 -G ocruser ocruser && \
+    adduser -D -u 1000 -G ocruser -s /bin/sh ocruser && \
     chown -R ocruser:ocruser /app
 
 # Switch to non-root user
