@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZRA OCR API Tester</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; }
+        .container { max-width: 1400px; margin: 20px auto; padding: 0 20px; }
+        
+        .api-section { background: white; margin: 20px 0; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
+        .section-header { background: #f8f9fa; padding: 15px 20px; border-bottom: 1px solid #dee2e6; font-weight: bold; color: #495057; }
+        .section-content { padding: 20px; }
+        
+        .endpoint { margin: 15px 0; padding: 15px; border: 1px solid #e9ecef; border-radius: 8px; }
+        .endpoint-header { display: flex; align-items: center; margin-bottom: 10px; }
+        .method { padding: 4px 12px; border-radius: 4px; font-weight: bold; margin-right: 10px; font-size: 12px; }
+        .method.GET { background: #28a745; color: white; }
+        .method.POST { background: #007bff; color: white; }
+        .method.PUT { background: #ffc107; color: black; }
+        .method.DELETE { background: #dc3545; color: white; }
+        
+        .url-input { flex: 1; padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; font-family: monospace; }
+        .test-btn { padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px; }
+        .test-btn:hover { background: #218838; }
+        
+        .params-section { margin: 10px 0; }
+        .params-section h4 { margin-bottom: 8px; color: #495057; }
+        .param-input { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ced4da; border-radius: 4px; }
+        .json-input { width: 100%; height: 120px; padding: 10px; font-family: monospace; border: 1px solid #ced4da; border-radius: 4px; }
+        
+        .response-section { margin-top: 15px; }
+        .response-header { background: #f8f9fa; padding: 10px; border-radius: 4px 4px 0 0; font-weight: bold; }
+        .response-body { background: #f8f9fa; padding: 15px; border-radius: 0 0 4px 4px; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+        
+        .auth-section { background: #fff3cd; padding: 15px; margin: 20px 0; border-radius: 8px; border: 1px solid #ffeaa7; }
+        .token-input { width: 100%; padding: 8px; margin: 10px 0; border: 1px solid #ced4da; border-radius: 4px; font-family: monospace; }
+        
+        .status-success { color: #28a745; }
+        .status-error { color: #dc3545; }
+        .status-warning { color: #ffc107; }
+        
+        .file-input { margin: 10px 0; }
+        .quick-auth { background: #d4edda; padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .quick-auth button { background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin: 5px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 ZRA OCR API Tester</h1>
+        <p>Interactive API Testing Interface - Like Postman in Your Browser</p>
+    </div>
+
+    <div class="container">
+        <!-- Authentication Section -->
+        <div class="api-section">
+            <div class="section-header">🔐 Authentication & Token Management</div>
+            <div class="section-content">
+                <div class="quick-auth">
+                    <strong>Quick Login:</strong>
+                    <button onclick="quickLogin('zra_admin', 'password')">Login as Admin</button>
+                    <button onclick="quickLogin('zra_officer', 'password')">Login as Officer</button>
+                </div>
+                
+                <div class="auth-section">
+                    <strong>Current JWT Token:</strong>
+                    <input type="text" id="jwtToken" class="token-input" placeholder="JWT token will appear here after login">
+                    <button onclick="clearToken()" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Clear Token</button>
+                </div>
+
+                <!-- Login Endpoint -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method POST">POST</span>
+                        <input type="text" class="url-input" value="http://localhost:3000/api/auth/login" readonly>
+                        <button class="test-btn" onclick="testLogin()">Test Login</button>
+                    </div>
+                    <div class="params-section">
+                        <h4>Request Body (JSON):</h4>
+                        <textarea class="json-input" id="loginBody">{"username": "zra_admin", "password": "password"}</textarea>
+                    </div>
+                    <div class="response-section" id="loginResponse" style="display: none;">
+                        <div class="response-header">Response:</div>
+                        <div class="response-body" id="loginResponseBody"></div>
+                    </div>
+                </div>
+
+                <!-- Token Verify -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method POST">POST</span>
+                        <input type="text" class="url-input" value="http://localhost:3000/api/auth/verify" readonly>
+                        <button class="test-btn" onclick="testTokenVerify()">Verify Token</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Document Management -->
+        <div class="api-section">
+            <div class="section-header">📄 Document Management</div>
+            <div class="section-content">
+                <!-- Upload Document -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method POST">POST</span>
+                        <input type="text" class="url-input" value="http://localhost:3000/api/upload" readonly>
+                        <button class="test-btn" onclick="testUpload()">Test Upload</button>
+                    </div>
+                    <div class="params-section">
+                        <h4>File Upload:</h4>
+                        <input type="file" id="uploadFile" class="file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                        <h4>Metadata (JSON):</h4>
+                        <textarea class="json-input" id="uploadMetadata">{"importerName": "Test Company", "importerTpin": "1234567890"}</textarea>
+                    </div>
+                    <div class="response-section" id="uploadResponse" style="display: none;">
+                        <div class="response-header">Response:</div>
+                        <div class="response-body" id="uploadResponseBody"></div>
+                    </div>
+                </div>
+
+                <!-- Get Results -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method GET">GET</span>
+                        <input type="text" class="url-input" value="http://localhost:3000/api/results" readonly>
+                        <button class="test-btn" onclick="testGetResults()">Get Results</button>
+                    </div>
+                    <div class="response-section" id="resultsResponse" style="display: none;">
+                        <div class="response-header">Response:</div>
+                        <div class="response-body" id="resultsResponseBody"></div>
+                    </div>
+                </div>
+
+                <!-- Get Specific Result -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method GET">GET</span>
+                        <input type="text" class="url-input" id="specificResultUrl" value="http://localhost:3000/api/results/" placeholder="Add document ID">
+                        <button class="test-btn" onclick="testGetSpecificResult()">Get Specific</button>
+                    </div>
+                    <div class="params-section">
+                        <h4>Document ID:</h4>
+                        <input type="text" class="param-input" id="documentId" placeholder="Enter document ID">
+                    </div>
+                    <div class="response-section" id="specificResultResponse" style="display: none;">
+                        <div class="response-header">Response:</div>
+                        <div class="response-body" id="specificResultResponseBody"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification -->
+        <div class="api-section">
+            <div class="section-header">✅ Verification Endpoints</div>
+            <div class="section-content">
+                <!-- Verify Document -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method POST">POST</span>
+                        <input type="text" class="url-input" value="http://localhost:3000/api/verify/document" readonly>
+                        <button class="test-btn" onclick="testVerifyDocument()">Verify Document</button>
+                    </div>
+                    <div class="params-section">
+                        <h4>Request Body (JSON):</h4>
+                        <textarea class="json-input" id="verifyDocumentBody">{"extractedData": {"importerName": "ABC Corporation", "importerTpin": "1234567890", "invoiceAmount": 50000}}</textarea>
+                    </div>
+                    <div class="response-section" id="verifyDocumentResponse" style="display: none;">
+                        <div class="response-header">Response:</div>
+                        <div class="response-body" id="verifyDocumentResponseBody"></div>
+                    </div>
+                </div>
+
+                <!-- Verify Company -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method POST">POST</span>
+                        <input type="text" class="url-input" value="http://localhost:3000/api/verify/company" readonly>
+                        <button class="test-btn" onclick="testVerifyCompany()">Verify Company</button>
+                    </div>
+                    <div class="params-section">
+                        <h4>Request Body (JSON):</h4>
+                        <textarea class="json-input" id="verifyCompanyBody">{"tpin": "1234567890", "companyName": "ABC Corporation"}</textarea>
+                    </div>
+                    <div class="response-section" id="verifyCompanyResponse" style="display: none;">
+                        <div class="response-header">Response:</div>
+                        <div class="response-body" id="verifyCompanyResponseBody"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blockchain Integration -->
+        <div class="api-section">
+            <div class="section-header">🔗 Blockchain Integration</div>
+            <div class="section-content">
+                <!-- Store Proof -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method POST">POST</span>
+                        <input type="text" class="url-input" value="http://localhost:3000/api/blockchain/store-proof" readonly>
+                        <button class="test-btn" onclick="testStoreProof()">Store Proof</button>
+                    </div>
+                    <div class="params-section">
+                        <h4>Request Body (JSON):</h4>
+                        <textarea class="json-input" id="storeProofBody">{"documentId": "TEST-DOC-001", "fileHash": "sha256:test-hash-123", "verificationResult": {"overallStatus": "VALID", "riskScore": 25}}</textarea>
+                    </div>
+                    <div class="response-section" id="storeProofResponse" style="display: none;">
+                        <div class="response-header">Response:</div>
+                        <div class="response-body" id="storeProofResponseBody"></div>
+                    </div>
+                </div>
+
+                <!-- Get Proof -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method GET">GET</span>
+                        <input type="text" class="url-input" id="getProofUrl" value="http://localhost:3000/api/blockchain/get-proof/" placeholder="Add hash">
+                        <button class="test-btn" onclick="testGetProof()">Get Proof</button>
+                    </div>
+                    <div class="params-section">
+                        <h4>Hash (Document ID, File Hash, or Transaction ID):</h4>
+                        <input type="text" class="param-input" id="proofHash" placeholder="Enter hash to verify">
+                    </div>
+                    <div class="response-section" id="getProofResponse" style="display: none;">
+                        <div class="response-header">Response:</div>
+                        <div class="response-body" id="getProofResponseBody"></div>
+                    </div>
+                </div>
+
+                <!-- Blockchain Health -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method GET">GET</span>
+                        <input type="text" class="url-input" value="http://localhost:3000/api/blockchain/health" readonly>
+                        <button class="test-btn" onclick="testBlockchainHealth()">Check Health</button>
+                    </div>
+                    <div class="response-section" id="blockchainHealthResponse" style="display: none;">
+                        <div class="response-header">Response:</div>
+                        <div class="response-body" id="blockchainHealthResponseBody"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Endpoints -->
+        <div class="api-section">
+            <div class="section-header">📊 System Endpoints</div>
+            <div class="section-content">
+                <!-- Health Check -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method GET">GET</span>
+                        <input type="text" class="url-input" value="http://localhost:3000/healthcheck" readonly>
+                        <button class="test-btn" onclick="testHealthCheck()">Health Check</button>
+                    </div>
+                    <div class="response-section" id="healthResponse" style="display: none;">
+                        <div class="response-header">Response:</div>
+                        <div class="response-body" id="healthResponseBody"></div>
+                    </div>
+                </div>
+
+                <!-- API Info -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method GET">GET</span>
+                        <input type="text" class="url-input" value="http://localhost:3000/api" readonly>
+                        <button class="test-btn" onclick="testApiInfo()">API Info</button>
+                    </div>
+                    <div class="response-section" id="apiInfoResponse" style="display: none;">
+                        <div class="response-header">Response:</div>
+                        <div class="response-body" id="apiInfoResponseBody"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let jwtToken = '';
+
+        // Helper function to make API calls
+        async function makeApiCall(method, url, body = null, useAuth = false, isFormData = false) {
+            const headers = {};
+            
+            if (useAuth && jwtToken) {
+                headers['Authorization'] = `Bearer ${jwtToken}`;
+            }
+            
+            if (body && !isFormData) {
+                headers['Content-Type'] = 'application/json';
+            }
+
+            const config = {
+                method: method,
+                headers: headers
+            };
+
+            if (body) {
+                config.body = isFormData ? body : JSON.stringify(body);
+            }
+
+            try {
+                const response = await fetch(url, config);
+                const responseData = await response.text();
+                
+                let jsonData;
+                try {
+                    jsonData = JSON.parse(responseData);
+                } catch (e) {
+                    jsonData = { rawResponse: responseData };
+                }
+
+                return {
+                    status: response.status,
+                    statusText: response.statusText,
+                    data: jsonData
+                };
+            } catch (error) {
+                return {
+                    status: 0,
+                    statusText: 'Network Error',
+                    data: { error: error.message }
+                };
+            }
+        }
+
+        // Display response
+        function displayResponse(elementId, response) {
+            const responseElement = document.getElementById(elementId);
+            const bodyElement = document.getElementById(elementId + 'Body');
+            
+            responseElement.style.display = 'block';
+            
+            const statusClass = response.status >= 200 && response.status < 300 ? 'status-success' : 
+                               response.status >= 400 ? 'status-error' : 'status-warning';
+            
+            bodyElement.innerHTML = `<span class="${statusClass}">Status: ${response.status} ${response.statusText}</span>\n\n${JSON.stringify(response.data, null, 2)}`;
+        }
+
+        // Quick login function
+        async function quickLogin(username, password) {
+            const body = { username, password };
+            const response = await makeApiCall('POST', 'http://localhost:3000/api/auth/login', body);
+            
+            if (response.data.success && response.data.data && response.data.data.token) {
+                jwtToken = response.data.data.token;
+                document.getElementById('jwtToken').value = jwtToken;
+                alert(`Logged in as ${username}! Token saved.`);
+            } else {
+                alert('Login failed: ' + (response.data.error || 'Unknown error'));
+            }
+        }
+
+        // Clear token
+        function clearToken() {
+            jwtToken = '';
+            document.getElementById('jwtToken').value = '';
+            alert('Token cleared!');
+        }
+
+        // Test functions
+        async function testLogin() {
+            const body = JSON.parse(document.getElementById('loginBody').value);
+            const response = await makeApiCall('POST', 'http://localhost:3000/api/auth/login', body);
+            
+            if (response.data.success && response.data.data && response.data.data.token) {
+                jwtToken = response.data.data.token;
+                document.getElementById('jwtToken').value = jwtToken;
+            }
+            
+            displayResponse('loginResponse', response);
+        }
+
+        async function testTokenVerify() {
+            if (!jwtToken) {
+                alert('Please login first to get a token');
+                return;
+            }
+            const body = { token: jwtToken };
+            const response = await makeApiCall('POST', 'http://localhost:3000/api/auth/verify', body);
+            displayResponse('loginResponse', response);
+        }
+
+        async function testUpload() {
+            const fileInput = document.getElementById('uploadFile');
+            const metadata = document.getElementById('uploadMetadata').value;
+            
+            if (!fileInput.files[0]) {
+                alert('Please select a file to upload');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('metadata', metadata);
+
+            const response = await makeApiCall('POST', 'http://localhost:3000/api/upload', formData, true, true);
+            displayResponse('uploadResponse', response);
+        }
+
+        async function testGetResults() {
+            const response = await makeApiCall('GET', 'http://localhost:3000/api/results', null, true);
+            displayResponse('resultsResponse', response);
+        }
+
+        async function testGetSpecificResult() {
+            const docId = document.getElementById('documentId').value;
+            if (!docId) {
+                alert('Please enter a document ID');
+                return;
+            }
+            const url = `http://localhost:3000/api/results/${docId}`;
+            const response = await makeApiCall('GET', url, null, true);
+            displayResponse('specificResultResponse', response);
+        }
+
+        async function testVerifyDocument() {
+            const body = JSON.parse(document.getElementById('verifyDocumentBody').value);
+            const response = await makeApiCall('POST', 'http://localhost:3000/api/verify/document', body, true);
+            displayResponse('verifyDocumentResponse', response);
+        }
+
+        async function testVerifyCompany() {
+            const body = JSON.parse(document.getElementById('verifyCompanyBody').value);
+            const response = await makeApiCall('POST', 'http://localhost:3000/api/verify/company', body, true);
+            displayResponse('verifyCompanyResponse', response);
+        }
+
+        async function testStoreProof() {
+            const body = JSON.parse(document.getElementById('storeProofBody').value);
+            const response = await makeApiCall('POST', 'http://localhost:3000/api/blockchain/store-proof', body, true);
+            displayResponse('storeProofResponse', response);
+        }
+
+        async function testGetProof() {
+            const hash = document.getElementById('proofHash').value;
+            if (!hash) {
+                alert('Please enter a hash to verify');
+                return;
+            }
+            const url = `http://localhost:3000/api/blockchain/get-proof/${hash}`;
+            const response = await makeApiCall('GET', url, null, false);
+            displayResponse('getProofResponse', response);
+        }
+
+        async function testBlockchainHealth() {
+            const response = await makeApiCall('GET', 'http://localhost:3000/api/blockchain/health');
+            displayResponse('blockchainHealthResponse', response);
+        }
+
+        async function testHealthCheck() {
+            const response = await makeApiCall('GET', 'http://localhost:3000/healthcheck');
+            displayResponse('healthResponse', response);
+        }
+
+        async function testApiInfo() {
+            const response = await makeApiCall('GET', 'http://localhost:3000/api');
+            displayResponse('apiInfoResponse', response);
+        }
+
+        // Update URL inputs when parameters change
+        document.getElementById('documentId').addEventListener('input', function() {
+            document.getElementById('specificResultUrl').value = 'http://localhost:3000/api/results/' + this.value;
+        });
+
+        document.getElementById('proofHash').addEventListener('input', function() {
+            document.getElementById('getProofUrl').value = 'http://localhost:3000/api/blockchain/get-proof/' + this.value;
+        });
+
+        // Auto-update token from input
+        document.getElementById('jwtToken').addEventListener('input', function() {
+            jwtToken = this.value;
+        });
+    </script>
+</body>
+</html>

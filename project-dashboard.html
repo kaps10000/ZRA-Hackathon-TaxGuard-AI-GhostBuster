@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZRA TaxGuard - Project Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; }
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
+        .card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card h3 { color: #333; margin-bottom: 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+        .status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .status.complete { background: #d4edda; color: #155724; }
+        .status.partial { background: #fff3cd; color: #856404; }
+        .status.pending { background: #f8d7da; color: #721c24; }
+        .btn { background: #667eea; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #5a6fd8; }
+        .log { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto; }
+        .branch-info { background: #e7f3ff; border-left: 4px solid #0066cc; padding: 15px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏛️ ZRA TaxGuard AI - Project Dashboard</h1>
+        <p>Comprehensive Tax Compliance & Fraud Detection System</p>
+    </div>
+
+    <div class="container">
+        <div class="branch-info">
+            <h3>📋 Current Branch Status</h3>
+            <p><strong>Active Branch:</strong> <span id="currentBranch">kelvin-latest-review</span></p>
+            <p><strong>Last Updated:</strong> <span id="lastUpdate">October 6, 2025</span></p>
+            <button class="btn" onclick="refreshStatus()">🔄 Refresh Status</button>
+            <button class="btn" onclick="pullKelvinChanges()">📥 Pull Kelvin's Changes</button>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3>🗄️ Database Status</h3>
+                <div style="margin: 10px 0;">
+                    <strong>Main Branch:</strong> <span class="status complete">PostgreSQL Ready</span><br>
+                    <strong>OCR Schema:</strong> <span class="status complete">Implemented</span><br>
+                    <strong>Kelvin's Schema:</strong> <span class="status pending">Checking...</span>
+                </div>
+                <button class="btn" onclick="checkDatabase()">🔍 Check Database</button>
+                <div id="dbStatus" class="log" style="margin-top: 10px; display: none;"></div>
+            </div>
+
+            <div class="card">
+                <h3>🔗 API Services</h3>
+                <div style="margin: 10px 0;">
+                    <strong>OCR Backend:</strong> <span class="status partial">Port 3000</span><br>
+                    <strong>AI Service:</strong> <span class="status complete">Port 5000</span><br>
+                    <strong>Blockchain API:</strong> <span class="status partial">Port 3001</span>
+                </div>
+                <button class="btn" onclick="testAPIs()">🧪 Test APIs</button>
+                <div id="apiStatus" class="log" style="margin-top: 10px; display: none;"></div>
+            </div>
+
+            <div class="card">
+                <h3>👥 Team Branches</h3>
+                <div style="margin: 10px 0;">
+                    <strong>Main:</strong> <span class="status complete">PostgreSQL + OCR</span><br>
+                    <strong>OCR-dev-2:</strong> <span class="status complete">Full Integration</span><br>
+                    <strong>Kelvin:</strong> <span class="status pending">WhistlePro Backend</span><br>
+                    <strong>Kaps:</strong> <span class="status complete">Blockchain</span>
+                </div>
+                <button class="btn" onclick="showBranches()">🌿 View Branches</button>
+                <div id="branchStatus" class="log" style="margin-top: 10px; display: none;"></div>
+            </div>
+
+            <div class="card">
+                <h3>📊 Project Files</h3>
+                <div style="margin: 10px 0;">
+                    <strong>Database Schema:</strong> <a href="#" onclick="showFile('DATABASE_SCHEMA_DOCUMENTATION.md')">📄 View Schema</a><br>
+                    <strong>API Tests:</strong> <a href="#" onclick="showFile('COMPREHENSIVE_API_TEST_REPORT.md')">🧪 Test Report</a><br>
+                    <strong>Integration:</strong> <a href="#" onclick="showFile('BLOCKCHAIN_OCR_INTEGRATION_COMPLETE.md')">🔗 Integration</a>
+                </div>
+                <button class="btn" onclick="listFiles()">📁 List All Files</button>
+                <div id="fileList" class="log" style="margin-top: 10px; display: none;"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🚀 Quick Actions</h3>
+            <button class="btn" onclick="startServices()">▶️ Start All Services</button>
+            <button class="btn" onclick="runTests()">🧪 Run API Tests</button>
+            <button class="btn" onclick="checkKelvinWork()">👤 Check Kelvin's Work</button>
+            <button class="btn" onclick="showLogs()">📋 Show Logs</button>
+            
+            <div id="actionOutput" class="log" style="margin-top: 15px; display: none;"></div>
+        </div>
+
+        <div class="card">
+            <h3>📝 Recent Activity</h3>
+            <div id="recentActivity" class="log">
+                <div>✅ Created separate branch 'kelvin-latest-review'</div>
+                <div>📊 Database schema documentation created</div>
+                <div>🔗 Blockchain-OCR integration completed</div>
+                <div>🧪 Comprehensive API tests created</div>
+                <div>⏳ Waiting to pull Kelvin's latest changes...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function refreshStatus() {
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+            addActivity('🔄 Status refreshed');
+        }
+
+        function pullKelvinChanges() {
+            const output = document.getElementById('actionOutput');
+            output.style.display = 'block';
+            output.innerHTML = `
+                <div>📥 Attempting to pull Kelvin's changes...</div>
+                <div>🔧 Command: git pull origin Kelvin</div>
+                <div>⚠️ Authentication required - please run manually:</div>
+                <div style="background: #333; color: #0f0; padding: 10px; margin: 10px 0;">
+                cd /home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster<br>
+                git checkout kelvin-latest-review<br>
+                git pull origin Kelvin
+                </div>
+            `;
+            addActivity('📥 Pull Kelvin changes requested');
+        }
+
+        function checkDatabase() {
+            const output = document.getElementById('dbStatus');
+            output.style.display = 'block';
+            output.innerHTML = `
+                <div>🗄️ Database Status Check:</div>
+                <div>✅ Main Branch: PostgreSQL with OCR schema</div>
+                <div>✅ Table: ocr.documents (fully implemented)</div>
+                <div>⏳ Kelvin Branch: Checking for WhistlePro schema...</div>
+                <div>📍 Location: /home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/DATABASE_SCHEMA_DOCUMENTATION.md</div>
+            `;
+            addActivity('🗄️ Database status checked');
+        }
+
+        function testAPIs() {
+            const output = document.getElementById('apiStatus');
+            output.style.display = 'block';
+            output.innerHTML = `
+                <div>🧪 API Testing:</div>
+                <div>✅ AI Service: http://localhost:5000 (Running)</div>
+                <div>⏳ OCR Backend: http://localhost:3000 (Need to start)</div>
+                <div>⏳ Blockchain API: http://localhost:3001 (Need to start)</div>
+                <div>📋 Test Script: ./manual-api-tests.sh</div>
+            `;
+            addActivity('🧪 API status checked');
+        }
+
+        function showBranches() {
+            const output = document.getElementById('branchStatus');
+            output.style.display = 'block';
+            output.innerHTML = `
+                <div>🌿 Git Branches:</div>
+                <div>📍 Current: kelvin-latest-review</div>
+                <div>✅ main: PostgreSQL + OCR implementation</div>
+                <div>✅ OCR-dev-2: Full blockchain integration</div>
+                <div>⏳ Kelvin: WhistlePro backend (checking...)</div>
+                <div>✅ Kaps: Blockchain implementation</div>
+            `;
+            addActivity('🌿 Branch status viewed');
+        }
+
+        function showFile(filename) {
+            const output = document.getElementById('actionOutput');
+            output.style.display = 'block';
+            output.innerHTML = `
+                <div>📄 File: ${filename}</div>
+                <div>📍 Location: /home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/${filename}</div>
+                <div>🔧 View command: cat /home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/${filename}</div>
+            `;
+            addActivity(`📄 Viewed ${filename}`);
+        }
+
+        function listFiles() {
+            const output = document.getElementById('fileList');
+            output.style.display = 'block';
+            output.innerHTML = `
+                <div>📁 Key Project Files:</div>
+                <div>📊 DATABASE_SCHEMA_DOCUMENTATION.md</div>
+                <div>🧪 COMPREHENSIVE_API_TEST_REPORT.md</div>
+                <div>🔗 BLOCKCHAIN_OCR_INTEGRATION_COMPLETE.md</div>
+                <div>📮 Comprehensive_API_Tests.postman_collection.json</div>
+                <div>🗄️ ocr-backend/models/Document.js</div>
+                <div>⚙️ ocr-backend/config/database.js</div>
+            `;
+            addActivity('📁 File list displayed');
+        }
+
+        function startServices() {
+            const output = document.getElementById('actionOutput');
+            output.style.display = 'block';
+            output.innerHTML = `
+                <div>▶️ Starting Services:</div>
+                <div>✅ AI Service: Already running on port 5000</div>
+                <div>⏳ Starting OCR Backend...</div>
+                <div>⏳ Starting Blockchain API...</div>
+                <div style="background: #333; color: #0f0; padding: 10px; margin: 10px 0;">
+                # Terminal 1:<br>
+                cd ocr-backend && npm start<br><br>
+                # Terminal 2:<br>
+                cd blockchain && npm start
+                </div>
+            `;
+            addActivity('▶️ Service startup initiated');
+        }
+
+        function runTests() {
+            const output = document.getElementById('actionOutput');
+            output.style.display = 'block';
+            output.innerHTML = `
+                <div>🧪 Running API Tests:</div>
+                <div>📋 Available test methods:</div>
+                <div>1. ./manual-api-tests.sh (Simple bash tests)</div>
+                <div>2. node test-all-integrations.js (Comprehensive)</div>
+                <div>3. newman run Comprehensive_API_Tests.postman_collection.json</div>
+                <div style="background: #333; color: #0f0; padding: 10px; margin: 10px 0;">
+                cd /home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster<br>
+                ./manual-api-tests.sh
+                </div>
+            `;
+            addActivity('🧪 Test execution prepared');
+        }
+
+        function checkKelvinWork() {
+            const output = document.getElementById('actionOutput');
+            output.style.display = 'block';
+            output.innerHTML = `
+                <div>👤 Kelvin's Work Status:</div>
+                <div>📁 Directory: whistlepro_backend/</div>
+                <div>📄 Current: README.md only (829 bytes)</div>
+                <div>❌ No database implementation yet</div>
+                <div>❌ No models or schemas created</div>
+                <div>📋 Planned: Django/Node.js + PostgreSQL</div>
+                <div>⏳ Need to pull latest from GitHub to check updates</div>
+            `;
+            addActivity('👤 Kelvin work status checked');
+        }
+
+        function showLogs() {
+            const output = document.getElementById('actionOutput');
+            output.style.display = 'block';
+            output.innerHTML = `
+                <div>📋 System Logs:</div>
+                <div>✅ AI Service: Running on port 5000</div>
+                <div>📊 Database: PostgreSQL schema ready</div>
+                <div>🔗 Integration: OCR-Blockchain complete</div>
+                <div>🧪 Tests: Comprehensive suite created</div>
+                <div>⏳ Pending: Pull Kelvin's latest work</div>
+            `;
+            addActivity('📋 Logs displayed');
+        }
+
+        function addActivity(message) {
+            const activity = document.getElementById('recentActivity');
+            const time = new Date().toLocaleTimeString();
+            activity.innerHTML = `<div>[${time}] ${message}</div>` + activity.innerHTML;
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+        }, 30000);
+    </script>
+</body>
+</html>

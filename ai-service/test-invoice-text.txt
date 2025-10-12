@@ -1,0 +1,30 @@
+COMMERCIAL INVOICE
+
+Invoice #: INV-2025-12345
+Date: 2025-10-05
+
+Seller: ABC Technology Corporation
+Address: 123 Tech Street, Shenzhen, China
+
+Buyer: XYZ Imports Ltd
+Address: 456 Trade Avenue, Lusaka, Zambia
+
+ITEM DETAILS:
+Description: Computer Equipment - Desktop Computers
+HS Code: 8471.30.00
+Quantity: 250 units
+Unit Price: $450.00
+Total Value: $112,500.00
+
+Currency: USD
+Origin Country: China
+Destination: Zambia
+Shipment Date: 2025-10-15
+
+Declaration ID: DECL-ZM-2025-789
+
+Terms: FOB Shenzhen
+Payment: Letter of Credit
+
+Authorized Signature: _____________
+Company Stamp: [ABC Technology Corp]
