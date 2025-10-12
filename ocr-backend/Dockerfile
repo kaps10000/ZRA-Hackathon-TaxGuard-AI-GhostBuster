@@ -1,8 +1,10 @@
-# ZRA OCR Backend Dockerfile
-FROM node:18-alpine
+# =====================================================
+# ZRA TaxGuard OCR Backend - Dockerfile
+# =====================================================
+# Node.js backend service with PostgreSQL and OCR integration
+# =====================================================
 
-# Set working directory
-WORKDIR /app
+FROM node:18-alpine as base
 
 # Install system dependencies for image processing
 RUN apk add --no-cache \
@@ -12,35 +14,85 @@ RUN apk add --no-cache \
     cairo-dev \
     jpeg-dev \
     pango-dev \
-    musl-dev \
     giflib-dev \
-    pixman-dev \
-    pangomm-dev \
-    libjpeg-turbo-dev \
-    freetype-dev
+    pixman-dev
+
+WORKDIR /app
+
+# =====================================================
+# Dependencies Stage
+# =====================================================
+FROM base as dependencies
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install all dependencies
+RUN npm install --only=production && \
+    npm cache clean --force
+
+# =====================================================
+# Development Stage
+# =====================================================
+FROM base as development
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies including dev
+RUN npm install
 
 # Copy application code
 COPY . .
 
-# Create uploads directory
+# Create necessary directories
 RUN mkdir -p uploads logs
 
-# Set permissions
-RUN chown -R node:node /app
-USER node
+# Expose port
+EXPOSE 5000
+
+# Development command with hot reload
+CMD ["npm", "run", "dev"]
+
+# =====================================================
+# Production Stage
+# =====================================================
+FROM base as production
+
+# Copy dependencies from dependencies stage
+COPY --from=dependencies /app/node_modules ./node_modules
+
+# Copy package files
+COPY package*.json ./
+
+# Copy application code
+COPY server.js ./
+COPY routes/ ./routes/
+COPY services/ ./services/
+COPY middleware/ ./middleware/
+COPY models/ ./models/
+COPY utils/ ./utils/
+COPY config/ ./config/
+COPY database/ ./database/
+
+# Create necessary directories
+RUN mkdir -p uploads logs temp
+
+# Create non-root user for security
+# Node Alpine already has node user with uid/gid 1000, use different id
+RUN addgroup -g 1001 ocruser && \
+    adduser -D -u 1001 -G ocruser -s /bin/sh ocruser && \
+    chown -R ocruser:ocruser /app
+
+# Switch to non-root user
+USER ocruser
 
 # Expose port
-EXPOSE 3000
+EXPOSE 5000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/healthcheck', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:5000/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"
 
-# Start application
-CMD ["npm", "start"]
+# Production command
+CMD ["node", "server.js"]

@@ -1,0 +1,38 @@
+{
+  "document_type": "invoice",
+  "invoice_number": "INV-2025-10-12-4498",
+  "document_date": "2025-09-26",
+  "total_amount": 667606.25,
+  "currency": "ZMW",
+  "importer_name": "International Trade Ltd",
+  "tpin": "9378326576",
+  "supplier_name": "Factory Direct Ltd",
+  "phone": "+260 966 167000",
+  "email": "contact@internationaltr.zm",
+  "address": "Plot 613, Great East Road, Lusaka",
+  "line_items": [
+    {
+      "description": "Petroleum Oils",
+      "hs_code": "2710194900",
+      "quantity": 526,
+      "unit_price": 25.37,
+      "amount": 13344.62
+    },
+    {
+      "description": "Men's Trousers",
+      "hs_code": "6203420000",
+      "quantity": 531,
+      "unit_price": 934.11,
+      "amount": 496012.41
+    },
+    {
+      "description": "Textiles",
+      "hs_code": "5208210000",
+      "quantity": 76,
+      "unit_price": 870.6,
+      "amount": 66165.6
+    }
+  ],
+  "subtotal": 575522.63,
+  "tax_amount": 92083.62
+}

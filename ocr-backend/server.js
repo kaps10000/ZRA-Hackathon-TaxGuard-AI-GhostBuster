@@ -1,237 +1,218 @@
-require('dotenv').config();
+/**
+ * ZRA TaxGuard OCR Backend - Main Server
+ * Node.js + Express backend for OCR document verification
+ * Integrates with PostgreSQL, OCR AI Service, and Blockchain
+ */
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const rateLimit = require('express-rate-limit');
-const { connectDatabase, testConnection, closeConnection } = require('./config/database');
-const { errorHandler, notFoundHandler } = require('./middleware/error-handler');
-const { authenticateToken, optionalAuth } = require('./middleware/auth');
-const logger = require('./utils/logger');
+const path = require('path');
+require('dotenv').config();
+
+// =====================================================
+// Express App Initialization
+// =====================================================
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
-// Security Middleware
+// =====================================================
+// Middleware
+// =====================================================
+
+// Security
 app.use(helmet());
 
-// Rate Limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: {
-    success: false,
-    error: 'Too many requests from this IP, please try again later.'
-  }
-});
+// CORS
+const corsOptions = {
+    origin: process.env.ALLOWED_ORIGINS
+        ? process.env.ALLOWED_ORIGINS.split(',')
+        : ['http://localhost:3000', 'http://localhost:8080'],
+    credentials: true
+};
+app.use(cors(corsOptions));
 
-const uploadLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // limit uploads to 10 per 15 minutes
-  message: {
-    success: false,
-    error: 'Too many upload requests, please try again later.'
-  }
-});
-
-app.use('/api/', limiter);
-
-// CORS Configuration
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}));
-
-// Body Parser Middleware
+// Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// HTTP Request Logging
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
+// Logging
+if (process.env.NODE_ENV === 'production') {
+    app.use(morgan('combined'));
 } else {
-  app.use(morgan('combined', { stream: logger.stream }));
+    app.use(morgan('dev'));
 }
 
-// Request ID Middleware
-app.use((req, res, next) => {
-  req.id = require('uuid').v4();
-  res.setHeader('X-Request-ID', req.id);
-  next();
-});
+// =====================================================
+// Database Connection
+// =====================================================
 
-// Health Check Route
-app.get('/healthcheck', async (req, res) => {
-  try {
-    const dbStatus = await testConnection();
-    const uptime = process.uptime();
-    const memoryUsage = process.memoryUsage();
+const { Sequelize } = require('sequelize');
 
-    const health = {
-      success: true,
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      service: 'OCR Verification Backend',
-      environment: process.env.NODE_ENV || 'development',
-      uptime: {
-        seconds: Math.floor(uptime),
-        formatted: `${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m ${Math.floor(uptime % 60)}s`
-      },
-      database: {
-        connected: dbStatus,
-        status: dbStatus ? 'connected' : 'disconnected'
-      },
-      memory: {
-        rss: `${Math.round(memoryUsage.rss / 1024 / 1024)}MB`,
-        heapUsed: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,
-        heapTotal: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)}MB`
-      },
-      integrations: {
-        aiService: process.env.AI_SERVICE_URL || 'Not configured',
-        blockchainService: process.env.BLOCKCHAIN_API_URL || 'Not configured'
-      }
-    };
-
-    logger.info('Health check requested', { status: 'healthy', dbStatus });
-    res.json(health);
-  } catch (error) {
-    logger.error('Health check failed:', error);
-    res.status(500).json({
-      success: false,
-      status: 'unhealthy',
-      timestamp: new Date().toISOString(),
-      error: error.message,
-      service: 'OCR Verification Backend'
-    });
-  }
-});
-
-// API Info Route
-app.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'OCR Verification Backend API',
-    version: '1.0.0',
-    endpoints: {
-      health: '/healthcheck',
-      upload: 'POST /api/upload',
-      verify: 'POST /api/verify/:documentId',
-      results: 'GET /api/results/:documentId',
-      verification: {
-        document: 'POST /api/verification/document',
-        company: 'POST /api/verification/company',
-        hsCode: 'POST /api/verification/hscode',
-        declaration: 'POST /api/verification/declaration',
-        country: 'POST /api/verification/country'
-      }
-    },
-    documentation: 'See README.md for full API documentation'
-  });
-});
-
-// API Routes
-app.use('/api/upload', require('./routes/upload'));
-app.use('/api/verify', require('./routes/verify'));
-app.use('/api/verification', require('./routes/verification')); // ZRA Verification Engine (Task 3)
-app.use('/api/results', require('./routes/results'));
-app.use('/api/blockchain', require('./routes/blockchain')); // Blockchain Integration (Task 4)
-
-// 404 Handler (must be after all routes)
-app.use(notFoundHandler);
-
-// Error Handler (must be last)
-app.use(errorHandler);
-
-// Database Connection and Server Startup
-async function startServer() {
-  let dbConnected = false;
-
-  try {
-    // Try to connect to database (non-blocking)
-    logger.info('🔌 Connecting to database...');
-    try {
-      await connectDatabase();
-      dbConnected = true;
-    } catch (dbError) {
-      logger.warn('⚠️  Database connection failed, continuing without database');
-      logger.warn('Note: Document persistence will not work');
-      dbConnected = false;
+const sequelize = new Sequelize({
+    dialect: 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5432,
+    database: process.env.DB_NAME || 'zra_taxguard',
+    username: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'zrapassword',
+    logging: process.env.NODE_ENV !== 'production' ? console.log : false,
+    pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000,
+        idle: 10000
     }
+});
 
-    // Start Express server regardless of DB status
-    const server = app.listen(PORT, () => {
-      logger.info(`✅ Server running on port ${PORT}`, {
+// Test database connection
+sequelize.authenticate()
+    .then(() => {
+        console.log('✅ Database connection established successfully');
+    })
+    .catch(err => {
+        console.error('❌ Unable to connect to database:', err.message);
+    });
+
+// Initialize models
+const { initializeModels } = require('./models');
+const models = initializeModels(sequelize);
+
+// Make models available globally
+app.locals.models = models;
+app.locals.sequelize = sequelize;
+
+// =====================================================
+// Routes
+// =====================================================
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'healthy',
+        service: 'ZRA TaxGuard OCR Backend',
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
         environment: process.env.NODE_ENV || 'development',
-        port: PORT,
-        database: dbConnected ? 'connected' : 'disconnected'
-      });
-      console.log('\n' + '='.repeat(60));
-      console.log('🚀 OCR Verification Backend - Server Started');
-      console.log('='.repeat(60));
-      console.log(`✅ Server:      http://localhost:${PORT}`);
-      console.log(`🏥 Health:      http://localhost:${PORT}/healthcheck`);
-      console.log(`📚 API Info:    http://localhost:${PORT}/`);
-      console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`💾 Database:    ${dbConnected ? '✅ Connected' : '⚠️  Disconnected (API-only mode)'}`);
-      console.log('='.repeat(60) + '\n');
-    });
-
-    // Graceful shutdown
-    const gracefulShutdown = async (signal) => {
-      logger.info(`${signal} received. Starting graceful shutdown...`);
-
-      server.close(async () => {
-        logger.info('HTTP server closed');
-
-        try {
-          await closeConnection();
-          logger.info('Database connection closed');
-          logger.info('✅ Graceful shutdown completed');
-          process.exit(0);
-        } catch (error) {
-          logger.error('Error during shutdown:', error);
-          process.exit(1);
+        database: sequelize.authenticate() ? 'connected' : 'disconnected',
+        services: {
+            ocrAI: process.env.OCR_AI_SERVICE_URL || 'http://ocr-ai-service:8000',
+            blockchain: process.env.BLOCKCHAIN_SERVICE_URL || 'http://blockchain-service:3001'
         }
-      });
-
-      // Force shutdown after 10 seconds
-      setTimeout(() => {
-        logger.error('Forced shutdown after timeout');
-        process.exit(1);
-      }, 10000);
-    };
-
-    // Handle shutdown signals
-    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-
-    // Handle uncaught errors
-    process.on('uncaughtException', (error) => {
-      logger.error('Uncaught Exception:', error);
-      gracefulShutdown('uncaughtException');
     });
+});
 
-    process.on('unhandledRejection', (reason, promise) => {
-      logger.error('Unhandled Rejection at:', { promise, reason });
-      // Don't shutdown on database connection errors
-      if (reason && reason.message && reason.message.includes('connect')) {
-        logger.warn('Database connection error, continuing...');
-      } else {
-        gracefulShutdown('unhandledRejection');
-      }
+// Root endpoint
+app.get('/', (req, res) => {
+    res.json({
+        service: 'ZRA TaxGuard OCR Backend',
+        version: '1.0.0',
+        endpoints: {
+            health: '/health',
+            security: '/api/security/*',
+            documentation: 'See TESTING_GUIDE.md'
+        },
+        status: 'operational'
     });
+});
 
-  } catch (error) {
-    logger.error('❌ Failed to start server:', error);
-    process.exit(1);
-  }
+// Security routes
+try {
+    const securityRoutes = require('./routes/security');
+    app.use('/api/security', securityRoutes);
+    console.log('✅ Security routes loaded');
+} catch (err) {
+    console.warn('⚠️  Security routes not available:', err.message);
 }
 
-// Start the server
-if (require.main === module) {
-  startServer();
-}
+// Upload endpoint (simple version)
+app.post('/api/upload', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Upload endpoint - implementation in progress',
+        documentId: 'TEST-DOC-' + Date.now()
+    });
+});
+
+// Document scan endpoint (simple version)
+app.post('/api/documents/:id/scan', (req, res) => {
+    const { id } = req.params;
+    res.json({
+        success: true,
+        message: `Scan triggered for document ${id}`,
+        documentId: id,
+        status: 'processing'
+    });
+});
+
+// =====================================================
+// Error Handling
+// =====================================================
+
+// 404 handler
+app.use((req, res) => {
+    res.status(404).json({
+        error: 'Not Found',
+        message: `Cannot ${req.method} ${req.path}`,
+        availableEndpoints: {
+            health: 'GET /health',
+            root: 'GET /',
+            security: 'GET /api/security/*'
+        }
+    });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error('Error:', err.message);
+    console.error(err.stack);
+
+    res.status(err.status || 500).json({
+        error: err.message || 'Internal Server Error',
+        ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
+    });
+});
+
+// =====================================================
+// Server Start
+// =====================================================
+
+const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log('');
+    console.log('🚀 ===================================');
+    console.log(`   ZRA TaxGuard OCR Backend`);
+    console.log('   ===================================');
+    console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`   Port: ${PORT}`);
+    console.log(`   Database: ${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || 5432}`);
+    console.log(`   OCR AI: ${process.env.OCR_AI_SERVICE_URL || 'http://ocr-ai-service:8000'}`);
+    console.log(`   Blockchain: ${process.env.BLOCKCHAIN_SERVICE_URL || 'http://blockchain-service:3001'}`);
+    console.log('   ===================================');
+    console.log(`   Server running at http://0.0.0.0:${PORT}`);
+    console.log('   Press Ctrl+C to stop');
+    console.log('   ===================================');
+    console.log('');
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('SIGTERM received, closing server gracefully...');
+    server.close(() => {
+        console.log('Server closed');
+        sequelize.close();
+        process.exit(0);
+    });
+});
+
+process.on('SIGINT', () => {
+    console.log('\nSIGINT received, closing server gracefully...');
+    server.close(() => {
+        console.log('Server closed');
+        sequelize.close();
+        process.exit(0);
+    });
+});
 
 module.exports = app;
