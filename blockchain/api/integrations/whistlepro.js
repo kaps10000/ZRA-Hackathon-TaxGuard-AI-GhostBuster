@@ -26,6 +26,7 @@ router.post('/report', async (req, res) => {
             severity,           // 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
             description,        // Report summary (encrypted client-side)
             evidenceHash,       // SHA256 hash of evidence bundle
+            evidence,           // NEW: Object containing arrays of file URLs from /api/uploads
             estimatedAmount,    // Estimated tax loss (optional)
             location,           // Province/district (optional, anonymized)
             whistleblowerKey,   // Public key for follow-up (optional)
@@ -93,6 +94,7 @@ router.post('/report', async (req, res) => {
             severity: severity || 'MEDIUM',
             description: description || '[encrypted]',
             evidenceHash,
+            evidence: evidence || { photos: [], documents: [], videos: [] }, // NEW: Store file URLs
             payloadHash,
             estimatedAmount: estimatedAmount || null,
             location: location || 'undisclosed',

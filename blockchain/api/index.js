@@ -52,6 +52,7 @@ const realtimeDashboard = require('./realtime-dashboard');
 // Add team integration routes
 const ghostbusterIntegration = require('./integrations/ghostbuster');
 const whistleproIntegration = require('./integrations/whistlepro');
+const uploadsIntegration = require('./integrations/uploads');
 const aiRiskIntegration = require('./integrations/ai-risk');
 const predictiveIntegration = require('./integrations/predictive-analytics');
 const dashboardFeed = require('./integrations/dashboard-feed');
@@ -68,9 +69,13 @@ app.use('/api/dashboard', realtimeDashboard);
 // Team integration endpoints
 app.use('/api/ghostbuster', ghostbusterIntegration);
 app.use('/api/whistlepro', whistleproIntegration);
+app.use('/api/uploads', uploadsIntegration);
 app.use('/api/ai-risk', aiRiskIntegration);
 app.use('/api/predictive', predictiveIntegration);
 app.use('/api/dashboard-feed', dashboardFeed);
+
+// Serve uploaded files as static content
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 /**
  * @swagger
@@ -297,6 +302,8 @@ app.get('/', (req, res) => {
             'GET /api/dashboard/overview': 'Real-time monitoring dashboard',
             'POST /api/ghostbuster/detection': 'GhostBuster phantom detection',
             'POST /api/whistlepro/report': 'WhistlePro whistleblower report',
+            'POST /api/uploads': 'Upload files (photos, documents, videos) for reports',
+            'GET /api/uploads/:filename': 'Retrieve uploaded file',
             'POST /api/ai-risk/assessment': 'AI Risk Score assessment',
             'POST /api/predictive/forecast': 'Predictive Analytics forecast',
             'GET /api/dashboard-feed/live': 'Dashboard live event feed',
