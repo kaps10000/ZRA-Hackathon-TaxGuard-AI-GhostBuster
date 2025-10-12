@@ -1,0 +1,339 @@
+{
+  "info": {
+    "name": "ZRA TaxGuard - Complete API Collection",
+    "description": "Complete API collection for ZRA TaxGuard OCR AI Service\n\nAll endpoints require POST method with multipart/form-data for file uploads.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health & Info",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["health"]
+            },
+            "description": "Check service health and component status"
+          }
+        },
+        {
+          "name": "Root - API Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": [""]
+            },
+            "description": "Get API information and available endpoints"
+          }
+        },
+        {
+          "name": "API Documentation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/docs",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["docs"]
+            },
+            "description": "Open interactive Swagger UI documentation"
+          }
+        }
+      ]
+    },
+    {
+      "name": "OCR Processing",
+      "item": [
+        {
+          "name": "Process OCR - Basic",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/ocr-backend/test-invoice.png",
+                  "description": "Upload image or PDF file"
+                },
+                {
+                  "key": "preprocess",
+                  "value": "true",
+                  "type": "text",
+                  "description": "Apply image preprocessing"
+                },
+                {
+                  "key": "language",
+                  "value": "eng",
+                  "type": "text",
+                  "description": "OCR language code"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/ocr/process",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "ocr", "process"]
+            },
+            "description": "Extract text from document using OCR only.\n\nSupported formats: PNG, JPG, JPEG, PDF, TIFF\n\nReturns:\n- Extracted text\n- OCR confidence score\n- Word count\n- Processing time\n- Text regions"
+          }
+        },
+        {
+          "name": "Process OCR - No Preprocessing",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/ocr-backend/test-invoice.png"
+                },
+                {
+                  "key": "preprocess",
+                  "value": "false",
+                  "type": "text"
+                },
+                {
+                  "key": "language",
+                  "value": "eng",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/ocr/process",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "ocr", "process"]
+            },
+            "description": "Process OCR without image preprocessing"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Data Extraction",
+      "item": [
+        {
+          "name": "Extract Data - Auto Detect",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/ocr-backend/test-invoice.png",
+                  "description": "Upload invoice, customs, or receipt document"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/extract",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "extract"]
+            },
+            "description": "Extract structured fields from document (auto-detect type).\n\nPerforms:\n1. OCR text extraction\n2. Document type classification\n3. Field extraction (dates, amounts, IDs, etc.)\n\nReturns:\n- Document type\n- Extracted fields\n- Confidence scores\n- Validation errors\n- Raw OCR text"
+          }
+        },
+        {
+          "name": "Extract Data - Invoice",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/ocr-backend/test-invoice.png"
+                },
+                {
+                  "key": "document_type",
+                  "value": "invoice",
+                  "type": "text",
+                  "description": "Hint: invoice, customs, receipt"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/extract",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "extract"]
+            },
+            "description": "Extract data with document type hint"
+          }
+        },
+        {
+          "name": "Extract Data - Customs",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/ocr-backend/test-invoice.png"
+                },
+                {
+                  "key": "document_type",
+                  "value": "customs",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/extract",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "extract"]
+            },
+            "description": "Extract customs declaration data"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Document Verification",
+      "item": [
+        {
+          "name": "Verify Document - Full Workflow",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/ocr-backend/test-invoice.png",
+                  "description": "Upload document for complete verification"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/verify",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "verify"]
+            },
+            "description": "Complete verification workflow:\n1. OCR text extraction\n2. Field extraction\n3. Document verification\n4. Risk assessment\n5. Anomaly detection\n\nReturns:\n- Verification status (approved/flagged/rejected)\n- Risk score (0-100)\n- Risk level (low/medium/high)\n- Detected anomalies\n- Recommendations\n- Extracted fields\n- OCR confidence"
+          }
+        },
+        {
+          "name": "Verify Document - With Type Hint",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/ocr-backend/test-invoice.png"
+                },
+                {
+                  "key": "document_type",
+                  "value": "invoice",
+                  "type": "text",
+                  "description": "invoice, customs, or receipt"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/verify",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "verify"]
+            },
+            "description": "Verify with document type hint for better accuracy"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Batch Processing",
+      "item": [
+        {
+          "name": "Batch Verify - Multiple Documents",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": "/home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/ocr-backend/test-invoice.png",
+                  "description": "Upload multiple files"
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": "/home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/ocr-backend/test-invoice.jpg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/verify/batch",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "verify", "batch"]
+            },
+            "description": "Process multiple documents in a single request.\n\nReturns array of:\n- Filename\n- Success status\n- Risk score\n- Risk level\n- Extracted fields\n- Errors (if any)\n\nNote: In Postman, add multiple 'files' keys with different files"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "testFile",
+      "value": "/home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/ocr-backend/test-invoice.png",
+      "type": "string"
+    }
+  ]
+}

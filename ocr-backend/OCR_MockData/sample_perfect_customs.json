@@ -1,0 +1,41 @@
+{
+  "document_type": "customs_declaration",
+  "invoice_number": "CUSTOMS-2025-816995",
+  "document_date": "2025-08-20",
+  "total_amount": 4328662.91,
+  "currency": "EUR",
+  "importer_name": "Unity Commerce Limited",
+  "hs_codes": [
+    "8471300000",
+    "8703230000",
+    "2710194900"
+  ],
+  "tpin": "5721336479",
+  "country_of_origin": "Germany",
+  "port_of_entry": "Chirundu Border Post",
+  "phone": "+260 955 725060",
+  "items": [
+    {
+      "description": "Women's Dresses",
+      "hs_code": "6204430000",
+      "quantity": 6898,
+      "unit_value": 407.05,
+      "value": 2807830.9
+    },
+    {
+      "description": "Men's Trousers",
+      "hs_code": "6203420000",
+      "quantity": 2317,
+      "unit_value": 356.74,
+      "value": 826566.58
+    },
+    {
+      "description": "Passenger Cars",
+      "hs_code": "8703230000",
+      "quantity": 1487,
+      "unit_value": 466.89,
+      "value": 694265.43
+    }
+  ],
+  "duty_amount": 649299.44
+}
