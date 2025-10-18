@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const eventRoutes = require('./routes/events');
+const dashboardRoutes = require('./routes/dashboard');
 const logger = require('./utils/logger');
 const { errorHandler } = require('./middleware/errorHandler');
 const {
@@ -79,6 +80,7 @@ app.get('/metrics/json', async (req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 app.use('/api', eventRoutes);
 
 // Simple API Links Page
@@ -1073,3 +1075,6 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
+
+// Due to the way this was built, I'll create a separate start script
+// But the WebSocket support is added via websocket.js module
