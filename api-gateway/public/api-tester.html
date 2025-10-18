@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaxGuard API Tester</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px; margin-bottom: 30px; text-align: center; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .header p { font-size: 1.2em; opacity: 0.9; }
+        
+        .section { background: white; border-radius: 10px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .section h2 { color: #333; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #eee; }
+        
+        .api-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        .api-card { border: 1px solid #ddd; border-radius: 8px; padding: 15px; transition: all 0.3s; cursor: pointer; }
+        .api-card:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .api-card.working { border-left: 4px solid #28a745; }
+        .api-card.waiting { border-left: 4px solid #ffc107; background: #fff9e6; }
+        
+        .method { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 10px; }
+        .method.GET { background: #28a745; color: white; }
+        .method.POST { background: #007bff; color: white; }
+        .method.PUT { background: #ffc107; color: black; }
+        
+        .endpoint { font-family: monospace; font-size: 0.9em; color: #666; margin: 5px 0; }
+        .description { font-size: 0.9em; color: #777; margin-top: 8px; }
+        
+        .test-panel { display: none; background: #f8f9fa; border-radius: 8px; padding: 20px; margin-top: 15px; }
+        .test-panel.active { display: block; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .form-group textarea { height: 100px; font-family: monospace; }
+        
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn:hover { opacity: 0.9; }
+        
+        .response { margin-top: 15px; padding: 15px; background: #f1f1f1; border-radius: 4px; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+        .response.success { background: #d4edda; border: 1px solid #c3e6cb; }
+        .response.error { background: #f8d7da; border: 1px solid #f5c6cb; }
+        
+        .status { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 0.8em; }
+        .status.working { background: #28a745; color: white; }
+        .status.waiting { background: #ffc107; color: black; }
+        
+        .auth-section { background: #e3f2fd; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .token-display { font-family: monospace; font-size: 0.8em; background: white; padding: 10px; border-radius: 4px; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 TaxGuard API Tester</h1>
+            <p>Test all blockchain APIs from one dashboard</p>
+        </div>
+
+        <div class="auth-section">
+            <h3>🔐 Authentication</h3>
+            <div style="display: flex; gap: 10px; margin: 10px 0;">
+                <input type="text" id="username" placeholder="Username" value="admin1">
+                <input type="password" id="password" placeholder="Password" value="password123">
+                <button class="btn btn-primary" onclick="login()">Login</button>
+            </div>
+            <div id="token-display" class="token-display" style="display: none;"></div>
+        </div>
+
+        <div class="section">
+            <h2>✅ Working APIs</h2>
+            <div class="api-grid">
+                <div class="api-card working" onclick="toggleTest('health')">
+                    <span class="method GET">GET</span>
+                    <div class="endpoint">/health</div>
+                    <div class="description">Health check endpoint</div>
+                    <span class="status working">WORKING</span>
+                </div>
+
+                <div class="api-card working" onclick="toggleTest('login')">
+                    <span class="method POST">POST</span>
+                    <div class="endpoint">/api/auth/login</div>
+                    <div class="description">User authentication</div>
+                    <span class="status working">WORKING</span>
+                </div>
+
+                <div class="api-card working" onclick="toggleTest('profile')">
+                    <span class="method GET">GET</span>
+                    <div class="endpoint">/api/auth/profile</div>
+                    <div class="description">Get user profile (requires token)</div>
+                    <span class="status working">WORKING</span>
+                </div>
+
+                <div class="api-card working" onclick="toggleTest('events-create')">
+                    <span class="method POST">POST</span>
+                    <div class="endpoint">/api/events</div>
+                    <div class="description">Create blockchain event</div>
+                    <span class="status working">WORKING</span>
+                </div>
+
+                <div class="api-card working" onclick="toggleTest('events-list')">
+                    <span class="method GET">GET</span>
+                    <div class="endpoint">/api/events</div>
+                    <div class="description">List all events</div>
+                    <span class="status working">WORKING</span>
+                </div>
+
+                <div class="api-card working" onclick="toggleTest('api-docs')">
+                    <span class="method GET">GET</span>
+                    <div class="endpoint">/api-docs</div>
+                    <div class="description">API documentation</div>
+                    <span class="status working">WORKING</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⏳ Waiting for Team Integration</h2>
+            <div class="api-grid">
+                <div class="api-card waiting">
+                    <span class="method POST">POST</span>
+                    <div class="endpoint">/api/ghostbuster/detection</div>
+                    <div class="description">GhostBuster phantom detection (Ezra)</div>
+                    <span class="status waiting">WAITING</span>
+                </div>
+
+                <div class="api-card waiting">
+                    <span class="method POST">POST</span>
+                    <div class="endpoint">/api/whistlepro/report</div>
+                    <div class="description">WhistlePro anonymous reports (Kelvin/Ephraim)</div>
+                    <span class="status waiting">WAITING</span>
+                </div>
+
+                <div class="api-card waiting">
+                    <span class="method POST">POST</span>
+                    <div class="endpoint">/api/ai-risk/assessment</div>
+                    <div class="description">AI Risk scoring (Shuan)</div>
+                    <span class="status waiting">WAITING</span>
+                </div>
+
+                <div class="api-card waiting">
+                    <span class="method POST">POST</span>
+                    <div class="endpoint">/api/predictive/forecast</div>
+                    <div class="description">Predictive analytics (Emmanuel)</div>
+                    <span class="status waiting">WAITING</span>
+                </div>
+
+                <div class="api-card waiting">
+                    <span class="method GET">GET</span>
+                    <div class="endpoint">/api/dashboard-feed/live</div>
+                    <div class="description">Dashboard feed (Thomas)</div>
+                    <span class="status waiting">WAITING</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Panels -->
+        <div id="test-health" class="test-panel">
+            <h3>Test Health Check</h3>
+            <button class="btn btn-success" onclick="testAPI('GET', '/health')">Test Health</button>
+            <div id="response-health" class="response"></div>
+        </div>
+
+        <div id="test-login" class="test-panel">
+            <h3>Test Login</h3>
+            <div class="form-group">
+                <label>Request Body:</label>
+                <textarea id="login-body">{"username":"admin1","password":"password123"}</textarea>
+            </div>
+            <button class="btn btn-success" onclick="testLogin()">Test Login</button>
+            <div id="response-login" class="response"></div>
+        </div>
+
+        <div id="test-profile" class="test-panel">
+            <h3>Test Profile</h3>
+            <p>Requires authentication token</p>
+            <button class="btn btn-success" onclick="testAPI('GET', '/api/auth/profile', null, true)">Test Profile</button>
+            <div id="response-profile" class="response"></div>
+        </div>
+
+        <div id="test-events-create" class="test-panel">
+            <h3>Test Create Event</h3>
+            <div class="form-group">
+                <label>Request Body:</label>
+                <textarea id="event-body">{"eventType":"filing","anonymizedUserId":"TPN-12345-ANON","hashOfPayload":"a3f7e92b1c4d8e6f5a9b2c1d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f","notes":"Test event"}</textarea>
+            </div>
+            <button class="btn btn-success" onclick="testCreateEvent()">Test Create Event</button>
+            <div id="response-events-create" class="response"></div>
+        </div>
+
+        <div id="test-events-list" class="test-panel">
+            <h3>Test List Events</h3>
+            <button class="btn btn-success" onclick="testAPI('GET', '/api/events', null, true)">Test List Events</button>
+            <div id="response-events-list" class="response"></div>
+        </div>
+
+        <div id="test-api-docs" class="test-panel">
+            <h3>Test API Docs</h3>
+            <button class="btn btn-success" onclick="testAPI('GET', '/api-docs')">Test API Docs</button>
+            <div id="response-api-docs" class="response"></div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = '';
+
+        function toggleTest(testId) {
+            // Hide all test panels
+            document.querySelectorAll('.test-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // Show selected test panel
+            const panel = document.getElementById('test-' + testId);
+            if (panel) {
+                panel.classList.add('active');
+                panel.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    authToken = data.token;
+                    document.getElementById('token-display').style.display = 'block';
+                    document.getElementById('token-display').textContent = 'Token: ' + authToken;
+                    alert('✅ Login successful!');
+                } else {
+                    alert('❌ Login failed: ' + data.message);
+                }
+            } catch (error) {
+                alert('❌ Login error: ' + error.message);
+            }
+        }
+
+        async function testAPI(method, endpoint, body = null, requiresAuth = false) {
+            const responseId = 'response-' + endpoint.replace(/[^a-zA-Z0-9]/g, '-').replace(/--+/g, '-').replace(/^-|-$/g, '');
+            const responseEl = document.getElementById(responseId) || document.querySelector('.response');
+            
+            try {
+                const headers = { 'Content-Type': 'application/json' };
+                if (requiresAuth && authToken) {
+                    headers['Authorization'] = 'Bearer ' + authToken;
+                }
+                
+                const options = { method, headers };
+                if (body) options.body = body;
+                
+                const response = await fetch(endpoint, options);
+                const data = await response.json();
+                
+                responseEl.className = 'response ' + (response.ok ? 'success' : 'error');
+                responseEl.textContent = JSON.stringify(data, null, 2);
+                
+            } catch (error) {
+                responseEl.className = 'response error';
+                responseEl.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function testLogin() {
+            const body = document.getElementById('login-body').value;
+            await testAPI('POST', '/api/auth/login', body);
+        }
+
+        async function testCreateEvent() {
+            const body = document.getElementById('event-body').value;
+            await testAPI('POST', '/api/events', body, true);
+        }
+
+        // Auto-login on page load
+        window.onload = function() {
+            login();
+        };
+    </script>
+</body>
+</html>

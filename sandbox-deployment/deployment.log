@@ -1,0 +1,53 @@
+[32minfo[39m: 🚀 Starting TaxGuard Sandbox Deployment {"timestamp":"2025-10-02T16:41:11.666Z"}
+[32minfo[39m: ======================================= {"timestamp":"2025-10-02T16:41:11.670Z"}
+[32minfo[39m: 
+📋 Executing: validateEnvironment {"timestamp":"2025-10-02T16:41:11.670Z"}
+[32minfo[39m: Validating sandbox environment... {"timestamp":"2025-10-02T16:41:11.670Z"}
+[32minfo[39m: Environment validation passed {"timestamp":"2025-10-02T16:41:11.674Z"}
+[32minfo[39m: ✅ Completed: validateEnvironment {"timestamp":"2025-10-02T16:41:11.674Z"}
+[32minfo[39m: 
+📋 Executing: prepareDeployment {"timestamp":"2025-10-02T16:41:11.675Z"}
+[32minfo[39m: Preparing deployment artifacts... {"timestamp":"2025-10-02T16:41:11.675Z"}
+[32minfo[39m: Deployment artifacts prepared {"timestamp":"2025-10-02T16:41:14.086Z"}
+[32minfo[39m: ✅ Completed: prepareDeployment {"timestamp":"2025-10-02T16:41:14.086Z"}
+[32minfo[39m: 
+📋 Executing: deploySmartContracts {"timestamp":"2025-10-02T16:41:14.087Z"}
+[32minfo[39m: Deploying smart contracts to sandbox network... {"timestamp":"2025-10-02T16:41:14.087Z"}
+[32minfo[39m: Smart contracts deployed successfully {"timestamp":"2025-10-02T16:41:14.087Z"}
+[32minfo[39m: TaxGuardContract: 0x6ab3ce88c5e7f {"timestamp":"2025-10-02T16:41:14.088Z"}
+[32minfo[39m: AdvancedTaxGuardContract: 0x103499dd791c1 {"timestamp":"2025-10-02T16:41:14.088Z"}
+[32minfo[39m: ✅ Completed: deploySmartContracts {"timestamp":"2025-10-02T16:41:14.088Z"}
+[32minfo[39m: 
+📋 Executing: deployAPIGateway {"timestamp":"2025-10-02T16:41:14.088Z"}
+[32minfo[39m: Deploying API Gateway to sandbox environment... {"timestamp":"2025-10-02T16:41:14.088Z"}
+[32minfo[39m: API Gateway deployed at: http://sandbox-api.zra.gov.zm:4000 {"timestamp":"2025-10-02T16:41:14.089Z"}
+[32minfo[39m: ✅ Completed: deployAPIGateway {"timestamp":"2025-10-02T16:41:14.089Z"}
+[32minfo[39m: 
+📋 Executing: configureNetworkProfiles {"timestamp":"2025-10-02T16:41:14.089Z"}
+[32minfo[39m: Configuring sandbox network connection profiles... {"timestamp":"2025-10-02T16:41:14.089Z"}
+[32minfo[39m: Network connection profiles configured {"timestamp":"2025-10-02T16:41:14.090Z"}
+[32minfo[39m: ✅ Completed: configureNetworkProfiles {"timestamp":"2025-10-02T16:41:14.090Z"}
+[32minfo[39m: 
+📋 Executing: setupOffChainStorage {"timestamp":"2025-10-02T16:41:14.090Z"}
+[32minfo[39m: Setting up off-chain storage configuration... {"timestamp":"2025-10-02T16:41:14.090Z"}
+[32minfo[39m: Off-chain storage configured with hash-only on-chain mode {"timestamp":"2025-10-02T16:41:14.091Z"}
+[32minfo[39m: ✅ Completed: setupOffChainStorage {"timestamp":"2025-10-02T16:41:14.092Z"}
+[32minfo[39m: 
+📋 Executing: runEndToEndTests {"timestamp":"2025-10-02T16:41:14.092Z"}
+[32minfo[39m: Running end-to-end tests... {"timestamp":"2025-10-02T16:41:14.092Z"}
+[32minfo[39m: End-to-end tests completed: 6/6 passed {"timestamp":"2025-10-02T16:41:14.092Z"}
+[32minfo[39m: ✅ Completed: runEndToEndTests {"timestamp":"2025-10-02T16:41:14.092Z"}
+[32minfo[39m: 
+📋 Executing: generateDocumentation {"timestamp":"2025-10-02T16:41:14.092Z"}
+[32minfo[39m: Generating deployment documentation... {"timestamp":"2025-10-02T16:41:14.093Z"}
+[32minfo[39m: Deployment documentation generated {"timestamp":"2025-10-02T16:41:14.093Z"}
+[32minfo[39m: ✅ Completed: generateDocumentation {"timestamp":"2025-10-02T16:41:14.093Z"}
+[32minfo[39m: 
+🎉 SANDBOX DEPLOYMENT COMPLETED SUCCESSFULLY! {"timestamp":"2025-10-02T16:41:14.093Z"}
+[32minfo[39m: 
+🎯 DEPLOYMENT SUMMARY {"timestamp":"2025-10-02T16:41:14.094Z"}
+[32minfo[39m: ==================== {"timestamp":"2025-10-02T16:41:14.094Z"}
+[32minfo[39m: Status: SUCCESS {"timestamp":"2025-10-02T16:41:14.094Z"}
+[32minfo[39m: Environment: sandbox {"timestamp":"2025-10-02T16:41:14.094Z"}
+[32minfo[39m: API Gateway: http://sandbox-api.zra.gov.zm:4000 {"timestamp":"2025-10-02T16:41:14.094Z"}
+[32minfo[39m: Health Check: http://sandbox-api.zra.gov.zm:4000/health {"timestamp":"2025-10-02T16:41:14.094Z"}

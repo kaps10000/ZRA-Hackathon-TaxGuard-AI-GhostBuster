@@ -1,0 +1,15 @@
+{
+  "network": "http://sandbox.zra.gov.zm:8545",
+  "contracts": {
+    "TaxGuardContract": {
+      "address": "0x6ab3ce88c5e7f",
+      "deployedAt": "2025-10-02T16:41:14.087Z",
+      "gasUsed": 2500000
+    },
+    "AdvancedTaxGuardContract": {
+      "address": "0x103499dd791c1",
+      "deployedAt": "2025-10-02T16:41:14.087Z",
+      "gasUsed": 4500000
+    }
+  }
+}
