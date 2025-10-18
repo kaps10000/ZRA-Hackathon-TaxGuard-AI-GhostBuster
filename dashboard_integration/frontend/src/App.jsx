@@ -1,58 +1,9 @@
 import React from 'react';
 import './index.css';
-import Home from './pages/Home';
-import { useState, useEffect } from 'react';
-import SettingsPanel from './components/SettingsPanel';
+import Dashboard from './pages/Dashboard';
 
 function App() {
-  const [demoMode, setDemoMode] = useState(true);
-  const [showSettings, setShowSettings] = useState(false);
-  const [apiBaseUrl, setApiBaseUrl] = useState(() => {
-    try {
-      return localStorage.getItem('taxguard:apiBaseUrl') || 'http://localhost:4000';
-    } catch (e) { return 'http://localhost:4000'; }
-  });
-
-  useEffect(() => {
-    const stored = localStorage.getItem('taxguard:demoMode');
-    if (stored != null) setDemoMode(stored === 'true');
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('taxguard:demoMode', demoMode ? 'true' : 'false');
-  }, [demoMode]);
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto py-4 px-6 flex items-center justify-between">
-          <h1 className="text-xl font-bold">TaxGuard Investigator Dashboard</h1>
-          <div className="flex items-center space-x-4">
-            <div className="px-3 py-1 rounded border text-sm">
-              Mode: <span className="font-semibold">{demoMode ? 'Mock' : 'Live'}</span>
-            </div>
-            <div className="px-3 py-1 rounded border text-sm">
-              Connected: <span className="font-semibold">{demoMode ? 'Mock' : `Live (${apiBaseUrl})`}</span>
-            </div>
-            <button
-              className="px-3 py-1 border rounded text-sm bg-gray-50"
-              onClick={() => setShowSettings(s => !s)}
-            >
-              Settings
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto p-6">
-        <Home demoMode={demoMode} apiBaseUrl={apiBaseUrl} />
-        {showSettings && (
-          <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999 }}>
-            <SettingsPanel demoMode={demoMode} setDemoMode={setDemoMode} apiBaseUrl={apiBaseUrl} setApiBaseUrl={(url)=>{setApiBaseUrl(url); try{localStorage.setItem('taxguard:apiBaseUrl', url)}catch(e){}}} onClose={() => setShowSettings(false)} />
-          </div>
-        )}
-      </main>
-    </div>
-  );
+  return <Dashboard />;
 }
 
 export default App;
