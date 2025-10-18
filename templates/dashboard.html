@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>AgriSmart Dashboard</title>
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5568d3;
+            --secondary: #764ba2;
+            --accent: #f093fb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --border: #e2e8f0;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --shadow-lg: rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* App Container */
+        .app-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0;
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 20px var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .top-bar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+        }
+        
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+        
+        .brand-text h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark);
+            line-height: 1;
+        }
+        
+        .brand-text p {
+            font-size: 0.75rem;
+            color: var(--gray);
+            margin-top: 0.25rem;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+        
+        .status-indicator.connected {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+        
+        .status-indicator.disconnected {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .status-indicator.connected .status-dot {
+            background: var(--success);
+        }
+        
+        .status-indicator.disconnected .status-dot {
+            background: var(--danger);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.9); }
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: 1.5rem;
+        }
+        
+        /* Grid System */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px var(--shadow);
+            transition: var(--transition);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px var(--shadow-lg);
+        }
+        
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Sensor Cards */
+        .sensor-card {
+            grid-column: span 4;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sensor-value-wrapper {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        
+        .sensor-value {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+        
+        .sensor-unit {
+            font-size: 1.5rem;
+            color: var(--gray);
+            font-weight: 500;
+        }
+        
+        .sensor-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .sensor-badge.dry {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+        
+        .sensor-badge.moderate {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+        
+        .sensor-badge.wet {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+        
+        .sensor-bg-icon {
+            position: absolute;
+            bottom: -20px;
+            right: -20px;
+            font-size: 8rem;
+            opacity: 0.05;
+            pointer-events: none;
+        }
+        
+        /* Weather Card */
+        .weather-card {
+            grid-column: span 8;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+        }
+        
+        .weather-card .card-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .weather-card .card-title,
+        .weather-card .card-icon {
+            color: white;
+        }
+        
+        .weather-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .weather-temp {
+            font-size: 4rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .weather-desc {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-top: 0.5rem;
+            text-transform: capitalize;
+        }
+        
+        .weather-icon-large {
+            font-size: 5rem;
+            opacity: 0.3;
+        }
+        
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .weather-detail {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .weather-detail-label {
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+        
+        .weather-detail-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .rain-alert {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 600;
+            margin-top: 1rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        /* Stats Card */
+        .stats-card {
+            grid-column: span 4;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .stat-item {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 1.5rem;
+            border-radius: 16px;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            opacity: 0.3;
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        
+        /* Log Card */
+        .log-card {
+            grid-column: span 4;
+        }
+        
+        .log-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--light);
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            transition: var(--transition);
+        }
+        
+        .log-item:hover {
+            background: var(--border);
+        }
+        
+        .log-label {
+            font-size: 0.875rem;
+            color: var(--gray);
+            font-weight: 500;
+        }
+        
+        .log-value {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        
+        /* Decision Card */
+        .decision-card {
+            grid-column: span 8;
+        }
+        
+        .decision-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .decision-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .decision-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .decision-bg-pattern {
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            font-size: 12rem;
+            opacity: 0.1;
+        }
+        
+        /* Controls */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .btn {
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-100%);
+            transition: var(--transition);
+        }
+        
+        .btn:hover::before {
+            transform: translateX(0);
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .btn-download {
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        /* Alerts Card */
+        .alerts-card {
+            grid-column: span 12;
+        }
+        
+        .alerts-container {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+        
+        .alerts-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .alerts-container::-webkit-scrollbar-track {
+            background: var(--light);
+            border-radius: 10px;
+        }
+        
+        .alerts-container::-webkit-scrollbar-thumb {
+            background: var(--gray);
+            border-radius: 10px;
+        }
+        
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            animation: slideIn 0.5s ease;
+            border-left: 4px solid;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .alert-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .alert-content {
+            flex: 1;
+        }
+        
+        .alert-message {
+            font-size: 0.9375rem;
+            font-weight: 500;
+        }
+        
+        .alert-time {
+            font-size: 0.8125rem;
+            opacity: 0.7;
+            margin-top: 0.25rem;
+        }
+        
+        .alert.success {
+            background: rgba(16, 185, 129, 0.1);
+            border-left-color: var(--success);
+        }
+        
+        .alert.success .alert-icon {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+        
+        .alert.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-left-color: var(--warning);
+        }
+        
+        .alert.warning .alert-icon {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+        
+        .alert.info {
+            background: rgba(59, 130, 246, 0.1);
+            border-left-color: var(--info);
+        }
+        
+        .alert.info .alert-icon {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info);
+        }
+        
+        .alert.error {
+            background: rgba(239, 68, 68, 0.1);
+            border-left-color: var(--danger);
+        }
+        
+        .alert.error .alert-icon {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            color: white;
+            font-size: 0.9375rem;
+        }
+        
+        .footer-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .footer-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .sensor-card {
+                grid-column: span 6;
+            }
+            
+            .weather-card {
+                grid-column: span 12;
+            }
+            
+            .stats-card,
+            .log-card,
+            .decision-card {
+                grid-column: span 6;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .top-bar-content {
+                padding: 1rem;
+            }
+            
+            .brand-text h1 {
+                font-size: 1.125rem;
+            }
+            
+            .brand-text p {
+                display: none;
+            }
+            
+            .status-indicator span {
+                display: none;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .dashboard-grid {
+                gap: 1rem;
+            }
+            
+            .sensor-card,
+            .weather-card,
+            .stats-card,
+            .log-card,
+            .decision-card,
+            .alerts-card {
+                grid-column: span 12;
+            }
+            
+            .sensor-value {
+                font-size: 2.5rem;
+            }
+            
+            .weather-temp {
+                font-size: 3rem;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .card-header {
+                padding: 1rem;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .sensor-value {
+                font-size: 2rem;
+            }
+            
+            .weather-details {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* PWA Enhancements */
+        @media (display-mode: standalone) {
+            body {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Selection */
+        ::selection {
+            background: var(--primary);
+            color: white;
+        }
+</style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Navigation Drawer -->
+        <style>
+            .drawer { position: fixed; top: 0; left: -260px; width: 260px; height: 100vh; background: #fff; box-shadow: 4px 0 20px var(--shadow); z-index: 1200; transition: var(--transition); padding: 1rem; border-right: 1px solid var(--border); }
+            .drawer.open { left: 0; }
+            .drawer h2 { font-size: 1rem; margin-bottom: 1rem; color: var(--dark); }
+            .nav-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0.5rem; border-radius: 10px; color: var(--dark); text-decoration: none; font-weight: 600; }
+            .nav-link:hover { background: var(--light); }
+            .nav-link i { width: 20px; text-align: center; color: var(--gray); }
+            .nav-link.active { background: rgba(102,126,234,0.12); color: var(--primary-dark); }
+            .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.25); z-index: 1100; display: none; }
+            .drawer-overlay.show { display: block; }
+            .menu-btn { background: transparent; border: none; font-size: 1.25rem; cursor: pointer; color: var(--dark); }
+        </style>
+        <div id="drawer" class="drawer">
+            <h2>Navigation</h2>
+            <a class="nav-link active" href="/"><i class="fas fa-gauge"></i> Water Harvesting</a>
+            <a class="nav-link" href="/soil-health"><i class="fas fa-leaf"></i> Soil Health Analytics</a>
+            <a class="nav-link" href="/crop-recommend"><i class="fas fa-wheat-awn"></i> Crop Recommendations</a>
+        </div>
+        <div id="drawerOverlay" class="drawer-overlay" onclick="toggleDrawer(false)"></div>
+
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-content">
+                <div class="brand">
+                    <button class="menu-btn" onclick="toggleDrawer()" title="Menu"><i class="fas fa-bars"></i></button>
+                    <div class="brand-icon">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <div class="brand-text">
+                        <h1>AgriSmart</h1>
+                        <p>Water Harvesting System</p>
+                    </div>
+                </div>
+                <div class="status-indicator" id="systemStatus">
+                    <div class="status-dot"></div>
+                    <span>Connecting...</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="dashboard-grid">
+                
+                <!-- Soil Moisture Card -->
+                <div class="card sensor-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);">
+                                <i class="fas fa-seedling"></i>
+                            </div>
+                            <span>Soil Moisture</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="sensor-value-wrapper">
+                            <div class="sensor-value" id="soilValue">--</div>
+                        </div>
+                        <div class="sensor-badge" id="soilStatus">Loading...</div>
+                        <i class="fas fa-seedling sensor-bg-icon"></i>
+                    </div>
+                </div>
+                
+                <!-- Temperature Card -->
+                <div class="card sensor-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">
+                                <i class="fas fa-temperature-high"></i>
+                            </div>
+                            <span>Temperature</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="sensor-value-wrapper">
+                            <div class="sensor-value" id="tempValue">--</div>
+                            <div class="sensor-unit">°C</div>
+                        </div>
+                        <i class="fas fa-thermometer-half sensor-bg-icon"></i>
+                    </div>
+                </div>
+                
+                <!-- Humidity Card -->
+                <div class="card sensor-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--info);">
+                                <i class="fas fa-water"></i>
+                            </div>
+                            <span>Humidity</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="sensor-value-wrapper">
+                            <div class="sensor-value" id="humidityValue">--</div>
+                            <div class="sensor-unit">%</div>
+                        </div>
+                        <i class="fas fa-droplet sensor-bg-icon"></i>
+                    </div>
+                </div>
+                
+                <!-- Weather Card -->
+                <div class="card weather-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">
+                                <i class="fas fa-cloud-sun"></i>
+                            </div>
+                            <span>Weather Forecast - Lusaka</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="weather-main">
+                            <div>
+                                <div class="weather-temp" id="weatherTemp">--°C</div>
+                                <div class="weather-desc" id="weatherDesc">Loading...</div>
+                            </div>
+                            <i class="fas fa-cloud-sun weather-icon-large"></i>
+                        </div>
+                        <div class="weather-details">
+                            <div class="weather-detail">
+                                <span class="weather-detail-label">Humidity</span>
+                                <span class="weather-detail-value" id="weatherHumidity">--%</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span class="weather-detail-label">Cloud Cover</span>
+                                <span class="weather-detail-value" id="weatherClouds">--%</span>
+                            </div>
+                        </div>
+                        <div id="rainAlert" style="display: none;" class="rain-alert">
+                            <i class="fas fa-cloud-showers-heavy"></i> RAIN EXPECTED - Prepare water containers!
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Statistics Card -->
+                <div class="card stats-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <span>Today's Impact</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <i class="fas fa-tint stat-icon"></i>
+                                <div class="stat-label">Water Saved</div>
+                                <div class="stat-value" id="waterSaved">0</div>
+                                <div class="stat-label">liters</div>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-shower stat-icon"></i>
+                                <div class="stat-label">Irrigations</div>
+                                <div class="stat-value" id="irrigationCount">0</div>
+                                <div class="stat-label">times</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Data Logging Card -->
+                <div class="card log-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <span>Data Logging</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="log-item">
+                            <span class="log-label">Total Entries</span>
+                            <span class="log-value" id="logEntries">0</span>
+                        </div>
+                        <div class="log-item">
+                            <span class="log-label">File Size</span>
+                            <span class="log-value" id="logSize">0 KB</span>
+                        </div>
+                        <div class="log-item" style="flex-direction: column; align-items: flex-start;">
+                            <span class="log-label">Date Range</span>
+                            <span class="log-value" id="logDateRange" style="font-size: 0.875rem; margin-top: 0.25rem;">No data yet</span>
+                        </div>
+                        <button class="btn btn-success btn-download" onclick="downloadLog()">
+                            <i class="fas fa-download"></i>
+                            <span>Download CSV Log</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Decision Card -->
+                <div class="card decision-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon" style="background: rgba(240, 147, 251, 0.1); color: #f093fb;">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <span>System Decision</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="decision-box" id="decisionBox">
+                            <i class="fas fa-cog fa-spin decision-icon"></i>
+                            <div class="decision-text" id="decisionText">Analyzing...</div>
+                            <i class="fas fa-circle-notch decision-bg-pattern"></i>
+                        </div>
+                        <div class="controls">
+                            <button class="btn btn-primary" onclick="testIrrigate()">
+                                <i class="fas fa-shower"></i>
+                                <span>Test Irrigation</span>
+                            </button>
+                            <button class="btn btn-secondary" onclick="testRain()">
+                                <i class="fas fa-cloud-rain"></i>
+                                <span>Test Rain Alert</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Alerts Card -->
+                <div class="card alerts-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <span>System Alerts</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="alerts-container" id="alertsContainer">
+                            <div class="alert info">
+                                <div class="alert-icon">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <div class="alert-content">
+                                    <div class="alert-message">System starting...</div>
+                                    <div class="alert-time">--:--:--</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div>Last updated: <span id="lastUpdate">--</span></div>
+            <div class="footer-stats">
+                <div class="footer-stat">
+                    <i class="fas fa-clock"></i>
+                    <span>Logging every 60 seconds</span>
+                </div>
+                <div class="footer-stat">
+                    <i class="fas fa-hourglass-half"></i>
+                    <span id="nextLog">Next log in: --s</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let lastLogTime = 0;
+        const LOG_INTERVAL = 60;
+        
+        // Fetch data from Flask API
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/data');
+                const data = await response.json();
+                
+                // Update soil moisture
+                document.getElementById('soilValue').textContent = data.soil_moisture;
+                const soilStatus = document.getElementById('soilStatus');
+                soilStatus.textContent = data.soil_status;
+                soilStatus.className = 'sensor-badge ' + data.soil_status.toLowerCase();
+                
+                // Update temperature
+                document.getElementById('tempValue').textContent = data.temperature.toFixed(1);
+                
+                // Update humidity
+                document.getElementById('humidityValue').textContent = data.humidity.toFixed(0);
+                
+                // Update weather
+                document.getElementById('weatherTemp').textContent = data.weather.temperature.toFixed(1) + '°C';
+                document.getElementById('weatherDesc').textContent = data.weather.description;
+                document.getElementById('weatherHumidity').textContent = data.weather.humidity + '%';
+                document.getElementById('weatherClouds').textContent = data.weather.cloud_coverage + '%';
+                
+                // Rain alert
+                const rainAlert = document.getElementById('rainAlert');
+                if (data.weather.rain_coming) {
+                    rainAlert.style.display = 'block';
+                } else {
+                    rainAlert.style.display = 'none';
+                }
+                
+                // Update statistics
+                document.getElementById('waterSaved').textContent = data.water_saved;
+                document.getElementById('irrigationCount').textContent = data.irrigation_count;
+                
+                // Update log statistics
+                if (data.log_stats) {
+                    document.getElementById('logEntries').textContent = data.log_stats.total_entries;
+                    document.getElementById('logSize').textContent = data.log_stats.file_size;
+                    document.getElementById('logDateRange').textContent = data.log_stats.date_range;
+                }
+                
+                // Update decision
+                const decisionBox = document.getElementById('decisionBox');
+                const decisionText = document.getElementById('decisionText');
+                const decisionIcon = decisionBox.querySelector('.decision-icon');
+                
+                if (data.decision === 'IRRIGATE') {
+                    decisionIcon.className = 'fas fa-shower decision-icon';
+                    decisionText.textContent = 'IRRIGATING NOW';
+                    decisionBox.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                } else if (data.decision === 'RAIN_ALERT') {
+                    decisionIcon.className = 'fas fa-cloud-showers-heavy decision-icon';
+                    decisionText.textContent = 'RAIN ALERT - Water Saved!';
+                    decisionBox.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+                } else if (data.decision === 'STOP') {
+                    decisionIcon.className = 'fas fa-check-circle decision-icon';
+                    decisionText.textContent = 'No Action Needed';
+                    decisionBox.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                } else {
+                    decisionIcon.className = 'fas fa-cog fa-spin decision-icon';
+                    decisionText.textContent = data.decision;
+                }
+                
+                // Update system status
+                const statusBadge = document.getElementById('systemStatus');
+                if (data.system_status === 'Connected') {
+                    statusBadge.className = 'status-indicator connected';
+                    statusBadge.innerHTML = '<div class="status-dot"></div><span>Connected</span>';
+                } else {
+                    statusBadge.className = 'status-indicator disconnected';
+                    statusBadge.innerHTML = '<div class="status-dot"></div><span>Disconnected</span>';
+                }
+                
+                // Update alerts
+                const alertsContainer = document.getElementById('alertsContainer');
+                alertsContainer.innerHTML = '';
+                
+                if (data.alerts && data.alerts.length > 0) {
+                    data.alerts.forEach(alert => {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = `alert ${alert.type}`;
+                        
+                        const icons = {
+                            success: 'fa-check-circle',
+                            warning: 'fa-exclamation-triangle',
+                            info: 'fa-info-circle',
+                            error: 'fa-times-circle'
+                        };
+                        
+                        alertDiv.innerHTML = `
+                            <div class="alert-icon">
+                                <i class="fas ${icons[alert.type]}"></i>
+                            </div>
+                            <div class="alert-content">
+                                <div class="alert-message">${alert.message}</div>
+                                <div class="alert-time">${alert.time}</div>
+                            </div>
+                        `;
+                        alertsContainer.appendChild(alertDiv);
+                    });
+                } else {
+                    alertsContainer.innerHTML = `
+                        <div class="alert info">
+                            <div class="alert-icon">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div class="alert-content">
+                                <div class="alert-message">No alerts yet</div>
+                                <div class="alert-time">--:--:--</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Update last update time
+                document.getElementById('lastUpdate').textContent = data.last_update;
+                
+                // Calculate next log time
+                const now = Math.floor(Date.now() / 1000);
+                if (lastLogTime === 0) lastLogTime = now;
+                const secondsSinceLog = now - lastLogTime;
+                const secondsUntilLog = LOG_INTERVAL - (secondsSinceLog % LOG_INTERVAL);
+                document.getElementById('nextLog').textContent = `Next log in: ${secondsUntilLog}s`;
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                const statusBadge = document.getElementById('systemStatus');
+                statusBadge.className = 'status-indicator disconnected';
+                statusBadge.innerHTML = '<div class="status-dot"></div><span>Connection Error</span>';
+            }
+        }
+        
+        // Test buttons
+        async function testIrrigate() {
+            try {
+                const response = await fetch('/api/test/irrigate');
+                const result = await response.json();
+                showNotification('success', result.message);
+                lastLogTime = Math.floor(Date.now() / 1000);
+            } catch (error) {
+                showNotification('error', 'Error triggering irrigation');
+            }
+        }
+        
+        async function testRain() {
+            try {
+                const response = await fetch('/api/test/rain');
+                const result = await response.json();
+                showNotification('success', result.message);
+                lastLogTime = Math.floor(Date.now() / 1000);
+            } catch (error) {
+                showNotification('error', 'Error triggering rain alert');
+            }
+        }
+        
+        // Download log file
+        function downloadLog() {
+            window.location.href = '/api/log/download';
+            showNotification('info', 'Downloading CSV log file...');
+        }
+        
+        // Simple notification system
+        function showNotification(type, message) {
+            // Create temporary alert
+            const alertsContainer = document.getElementById('alertsContainer');
+            const tempAlert = document.createElement('div');
+            tempAlert.className = `alert ${type}`;
+            
+            const icons = {
+                success: 'fa-check-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle',
+                error: 'fa-times-circle'
+            };
+            
+            tempAlert.innerHTML = `
+                <div class="alert-icon">
+                    <i class="fas ${icons[type]}"></i>
+                </div>
+                <div class="alert-content">
+                    <div class="alert-message">${message}</div>
+                    <div class="alert-time">${new Date().toLocaleTimeString()}</div>
+                </div>
+            `;
+            
+            alertsContainer.insertBefore(tempAlert, alertsContainer.firstChild);
+        }
+        
+        // Update every 2 seconds
+        setInterval(fetchData, 2000);
+        
+        // Initial fetch
+        fetchData();
+        
+        // Simple drawer toggle
+        function toggleDrawer(force) {
+            const drawer = document.getElementById('drawer');
+            const overlay = document.getElementById('drawerOverlay');
+            const open = typeof force === 'boolean' ? force : !drawer.classList.contains('open');
+            drawer.classList.toggle('open', open);
+            overlay.classList.toggle('show', open);
+        }
+
+        // PWA - Add to home screen prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+    </script>
+</body>
+</html>

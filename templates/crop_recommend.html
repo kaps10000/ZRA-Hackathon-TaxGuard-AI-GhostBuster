@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Crop Recommendations • AgriSmart</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root { --primary:#667eea; --secondary:#764ba2; --dark:#1e293b; --gray:#64748b; --light:#f8fafc; --border:#e2e8f0; --shadow:rgba(0,0,0,0.1); --success:#10b981; --danger:#ef4444; --warning:#f59e0b; }
+    *{box-sizing:border-box}
+    body{font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; background: linear-gradient(135deg, var(--primary), var(--secondary)); margin:0; color:var(--dark);} 
+    .top-bar{background:#fff; box-shadow:0 4px 20px var(--shadow); position:sticky; top:0; z-index:1000; border-bottom:1px solid var(--border);} 
+    .top-bar-content{display:flex; justify-content:space-between; align-items:center; padding:1rem 1.5rem}
+    .brand{display:flex; align-items:center; gap:.75rem}
+    .brand-icon{width:40px; height:40px; border-radius:12px; background: linear-gradient(135deg, var(--primary), var(--secondary)); display:flex; align-items:center; justify-content:center; color:#fff}
+    .brand-text h1{font-size:1.1rem; margin:0}
+    .menu-btn { background: transparent; border: none; font-size: 1.25rem; cursor: pointer; color: var(--dark); }
+    .drawer { position: fixed; top: 0; left: -260px; width: 260px; height: 100vh; background: #fff; box-shadow: 4px 0 20px var(--shadow); z-index: 1200; transition: .3s; padding: 1rem; border-right: 1px solid var(--border); }
+    .drawer.open { left: 0; }
+    .nav-link { display:flex; align-items:center; gap:.75rem; padding:.65rem .5rem; border-radius:10px; color:var(--dark); text-decoration:none; font-weight:600 }
+    .nav-link:hover{ background: var(--light) }
+    .nav-link.active{ background: rgba(102,126,234,.12); color: var(--primary) }
+    .drawer-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.25); z-index:1100; display:none }
+    .drawer-overlay.show{ display:block }
+    .container{ max-width:1000px; margin:0 auto; padding:1.25rem }
+    .card{ background:#fff; border:1px solid var(--border); border-radius:16px; box-shadow:0 4px 20px var(--shadow); overflow:hidden }
+    .card-header{ padding:1rem 1.25rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:.75rem; font-weight:700 }
+    .card-body{ padding:1rem 1.25rem }
+    .form-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:1rem }
+    .form-row{ display:flex; flex-direction:column; gap:.25rem }
+    label{ font-weight:700; color:var(--gray) }
+    input, select{ padding:.75rem; border-radius:10px; border:1px solid var(--border); font-size:1rem; width:100% }
+    .btn{ padding: .9rem 1rem; border:none; border-radius:12px; font-weight:700; color:#fff; cursor:pointer; background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+    .result{ padding:1rem; border-radius:12px; background: var(--light); border:1px solid var(--border); }
+    .badge{ display:inline-block; padding:.35rem .6rem; border-radius:999px; font-weight:700; font-size:.8rem }
+    .badge-success{ background: rgba(16,185,129,.12); color: var(--success) }
+    .badge-warning{ background: rgba(245,158,11,.12); color: var(--warning) }
+    .badge-danger{ background: rgba(239,68,68,.12); color: var(--danger) }
+
+    /* Responsive adjustments */
+    @media (max-width: 900px){
+      .top-bar-content{ padding: .75rem 1rem }
+      .container{ padding: 1rem }
+      .form-grid{ grid-template-columns: 1fr; }
+      .card-header{ padding: .85rem 1rem }
+      .card-body{ padding: .85rem 1rem }
+    }
+    @media (max-width: 600px){
+      .brand-text h1{ font-size: 1rem }
+      .container{ padding: .75rem }
+      .btn{ width: 100% }
+      .nav-link{ padding:.6rem .5rem }
+    }
+  </style>
+</head>
+<body>
+  <div id="drawer" class="drawer">
+    <h2>Navigation</h2>
+    <a class="nav-link" href="/"><i class="fas fa-gauge"></i> Water Harvesting</a>
+    <a class="nav-link" href="/soil-health"><i class="fas fa-leaf"></i> Soil Health Analytics</a>
+    <a class="nav-link active" href="/crop-recommend"><i class="fas fa-wheat-awn"></i> Crop Recommendations</a>
+  </div>
+  <div id="drawerOverlay" class="drawer-overlay" onclick="toggleDrawer(false)"></div>
+
+  <div class="top-bar">
+    <div class="top-bar-content">
+      <div class="brand">
+        <button class="menu-btn" onclick="toggleDrawer()" title="Menu"><i class="fas fa-bars"></i></button>
+        <div class="brand-icon"><i class="fas fa-wheat-awn"></i></div>
+        <div class="brand-text">
+          <h1>AgriSmart • Crop Recommendations</h1>
+        </div>
+      </div>
+      <a class="nav-link" href="/" style="text-decoration:none"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <div class="card-header"><i class="fas fa-seedling"></i> Input Climate and Soil</div>
+      <div class="card-body">
+        <form id="recForm" onsubmit="submitRec(event)">
+          <div class="form-grid">
+            <div class="form-row">
+              <label>Temperature (°C)</label>
+              <input type="number" step="0.1" id="temperature" required value="{{ defaults.temperature }}" />
+            </div>
+            <div class="form-row">
+              <label>Rainfall (mm this season)</label>
+              <input type="number" step="1" id="rainfall" required value="{{ defaults.rainfall }}" />
+            </div>
+            <div class="form-row">
+              <label>Season</label>
+              <select id="season">
+                <option value="Rainy" {% if defaults.season=='Rainy' %}selected{% endif %}>Rainy</option>
+                <option value="Dry" {% if defaults.season=='Dry' %}selected{% endif %}>Dry</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label>Soil Type</label>
+              <select id="soil_type">
+                <option value="Sand">Sand</option>
+                <option value="Loam" selected>Loam</option>
+                <option value="Clay">Clay</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:1rem; display:flex; gap:.75rem">
+            <button type="submit" class="btn"><i class="fas fa-magic"></i> Get Recommendations</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="results" style="margin-top:1rem; display:none">
+      <div class="card">
+        <div class="card-header"><i class="fas fa-list"></i> Recommended Crops for this Season</div>
+        <div class="card-body">
+          <div class="result">
+            <div><strong>Top Recommendation:</strong> <span id="bestCrop"></span> <span id="riskBadge" class="badge"></span></div>
+            <div id="riskMsg" style="margin-top:.25rem; color:var(--gray)"></div>
+            <hr style="margin:1rem 0" />
+            <div><strong>Top 3:</strong></div>
+            <ul id="topList" style="margin:.5rem 0 0 1rem"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleDrawer(force){
+      const drawer = document.getElementById('drawer');
+      const overlay = document.getElementById('drawerOverlay');
+      const open = typeof force === 'boolean' ? force : !drawer.classList.contains('open');
+      drawer.classList.toggle('open', open);
+      overlay.classList.toggle('show', open);
+    }
+
+    async function submitRec(e){
+      e.preventDefault();
+      const payload = {
+        temperature: parseFloat(document.getElementById('temperature').value),
+        rainfall: parseFloat(document.getElementById('rainfall').value),
+        season: document.getElementById('season').value,
+        soil_type: document.getElementById('soil_type').value,
+      };
+      const res = await fetch('/api/crop/recommend', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      const data = await res.json();
+      if(data.status !== 'success'){
+        alert('Error: ' + data.message);
+        return;
+      }
+      const best = data.best;
+      document.getElementById('bestCrop').textContent = best.crop;
+      const badge = document.getElementById('riskBadge');
+      badge.textContent = best.risk + ' risk';
+      badge.className = 'badge ' + (best.risk==='Low'?'badge-success':(best.risk==='Moderate'?'badge-warning':'badge-danger'));
+      document.getElementById('riskMsg').textContent = best.message + ` (score: ${best.score})`;
+      const list = document.getElementById('topList');
+      list.innerHTML = '';
+      (data.recommendations || []).forEach(r => {
+        const li = document.createElement('li');
+        li.textContent = `${r.crop} — confidence ${Math.round(r.confidence*100)/100}`;
+        list.appendChild(li);
+      });
+      document.getElementById('results').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
