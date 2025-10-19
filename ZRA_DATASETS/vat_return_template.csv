@@ -1,2 +1,0 @@
-claim_id,taxpayer_id,period_start,period_end,claim_date,submitted_by,net_refund_amount,output_vat,input_vat,total_sales_amount,export_sales_value,zero_rated_sales,exempt_sales,sales_invoice_count,supporting_docs_count
-CLM_RETURN_0001,TPIN_12345678,2025-07-01,2025-09-30,2025-10-05,Self,7500,12000,15000,400000,180000,20000,5000,20,6

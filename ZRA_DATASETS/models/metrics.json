@@ -1,5 +1,0 @@
-{
-  "cv_best_model": "log_reg",
-  "cv_best_auc": 1.0,
-  "test_auc": 1.0
-}
