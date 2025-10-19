@@ -1,0 +1,56 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Testing
+coverage/
+.nyc_output/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+server.log
+ocr.log
+startup.log
+test-server.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Uploads
+uploads/
+temp/
+*.jpg
+*.png
+*.pdf
+test-invoice.*
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Database files
+*.sql
+database/seed-mock-data.sql
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db

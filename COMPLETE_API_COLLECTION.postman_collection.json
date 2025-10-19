@@ -1,0 +1,291 @@
+{
+  "info": {
+    "name": "ZRA TaxGuard - COMPLETE API Collection",
+    "description": "Complete API collection for ALL ZRA TaxGuard services:\n\n1. OCR AI Service (Port 8000) - Document processing\n2. Blockchain API (Port 3001) - Event management\n3. OCR Backend (Port 5000) - Legacy/backup service\n\nAll file upload endpoints require POST with multipart/form-data.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "OCR AI Service (Port 8000)",
+      "description": "FastAPI-based OCR and document verification service",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:8000/health"
+          }
+        },
+        {
+          "name": "Process OCR",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key": "file", "type": "file", "src": ""},
+                {"key": "preprocess", "value": "true", "type": "text"},
+                {"key": "language", "value": "eng", "type": "text"}
+              ]
+            },
+            "url": "http://localhost:8000/api/ocr/process"
+          }
+        },
+        {
+          "name": "Extract Data",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key": "file", "type": "file", "src": ""},
+                {"key": "document_type", "value": "invoice", "type": "text"}
+              ]
+            },
+            "url": "http://localhost:8000/api/extract"
+          }
+        },
+        {
+          "name": "Verify Document",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key": "file", "type": "file", "src": ""}
+              ]
+            },
+            "url": "http://localhost:8000/api/verify"
+          }
+        },
+        {
+          "name": "Batch Verify",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key": "files", "type": "file", "src": ""},
+                {"key": "files", "type": "file", "src": ""}
+              ]
+            },
+            "url": "http://localhost:8000/api/verify/batch"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Blockchain API (Port 3001)",
+      "description": "Tax event blockchain and compliance management",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3001/health"
+          }
+        },
+        {
+          "name": "API Info",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3001/"
+          }
+        },
+        {
+          "name": "Get All Events",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3001/api/events"
+          }
+        },
+        {
+          "name": "Create Tax Event",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventType\": \"taxPayment\",\n  \"taxpayerId\": \"TAX123456\",\n  \"amount\": 5000,\n  \"currency\": \"ZMW\",\n  \"description\": \"Q4 2025 Tax Payment\"\n}"
+            },
+            "url": "http://localhost:3001/api/events"
+          }
+        },
+        {
+          "name": "Get Full Blockchain",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3001/api/blockchain"
+          }
+        },
+        {
+          "name": "Get Statistics",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3001/api/stats"
+          }
+        },
+        {
+          "name": "Verify Event",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3001/api/verify/:eventId"
+          }
+        },
+        {
+          "name": "SIEM Export - Splunk",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3001/api/siem/export/splunk"
+          }
+        },
+        {
+          "name": "SIEM Export - ELK",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3001/api/siem/export/elk"
+          }
+        },
+        {
+          "name": "SIEM Export - CSV",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3001/api/siem/export/csv"
+          }
+        },
+        {
+          "name": "Event Templates",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3001/api/templates"
+          }
+        },
+        {
+          "name": "Calculate Risk Score",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"TAX123456\",\n  \"events\": [\n    {\"type\": \"latePayment\", \"amount\": 1000},\n    {\"type\": \"taxReturn\", \"amount\": 50000}\n  ]\n}"
+            },
+            "url": "http://localhost:3001/api/analytics/risk-score"
+          }
+        },
+        {
+          "name": "Pattern Detection",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"TAX123456\",\n  \"timeRange\": \"30d\"\n}"
+            },
+            "url": "http://localhost:3001/api/analytics/pattern-detection"
+          }
+        },
+        {
+          "name": "Evaluate Compliance Triggers",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventType\": \"taxPayment\",\n  \"amount\": 100000,\n  \"taxpayerId\": \"TAX123456\"\n}"
+            },
+            "url": "http://localhost:3001/api/triggers/evaluate"
+          }
+        },
+        {
+          "name": "Create Multi-Signature Event",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventData\": {\n    \"eventType\": \"taxAudit\",\n    \"taxpayerId\": \"TAX123456\",\n    \"amount\": 500000\n  },\n  \"requiredApprovals\": 3,\n  \"approvers\": [\"user1\", \"user2\", \"user3\"]\n}"
+            },
+            "url": "http://localhost:3001/api/multisig/create"
+          }
+        },
+        {
+          "name": "Dashboard Overview",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3001/api/dashboard/overview"
+          }
+        },
+        {
+          "name": "GhostBuster Detection",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"COMP123\",\n  \"employeeData\": [\n    {\"id\": \"EMP001\", \"name\": \"John Doe\", \"salary\": 5000}\n  ]\n}"
+            },
+            "url": "http://localhost:3001/api/ghostbuster/detection"
+          }
+        },
+        {
+          "name": "WhistlePro Report",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reportType\": \"taxEvasion\",\n  \"description\": \"Suspected under-reporting of sales\",\n  \"companyName\": \"XYZ Ltd\",\n  \"anonymous\": true\n}"
+            },
+            "url": "http://localhost:3001/api/whistlepro/report"
+          }
+        },
+        {
+          "name": "AI Risk Assessment",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"taxpayerId\": \"TAX123456\",\n  \"transactionHistory\": [],\n  \"complianceScore\": 75\n}"
+            },
+            "url": "http://localhost:3001/api/ai-risk/assessment"
+          }
+        },
+        {
+          "name": "Predictive Forecast",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"taxpayerId\": \"TAX123456\",\n  \"forecastPeriod\": \"6m\"\n}"
+            },
+            "url": "http://localhost:3001/api/predictive/forecast"
+          }
+        },
+        {
+          "name": "Dashboard Live Feed",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3001/api/dashboard-feed/live"
+          }
+        },
+        {
+          "name": "Blockchain Explorer",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3001/explorer"
+          }
+        },
+        {
+          "name": "API Documentation",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3001/api-docs"
+          }
+        }
+      ]
+    }
+  ]
+}

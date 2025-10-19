@@ -1,6 +1,6 @@
-# Dashboard & Integration
+# Dashboard & Integration - Dev 6
 
-**Assigned to: Thomas**
+**Assigned to: Ephraim**
 
 ## Overview
 Central web dashboard for investigators & ZRA with full system integration.
@@ -31,9 +31,9 @@ dashboard_integration/
 ```
 
 ## Integration Points
-- **AI Risk Scoring** (Shuan) - Risk dashboard data
-- **GhostBuster Module** (Ezra) - Detection results
-- **WhistlePro** (Ephraim/Kelvin) - Report management
+- **AI Risk Scoring** (Ezra) - Risk dashboard data
+- **GhostBuster Module** (Thomas) - Detection results
+- **WhistlePro** (Shuan/Kelvin) - Report management
 - **Predictive Analytics** (Emmanuel) - Revenue forecasts
 - **Blockchain** (Kaps) - Audit trail data
 

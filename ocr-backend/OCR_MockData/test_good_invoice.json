@@ -1,0 +1,8 @@
+{
+  "document_type": "invoice",
+  "invoice_number": "INV21788",
+  "document_date": "2024-12-17",
+  "total_amount": 5000.0,
+  "currency": "EUR",
+  "importer_name": "Zambia Exports Ltd"
+}
