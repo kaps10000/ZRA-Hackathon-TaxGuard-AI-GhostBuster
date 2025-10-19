@@ -1,0 +1,35 @@
+# Data processing
+pandas>=1.5.0
+numpy>=1.21.0
+
+# Machine Learning
+scikit-learn>=1.1.0
+xgboost>=1.6.0
+joblib>=1.2.0
+
+# Web API
+flask>=2.2.0
+flask-cors>=4.0.0  # Added for CORS support
+gunicorn>=20.1.0
+
+# Environment and configuration
+python-dotenv>=0.19.0
+
+# Testing
+pytest>=7.0.0
+pytest-cov>=4.0.0  # Added for test coverage
+
+# HTTP requests
+requests>=2.28.0
+
+# Logging and monitoring
+prometheus-client>=0.15.0  # Added for metrics
+
+# Development tools
+black>=22.0.0  # Added for code formatting
+flake8>=5.0.0  # Added for linting
+mypy>=0.991   # Added for type checking
+
+# Optional visualization (uncomment if needed)
+# matplotlib>=3.5.0
+# seaborn>=0.11.0
