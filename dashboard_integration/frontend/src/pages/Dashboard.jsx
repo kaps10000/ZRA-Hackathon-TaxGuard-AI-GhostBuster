@@ -8,7 +8,7 @@ import GhostBusterPanel from '../components/GhostBusterPanel';
 import PredictivePanel from '../components/PredictivePanel';
 import BlockchainAudit from '../components/BlockchainAudit';
 
-const Dashboard = () => {
+const Dashboard = ({ onNavigate }) => {
   const { data, loading, error, refresh } = useDashboardData();
 
   if (loading) {
@@ -70,28 +70,50 @@ const Dashboard = () => {
         <MetricsOverview data={data} />
 
         {/* Recent Alerts */}
-        <RecentAlerts data={data} />
+        <RecentAlerts data={data} onNavigate={onNavigate} />
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           {/* OCR Monitor */}
-          <OCRMonitor data={data?.ocr} />
+          <div onClick={() => onNavigate && onNavigate('ocr')} className="cursor-pointer hover:shadow-xl transition-shadow">
+            <OCRMonitor data={data?.ocr} />
+          </div>
 
           {/* GhostBuster Panel */}
-          <GhostBusterPanel data={data?.ghostbuster} />
+          <div onClick={() => onNavigate && onNavigate('ghostbuster')} className="cursor-pointer hover:shadow-xl transition-shadow">
+            <GhostBusterPanel data={data?.ghostbuster} />
+          </div>
         </div>
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           {/* WhistlePro Panel */}
-          <WhistleProPanel data={data?.whistlepro} />
+          <div onClick={() => onNavigate && onNavigate('whistlepro')} className="cursor-pointer hover:shadow-xl transition-shadow">
+            <WhistleProPanel data={data?.whistlepro} />
+          </div>
 
           {/* Predictive Panel */}
-          <PredictivePanel data={data?.predictive} />
+          <div onClick={() => onNavigate && onNavigate('predictive')} className="cursor-pointer hover:shadow-xl transition-shadow">
+            <PredictivePanel data={data?.predictive} />
+          </div>
+        </div>
+
+        {/* Network Analysis Button */}
+        <div className="mt-6">
+          <button
+            onClick={() => onNavigate && onNavigate('network')}
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-3"
+          >
+            <span className="text-2xl">🔗</span>
+            <span className="text-lg font-bold">Analyze Entity Networks & Relationships</span>
+            <span className="text-sm bg-white/20 px-3 py-1 rounded-full">Click to Explore</span>
+          </button>
         </div>
 
         {/* Blockchain Audit Trail */}
-        <BlockchainAudit data={data?.blockchain} />
+        <div onClick={() => onNavigate && onNavigate('blockchain')} className="cursor-pointer hover:shadow-xl transition-shadow mt-6">
+          <BlockchainAudit data={data?.blockchain} />
+        </div>
       </main>
     </div>
   );

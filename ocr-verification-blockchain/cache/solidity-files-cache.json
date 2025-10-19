@@ -1,0 +1,40 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/ocr-verification-blockchain/contracts/HelloBlockchain.sol": {
+      "lastModificationDate": 1759694194559,
+      "contentHash": "b8b6856ccd5c6b04bf28e1d586bbda95",
+      "sourceName": "contracts/HelloBlockchain.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "HelloBlockchain"
+      ]
+    }
+  }
+}
