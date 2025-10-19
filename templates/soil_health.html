@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Soil Health Analytics • AgriSmart</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    :root { --primary:#667eea; --secondary:#764ba2; --dark:#1e293b; --gray:#64748b; --light:#f8fafc; --border:#e2e8f0; --shadow:rgba(0,0,0,0.1); --success:#10b981; --danger:#ef4444; --warning:#f59e0b; }
+    *{box-sizing:border-box}
+    body{font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; background: linear-gradient(135deg, var(--primary), var(--secondary)); margin:0; color:var(--dark);} 
+    .top-bar{background:#fff; box-shadow:0 4px 20px var(--shadow); position:sticky; top:0; z-index:1000; border-bottom:1px solid var(--border);} 
+    .top-bar-content{display:flex; justify-content:space-between; align-items:center; padding:1rem 1.5rem}
+    .brand{display:flex; align-items:center; gap:.75rem}
+    .brand-icon{width:40px; height:40px; border-radius:12px; background: linear-gradient(135deg, var(--primary), var(--secondary)); display:flex; align-items:center; justify-content:center; color:#fff}
+    .brand-text h1{font-size:1.1rem; margin:0}
+    .menu-btn { background: transparent; border: none; font-size: 1.25rem; cursor: pointer; color: var(--dark); }
+    .drawer { position: fixed; top: 0; left: -260px; width: 260px; height: 100vh; background: #fff; box-shadow: 4px 0 20px var(--shadow); z-index: 1200; transition: .3s; padding: 1rem; border-right: 1px solid var(--border); }
+    .drawer.open { left: 0; }
+    .nav-link { display:flex; align-items:center; gap:.75rem; padding:.65rem .5rem; border-radius:10px; color:var(--dark); text-decoration:none; font-weight:600 }
+    .nav-link:hover{ background: var(--light) }
+    .nav-link.active{ background: rgba(102,126,234,.12); color: var(--primary) }
+    .drawer-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.25); z-index:1100; display:none }
+    .drawer-overlay.show{ display:block }
+    .container{ max-width:1200px; margin:0 auto; padding:1.25rem }
+    .grid{ display:grid; grid-template-columns: repeat(12, 1fr); gap:1rem }
+    .card{ background:#fff; border:1px solid var(--border); border-radius:16px; box-shadow:0 4px 20px var(--shadow) }
+    .card-header{ padding:1rem 1.25rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:.75rem; font-weight:700 }
+    .card-body{ padding:1rem 1.25rem }
+    .kpi{ grid-column: span 4 }
+    .charts{ grid-column: span 12 }
+    .alerts{ grid-column: span 12 }
+    .kpi-value{ font-size:2rem; font-weight:800; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .badge{ display:inline-block; padding:.35rem .6rem; border-radius:999px; font-weight:700; font-size:.8rem }
+    .badge-success{ background: rgba(16,185,129,.12); color: var(--success) }
+    .badge-warning{ background: rgba(245,158,11,.12); color: var(--warning) }
+    .badge-danger{ background: rgba(239,68,68,.12); color: var(--danger) }
+    .alert{ border-left:4px solid var(--primary); padding: .75rem 1rem; border-radius:12px; margin:.5rem 0; background: var(--light) }
+    @media (max-width: 900px){ .kpi{ grid-column: span 12 } }
+  </style>
+</head>
+<body>
+  <div id="drawer" class="drawer">
+    <h2>Navigation</h2>
+    <a class="nav-link" href="/"><i class="fas fa-gauge"></i> Water Harvesting</a>
+    <a class="nav-link active" href="/soil-health"><i class="fas fa-leaf"></i> Soil Health Analytics</a>
+    <a class="nav-link" href="/crop-recommend"><i class="fas fa-wheat-awn"></i> Crop Recommendations</a>
+  </div>
+  <div id="drawerOverlay" class="drawer-overlay" onclick="toggleDrawer(false)"></div>
+
+  <div class="top-bar">
+    <div class="top-bar-content">
+      <div class="brand">
+        <button class="menu-btn" onclick="toggleDrawer()" title="Menu"><i class="fas fa-bars"></i></button>
+        <div class="brand-icon"><i class="fas fa-leaf"></i></div>
+        <div class="brand-text">
+          <h1>AgriSmart • Soil Health</h1>
+        </div>
+      </div>
+      <a class="nav-link" href="/" style="text-decoration:none"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+  </div>
+
+  <div class="container">
+    {% if error %}
+      <div class="card"><div class="card-body"><div class="alert">{{ error }}</div></div></div>
+    {% else %}
+      <style>
+        .farmer-card { grid-column: span 12; }
+        .traffic { display:inline-flex; align-items:center; gap:.5rem; }
+        .dot { width:12px; height:12px; border-radius:50%; display:inline-block }
+        .dot.red{ background:#ef4444 }
+        .dot.yellow{ background:#f59e0b }
+        .dot.green{ background:#10b981 }
+        .plain-box{ background: var(--light); border:1px solid var(--border); border-radius:12px; padding:1rem }
+        .explain li{ margin:.25rem 0 }
+      </style>
+      <div class="grid">
+        <!-- Farmer-friendly Summary -->
+        <div class="card farmer-card">
+          <div class="card-header"><i class="fas fa-hand-holding-water"></i> Simple Summary (For Farmers)</div>
+          <div class="card-body">
+            <div style="display:flex; gap:1.25rem; align-items:center; flex-wrap:wrap">
+              <div class="traffic">
+                <span class="dot {{ data.farmer_summary.traffic }}"></span>
+                <strong>{{ data.farmer_summary.status }}</strong>
+              </div>
+              <div><strong>Do now:</strong> {{ data.farmer_summary.action }}</div>
+            </div>
+            <div style="margin-top:.5rem; color:var(--gray)">{{ data.farmer_summary.reason }}</div>
+            {% if data.farmer_summary.tips and data.farmer_summary.tips|length > 0 %}
+            <ul style="margin:.75rem 0 0 1rem">
+              {% for tip in data.farmer_summary.tips %}
+                <li>{{ tip }}</li>
+              {% endfor %}
+            </ul>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="card kpi">
+          <div class="card-header"><i class="fas fa-heart-pulse"></i> Soil Health Score</div>
+          <div class="card-body">
+            <div class="kpi-value">{{ data.latest_health_score }}%</div>
+            <div class="badge {% if data.latest_health_score >= 70 %}badge-success{% elif data.latest_health_score >= 40 %}badge-warning{% else %}badge-danger{% endif %}">
+              {% if data.latest_health_score >= 70 %}Healthy{% elif data.latest_health_score >= 40 %}Watch{% else %}Critical{% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="card kpi">
+          <div class="card-header"><i class="fas fa-droplet"></i> Latest Moisture</div>
+          <div class="card-body">
+            <div class="kpi-value">{{ data.latest_soil_moisture | round(0) }}</div>
+            <div class="gray">as of {{ data.latest_data_time }}</div>
+          </div>
+        </div>
+        <div class="card kpi">
+          <div class="card-header"><i class="fas fa-bullhorn"></i> Alerts</div>
+          <div class="card-body">
+            {% if data.alerts %}
+              {% for a in data.alerts %}
+                <div class="alert">{{ a }}</div>
+              {% endfor %}
+            {% else %}
+              <div class="alert">No critical alerts detected.</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="card charts">
+          <div class="card-header"><i class="fas fa-chart-line"></i> Moisture (7 Days)</div>
+          <div class="card-body">{{ data.visuals.moisture_7d_html | safe }}</div>
+        </div>
+
+        <div class="card charts">
+          <div class="card-header"><i class="fas fa-chart-area"></i> Moisture (30 Days)</div>
+          <div class="card-body">{{ data.visuals.moisture_30d_html | safe }}</div>
+        </div>
+
+        <div class="card charts">
+          <div class="card-header"><i class="fas fa-heart"></i> Health Score History</div>
+          <div class="card-body">{{ data.visuals.health_score_html | safe }}</div>
+        </div>
+
+        <!-- Plain-language graph guide -->
+        <div class="card farmer-card">
+          <div class="card-header"><i class="fas fa-book-open"></i> What these graphs mean</div>
+          <div class="card-body">
+            <div class="plain-box">
+              <ul class="explain">
+                <li>Moisture line: higher = wetter soil. Low line means dry soil.</li>
+                <li>Health score: 0–100%. Green (70–100), Yellow (40–69), Red (0–39).</li>
+                <li>If line keeps going down fast, soil is losing water quickly. Add mulch.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <script>
+    function toggleDrawer(force){
+      const drawer = document.getElementById('drawer');
+      const overlay = document.getElementById('drawerOverlay');
+      const open = typeof force === 'boolean' ? force : !drawer.classList.contains('open');
+      drawer.classList.toggle('open', open);
+      overlay.classList.toggle('show', open);
+    }
+  </script>
+</body>
+</html>

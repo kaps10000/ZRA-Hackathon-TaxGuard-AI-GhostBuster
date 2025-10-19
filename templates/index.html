@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZRA Fraud Prediction</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header>
+    <h1>ZRA Fraud Prediction</h1>
+  </header>
+  <div class="container">
+    <div class="grid">
+      <div class="card" style="grid-column: 1 / span 2;">
+        <h3>Model</h3>
+        {% if metrics %}
+          <p><strong>Best model (CV):</strong> {{ metrics.cv_best_model }}</p>
+          <p><strong>CV ROC AUC:</strong> {{ '%.3f'|format(metrics.cv_best_auc) }}</p>
+          <p><strong>Test ROC AUC:</strong> {{ '%.3f'|format(metrics.test_auc) }}</p>
+        {% else %}
+          <p>Train and save the model from the notebook to populate metrics.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card" style="grid-column: 1 / span 2;">
+        <h3>VAT Return Upload (CSV or JSON)</h3>
+        <p style="font-size: 0.95em; color: #444;">
+          Upload a standard VAT Return file for a single taxpayer/period.
+          Only human-friendly VAT return fields are required; the system computes all engineered features and risk scores in the background.
+          <a href="/templates/return">Download VAT Return CSV Template</a>
+        </p>
+        <form method="post" action="/upload/return" enctype="multipart/form-data">
+          <input type="file" name="file" accept=".csv,.json" />
+          <br/><br/>
+          <button type="submit">Upload and Predict</button>
+        </form>
+      </div>
+    </div>
+
+    {% if predictions %}
+      <div class="card">
+        <h3>Predictions (showing up to 200 rows)</h3>
+        <div style="overflow:auto; max-height: 500px;">
+          <table border="1" cellpadding="6" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+            <thead>
+              <tr>
+                {% for k in predictions[0].keys() %}
+                  <th>{{ k }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in predictions %}
+                <tr>
+                  {% for v in row.values() %}
+                    <td>{{ v }}</td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>
