@@ -91,6 +91,220 @@ def _predict_dataframe(df_features: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+def _analyze_fraud_probability(df_features: pd.DataFrame, fraud_prob: float, row_idx: int = 0) -> Dict[str, Any]:
+    """Generate detailed fraud analysis report for a single record."""
+    row = df_features.iloc[row_idx]
+    
+    analysis = {
+        'fraud_probability': fraud_prob,
+        'risk_level': 'HIGH' if fraud_prob > 0.7 else 'MEDIUM' if fraud_prob > 0.3 else 'LOW',
+        'key_indicators': [],
+        'risk_factors': [],
+        'protective_factors': [],
+        'detailed_analysis': {
+            'claim_patterns': {},
+            'business_profile': {},
+            'transaction_behavior': {},
+            'compliance_history': {},
+            'risk_scores': {}
+        },
+        'recommendations': []
+    }
+    
+    # Analyze Claim Patterns
+    claim_analysis = analysis['detailed_analysis']['claim_patterns']
+    
+    # Refund amount and ratios
+    net_refund = row.get('net_refund_amount', 0)
+    refund_ratio = row.get('refund_to_output_ratio', 0)
+    input_output_ratio = row.get('input_output_vat_ratio', 1)
+    
+    claim_analysis['net_refund_amount'] = f"ZMW {net_refund:,.0f}"
+    claim_analysis['refund_to_output_ratio'] = f"{refund_ratio:.3f}"
+    claim_analysis['input_output_vat_ratio'] = f"{input_output_ratio:.3f}"
+    
+    # High-risk claim patterns
+    if refund_ratio > 0.8:
+        analysis['risk_factors'].append(f"Very high refund-to-output ratio ({refund_ratio:.2f}) - suggests minimal legitimate business activity")
+    elif refund_ratio > 0.5:
+        analysis['risk_factors'].append(f"High refund-to-output ratio ({refund_ratio:.2f}) - requires verification")
+    else:
+        analysis['protective_factors'].append(f"Normal refund-to-output ratio ({refund_ratio:.2f}) - indicates legitimate business activity")
+    
+    if input_output_ratio > 1.8:
+        analysis['risk_factors'].append(f"Excessive input VAT ratio ({input_output_ratio:.2f}) - possible inflated input claims")
+    elif input_output_ratio < 1.1:
+        analysis['protective_factors'].append(f"Conservative input VAT ratio ({input_output_ratio:.2f}) - suggests genuine business")
+    
+    # Claim frequency and timing
+    if row.get('is_first_time_claimant', 0):
+        analysis['risk_factors'].append("First-time claimant - higher scrutiny required")
+    
+    if row.get('is_high_value_claim', 0):
+        analysis['risk_factors'].append("High-value claim (top 10%) - requires enhanced verification")
+    
+    processing_zscore = row.get('processing_days_zscore', 0)
+    if processing_zscore < -1:
+        analysis['risk_factors'].append("Unusually fast processing request - may indicate urgency to obtain funds")
+    elif processing_zscore > 1:
+        analysis['protective_factors'].append("Normal processing timeframe - no urgency concerns")
+    
+    # Business Profile Analysis
+    business_analysis = analysis['detailed_analysis']['business_profile']
+    
+    business_age = row.get('business_age_years', 0)
+    business_analysis['business_age'] = f"{business_age:.1f} years"
+    
+    if row.get('is_young_business', 0):
+        analysis['risk_factors'].append(f"Young business (<2 years old) - limited trading history")
+    else:
+        analysis['protective_factors'].append(f"Established business ({business_age:.1f} years) - good trading history")
+    
+    if row.get('single_director', 0):
+        analysis['risk_factors'].append("Single director company - concentrated control")
+    
+    if row.get('is_sole_proprietor', 0):
+        analysis['risk_factors'].append("Sole proprietorship - individual control structure")
+    
+    # Address and verification issues
+    if row.get('address_not_verified', 0):
+        analysis['risk_factors'].append("Address not verified - location concerns")
+    
+    if row.get('bank_not_verified', 0):
+        analysis['risk_factors'].append("Bank account not verified - payment destination unclear")
+    
+    # Tax agent usage
+    if row.get('submitted_by_agent', 0):
+        analysis['protective_factors'].append("Submitted by tax agent - professional oversight")
+    elif row.get('no_tax_agent', 0):
+        analysis['risk_factors'].append("No tax agent - lacks professional oversight")
+    
+    # Transaction Behavior Analysis
+    transaction_analysis = analysis['detailed_analysis']['transaction_behavior']
+    
+    # Supplier diversity and verification
+    if row.get('low_supplier_diversity', 0):
+        analysis['risk_factors'].append("Low supplier diversity (≤3 suppliers) - limited business network")
+    
+    if row.get('has_unverified_suppliers', 0):
+        unverified_ratio = row.get('unverified_supplier_ratio', 0)
+        analysis['risk_factors'].append(f"Unverified suppliers present ({unverified_ratio:.1%} of suppliers) - supply chain risks")
+    
+    if row.get('has_few_purchases', 0):
+        analysis['risk_factors'].append("Few purchase transactions - limited business activity")
+    
+    if row.get('suspicious_purchase_pattern', 0):
+        analysis['risk_factors'].append("Suspicious purchase patterns detected - uniform transaction amounts")
+    
+    # Sales patterns
+    if row.get('has_export_sales', 0):
+        if row.get('is_export_heavy', 0):
+            analysis['protective_factors'].append("Export-heavy business - legitimate reason for VAT refunds")
+        else:
+            analysis['protective_factors'].append("Has export sales - supports refund claim")
+    
+    if row.get('has_missing_export_docs', 0):
+        analysis['risk_factors'].append("Missing export documentation - incomplete evidence")
+    
+    if row.get('has_unpaid_sales', 0):
+        analysis['risk_factors'].append("Unpaid sales present - cash flow concerns")
+    
+    if row.get('single_export_destination', 0):
+        analysis['risk_factors'].append("Single export destination - limited market diversification")
+    
+    # Customs verification
+    if row.get('export_without_customs', 0):
+        analysis['risk_factors'].append("Export sales without customs records - documentation gap")
+    
+    if row.get('large_export_customs_mismatch', 0):
+        analysis['risk_factors'].append("Large mismatch between export sales and customs data - verification required")
+    
+    # Compliance History Analysis
+    compliance_analysis = analysis['detailed_analysis']['compliance_history']
+    
+    if row.get('never_audited', 0):
+        analysis['risk_factors'].append("Never been audited - no compliance verification history")
+    
+    if row.get('has_audit_issues', 0):
+        analysis['risk_factors'].append("Previous audit issues found - compliance concerns")
+    
+    if row.get('has_penalties', 0):
+        analysis['risk_factors'].append("Previous penalties imposed - compliance violations")
+    
+    if row.get('low_compliance_rating', 0):
+        analysis['risk_factors'].append("Low compliance rating (<60) - poor compliance track record")
+    
+    # PACRA verification
+    if row.get('not_registered_pacra', 0):
+        analysis['risk_factors'].append("Not registered with PACRA - legitimacy concerns")
+    
+    if row.get('directors_mismatch', 0):
+        analysis['risk_factors'].append("Directors mismatch with PACRA records - identity verification issues")
+    
+    if row.get('address_mismatch_pacra', 0):
+        analysis['risk_factors'].append("Address mismatch with PACRA records - location verification issues")
+    
+    if row.get('is_dormant_company', 0):
+        analysis['risk_factors'].append("Dormant company status - inactive business claiming refunds")
+    
+    # Business size validation
+    claim_to_turnover = row.get('claim_to_turnover_ratio', 0)
+    if row.get('claim_exceeds_business_size', 0):
+        analysis['risk_factors'].append(f"Refund claim exceeds reasonable business size (claim-to-turnover: {claim_to_turnover:.1%})")
+    
+    if row.get('claim_exceeds_share_capital', 0):
+        analysis['risk_factors'].append("Refund claim exceeds 10x share capital - disproportionate to company size")
+    
+    # Risk Scores Analysis
+    risk_scores = analysis['detailed_analysis']['risk_scores']
+    supplier_risk = row.get('supplier_risk_score', 0)
+    export_risk = row.get('export_risk_score', 0)
+    legitimacy_risk = row.get('legitimacy_risk_score', 0)
+    historical_risk = row.get('historical_risk_score', 0)
+    
+    risk_scores['supplier_risk'] = f"{supplier_risk}/10"
+    risk_scores['export_risk'] = f"{export_risk}/10"
+    risk_scores['legitimacy_risk'] = f"{legitimacy_risk}/10"
+    risk_scores['historical_risk'] = f"{historical_risk}/10"
+    
+    # Key indicators summary
+    total_risk_factors = len(analysis['risk_factors'])
+    total_protective_factors = len(analysis['protective_factors'])
+    
+    if total_risk_factors > 8:
+        analysis['key_indicators'].append(f"Multiple red flags detected ({total_risk_factors} risk factors)")
+    elif total_risk_factors > 4:
+        analysis['key_indicators'].append(f"Several concerns identified ({total_risk_factors} risk factors)")
+    
+    if total_protective_factors > 4:
+        analysis['key_indicators'].append(f"Strong positive indicators ({total_protective_factors} protective factors)")
+    
+    # Recommendations
+    if fraud_prob > 0.7:
+        analysis['recommendations'].extend([
+            "IMMEDIATE REVIEW REQUIRED - High fraud probability",
+            "Conduct thorough document verification",
+            "Verify business premises and operations",
+            "Cross-check with customs and PACRA records",
+            "Consider on-site audit before processing refund"
+        ])
+    elif fraud_prob > 0.3:
+        analysis['recommendations'].extend([
+            "Enhanced due diligence recommended",
+            "Verify supporting documentation",
+            "Cross-reference with external databases",
+            "Monitor for future claims patterns"
+        ])
+    else:
+        analysis['recommendations'].extend([
+            "Standard processing acceptable",
+            "Routine verification sufficient",
+            "Monitor for any unusual patterns in future claims"
+        ])
+    
+    return analysis
+
+
 def _safe_ratio(a, b):
     b = np.where(pd.Series(b).fillna(0) == 0, np.nan, b)
     return np.array(a, dtype=float) / np.array(b, dtype=float)
@@ -794,18 +1008,81 @@ def upload_vat_return():
     else:
         df_return = pd.read_csv(f)
 
+    # Check batch size limit
+    if len(df_return) > 1000:
+        return jsonify({'error': 'Batch size limit exceeded. Maximum 1000 claims per upload.'}), 400
+
     try:
         df_features = _featureize_from_vat_return(df_return)
         # Preserve ids if present for display
-        preds = _predict_dataframe(pd.concat([
+        features_with_ids = pd.concat([
             df_return[['claim_id','taxpayer_id']] if set(['claim_id','taxpayer_id']).issubset(df_return.columns) else pd.DataFrame(index=df_return.index),
             df_features
-        ], axis=1))
+        ], axis=1)
+
+        preds = _predict_dataframe(features_with_ids)
+
+        # Add risk level classification
+        preds['risk_level'] = preds['fraud_probability'].apply(
+            lambda x: 'HIGH' if x > 0.7 else ('MEDIUM' if x > 0.3 else 'LOW')
+        )
+
+        # Determine if single or batch
+        is_batch = len(preds) > 1
+
+        # Generate detailed fraud analysis
+        fraud_analysis = None
+        batch_analyses = []
+
+        if len(preds) == 1:
+            # Single record - full detailed analysis
+            fraud_prob = preds.iloc[0]['fraud_probability']
+            fraud_analysis = _analyze_fraud_probability(features_with_ids, fraud_prob, 0)
+        else:
+            # Batch - generate summary for each record
+            for idx in range(len(preds)):
+                fraud_prob = preds.iloc[idx]['fraud_probability']
+                analysis = _analyze_fraud_probability(features_with_ids, fraud_prob, idx)
+
+                # Create compact summary for batch view
+                summary = {
+                    'claim_id': preds.iloc[idx].get('claim_id', f'Row {idx+1}'),
+                    'taxpayer_id': preds.iloc[idx].get('taxpayer_id', 'N/A'),
+                    'fraud_probability': fraud_prob,
+                    'risk_level': preds.iloc[idx]['risk_level'],
+                    'top_risk_factors': analysis['risk_factors'][:5],  # Top 5 risks
+                    'top_protective_factors': analysis['protective_factors'][:3],  # Top 3 protective
+                    'key_ratios': {
+                        'refund_to_output': analysis['detailed_analysis']['claim_patterns'].get('refund_to_output_ratio', 'N/A'),
+                        'input_output': analysis['detailed_analysis']['claim_patterns'].get('input_output_vat_ratio', 'N/A'),
+                    },
+                    'recommendations': analysis['recommendations'][:2]  # Top 2 recommendations
+                }
+                batch_analyses.append(summary)
+
     except Exception as e:
         return jsonify({'error': f'VAT return processing failed: {e}'}), 400
 
-    rows = preds.head(200).to_dict(orient='records')
-    return render_template('index.html', predictions=rows, metrics=_metrics, summary=_summary, mode='return')
+    # For batch, show summary table; for single, show detailed analysis
+    if is_batch:
+        rows = preds.to_dict(orient='records')
+        return render_template('index.html',
+                             predictions=rows,
+                             batch_analyses=batch_analyses,
+                             is_batch=True,
+                             batch_count=len(rows),
+                             metrics=_metrics,
+                             summary=_summary,
+                             mode='return')
+    else:
+        rows = preds.head(200).to_dict(orient='records')
+        return render_template('index.html',
+                             predictions=rows,
+                             fraud_analysis=fraud_analysis,
+                             is_batch=False,
+                             metrics=_metrics,
+                             summary=_summary,
+                             mode='return')
 
 
 # Backward compatible JSON predict endpoint (single record)

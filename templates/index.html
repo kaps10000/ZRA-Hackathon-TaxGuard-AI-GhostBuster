@@ -3,68 +3,325 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZRA Fraud Prediction</title>
+  <title>ZRA VAT Fraud Detection System</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
   <header>
-    <h1>ZRA Fraud Prediction</h1>
+    <h1>ZRA VAT Fraud Detection</h1>
+    <p>AI-Powered VAT Refund Fraud Analysis System</p>
   </header>
   <div class="container">
-    <div class="grid">
-      <div class="card" style="grid-column: 1 / span 2;">
-        <h3>Model</h3>
-        {% if metrics %}
-          <p><strong>Best model (CV):</strong> {{ metrics.cv_best_model }}</p>
-          <p><strong>CV ROC AUC:</strong> {{ '%.3f'|format(metrics.cv_best_auc) }}</p>
-          <p><strong>Test ROC AUC:</strong> {{ '%.3f'|format(metrics.test_auc) }}</p>
-        {% else %}
-          <p>Train and save the model from the notebook to populate metrics.</p>
+    <!-- Upload Section -->
+    <div class="card">
+      <h3>📤 Upload VAT Return(s) for Analysis</h3>
+      <p style="font-size: 0.95em; color: #444; margin-bottom: 1.5rem;">
+        Upload a CSV or JSON file containing one or more VAT returns. The system will automatically process and analyze each claim.
+      </p>
+
+      <div class="grid">
+        <div>
+          <h4 style="color: #2c3e50; margin-bottom: 1rem;">Single or Batch Upload</h4>
+          <form method="post" action="/upload/return" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".csv,.json" required />
+            <button type="submit">Analyze VAT Return(s)</button>
+          </form>
+          <p style="margin-top: 1rem; font-size: 0.9rem; color: #666;">
+            <strong>Supported formats:</strong> CSV, JSON<br>
+            <strong>Max file size:</strong> 50 MB<br>
+            <strong>Max claims per file:</strong> 1000
+          </p>
+        </div>
+
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #3498db;">
+          <h4 style="color: #2c3e50; margin-top: 0;">📊 Example Results</h4>
+          <p style="font-size: 0.9rem; margin-bottom: 0.5rem;"><strong>Single Claim:</strong> Detailed fraud analysis report with risk factors</p>
+          <p style="font-size: 0.9rem; margin-bottom: 0.5rem;"><strong>Batch Claims:</strong> Summary table with fraud probability for each claim</p>
+          <p style="font-size: 0.9rem; margin-bottom: 0;"><strong>Export:</strong> Download results as CSV for audit records</p>
+        </div>
+      </div>
+    </div>
+
+    {% if fraud_analysis %}
+      <!-- FRAUD ANALYSIS DASHBOARD -->
+      <div class="card" style="background: {% if fraud_analysis.risk_level == 'HIGH' %}#fff2f2{% elif fraud_analysis.risk_level == 'MEDIUM' %}#fff8e1{% else %}#f3fff3{% endif %}; border-left: 5px solid {% if fraud_analysis.risk_level == 'HIGH' %}#d32f2f{% elif fraud_analysis.risk_level == 'MEDIUM' %}#f57c00{% else %}#388e3c{% endif %};">
+        <h2 style="color: {% if fraud_analysis.risk_level == 'HIGH' %}#d32f2f{% elif fraud_analysis.risk_level == 'MEDIUM' %}#f57c00{% else %}#388e3c{% endif %}; margin-top: 0;">
+          🚨 VAT FRAUD ANALYSIS REPORT
+        </h2>
+        
+        <!-- EXECUTIVE SUMMARY -->
+        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <h3 style="margin-top: 0; color: #333;">📊 Executive Summary</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+            <div style="text-align: center; padding: 15px; background: {% if fraud_analysis.risk_level == 'HIGH' %}#ffebee{% elif fraud_analysis.risk_level == 'MEDIUM' %}#fff3e0{% else %}#e8f5e8{% endif %}; border-radius: 8px;">
+              <div style="font-size: 2.5em; font-weight: bold; color: {% if fraud_analysis.risk_level == 'HIGH' %}#d32f2f{% elif fraud_analysis.risk_level == 'MEDIUM' %}#f57c00{% else %}#388e3c{% endif %};">{{ '%.1f'|format(fraud_analysis.fraud_probability * 100) }}%</div>
+              <div style="font-weight: bold; color: #666;">Fraud Probability</div>
+            </div>
+            <div style="text-align: center; padding: 15px; background: {% if fraud_analysis.risk_level == 'HIGH' %}#ffebee{% elif fraud_analysis.risk_level == 'MEDIUM' %}#fff3e0{% else %}#e8f5e8{% endif %}; border-radius: 8px;">
+              <div style="font-size: 2em; font-weight: bold; color: {% if fraud_analysis.risk_level == 'HIGH' %}#d32f2f{% elif fraud_analysis.risk_level == 'MEDIUM' %}#f57c00{% else %}#388e3c{% endif %};">{{ fraud_analysis.risk_level }}</div>
+              <div style="font-weight: bold; color: #666;">Risk Level</div>
+            </div>
+          </div>
+          
+          {% if fraud_analysis.key_indicators %}
+            <div style="margin-top: 15px;">
+              <h4 style="color: #333; margin-bottom: 10px;">🎯 Key Indicators:</h4>
+              <ul style="margin: 0; padding-left: 20px;">
+                {% for indicator in fraud_analysis.key_indicators %}
+                  <li style="margin-bottom: 5px; color: #555;"><strong>{{ indicator }}</strong></li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+        </div>
+        
+        <!-- DETAILED ANALYSIS SECTIONS -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+          
+          <!-- RISK FACTORS -->
+          {% if fraud_analysis.risk_factors %}
+          <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h3 style="margin-top: 0; color: #d32f2f;">⚠️ Risk Factors Identified ({{ fraud_analysis.risk_factors|length }})</h3>
+            <ul style="margin: 0; padding-left: 20px; max-height: 300px; overflow-y: auto;">
+              {% for risk in fraud_analysis.risk_factors %}
+                <li style="margin-bottom: 8px; color: #d32f2f; line-height: 1.4;">{{ risk }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+          
+          <!-- PROTECTIVE FACTORS -->
+          {% if fraud_analysis.protective_factors %}
+          <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h3 style="margin-top: 0; color: #388e3c;">✅ Protective Factors ({{ fraud_analysis.protective_factors|length }})</h3>
+            <ul style="margin: 0; padding-left: 20px; max-height: 300px; overflow-y: auto;">
+              {% for factor in fraud_analysis.protective_factors %}
+                <li style="margin-bottom: 8px; color: #388e3c; line-height: 1.4;">{{ factor }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+        
+        <!-- DETAILED ANALYSIS BREAKDOWN -->
+        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <h3 style="margin-top: 0; color: #333;">🔍 Detailed Analysis Breakdown</h3>
+          
+          <!-- Risk Scores -->
+          <div style="margin-bottom: 25px;">
+            <h4 style="color: #333; margin-bottom: 15px;">📊 Risk Scores</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+              <div style="text-align: center; padding: 10px; background: #f5f5f5; border-radius: 8px;">
+                <div style="font-size: 1.5em; font-weight: bold; color: #333;">{{ fraud_analysis.detailed_analysis.risk_scores.supplier_risk }}</div>
+                <div style="color: #666;">Supplier Risk</div>
+              </div>
+              <div style="text-align: center; padding: 10px; background: #f5f5f5; border-radius: 8px;">
+                <div style="font-size: 1.5em; font-weight: bold; color: #333;">{{ fraud_analysis.detailed_analysis.risk_scores.export_risk }}</div>
+                <div style="color: #666;">Export Risk</div>
+              </div>
+              <div style="text-align: center; padding: 10px; background: #f5f5f5; border-radius: 8px;">
+                <div style="font-size: 1.5em; font-weight: bold; color: #333;">{{ fraud_analysis.detailed_analysis.risk_scores.legitimacy_risk }}</div>
+                <div style="color: #666;">Legitimacy Risk</div>
+              </div>
+              <div style="text-align: center; padding: 10px; background: #f5f5f5; border-radius: 8px;">
+                <div style="font-size: 1.5em; font-weight: bold; color: #333;">{{ fraud_analysis.detailed_analysis.risk_scores.historical_risk }}</div>
+                <div style="color: #666;">Historical Risk</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Claim Patterns -->
+          {% if fraud_analysis.detailed_analysis.claim_patterns %}
+          <div style="margin-bottom: 25px;">
+            <h4 style="color: #333; margin-bottom: 10px;">💰 Claim Pattern Analysis</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+              {% for key, value in fraud_analysis.detailed_analysis.claim_patterns.items() %}
+                <div style="background: #f9f9f9; padding: 10px; border-radius: 6px;">
+                  <div style="font-weight: bold; color: #333; text-transform: capitalize;">{{ key.replace('_', ' ') }}:</div>
+                  <div style="color: #666;">{{ value }}</div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+          
+          <!-- Business Profile -->
+          {% if fraud_analysis.detailed_analysis.business_profile %}
+          <div style="margin-bottom: 25px;">
+            <h4 style="color: #333; margin-bottom: 10px;">🏢 Business Profile Analysis</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+              {% for key, value in fraud_analysis.detailed_analysis.business_profile.items() %}
+                <div style="background: #f9f9f9; padding: 10px; border-radius: 6px;">
+                  <div style="font-weight: bold; color: #333; text-transform: capitalize;">{{ key.replace('_', ' ') }}:</div>
+                  <div style="color: #666;">{{ value }}</div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        
+        <!-- RECOMMENDATIONS -->
+        {% if fraud_analysis.recommendations %}
+        <div style="background: {% if fraud_analysis.risk_level == 'HIGH' %}#ffebee{% elif fraud_analysis.risk_level == 'MEDIUM' %}#fff3e0{% else %}#e8f5e8{% endif %}; padding: 20px; border-radius: 8px; border-left: 4px solid {% if fraud_analysis.risk_level == 'HIGH' %}#d32f2f{% elif fraud_analysis.risk_level == 'MEDIUM' %}#f57c00{% else %}#388e3c{% endif %};">
+          <h3 style="margin-top: 0; color: {% if fraud_analysis.risk_level == 'HIGH' %}#d32f2f{% elif fraud_analysis.risk_level == 'MEDIUM' %}#f57c00{% else %}#388e3c{% endif %};">📋 Action Recommendations</h3>
+          <ol style="margin: 0; padding-left: 20px;">
+            {% for rec in fraud_analysis.recommendations %}
+              <li style="margin-bottom: 10px; color: #333; line-height: 1.5;"><strong>{{ rec }}</strong></li>
+            {% endfor %}
+          </ol>
+        </div>
         {% endif %}
       </div>
-    </div>
-
-    <div class="grid">
-      <div class="card" style="grid-column: 1 / span 2;">
-        <h3>VAT Return Upload (CSV or JSON)</h3>
-        <p style="font-size: 0.95em; color: #444;">
-          Upload a standard VAT Return file for a single taxpayer/period.
-          Only human-friendly VAT return fields are required; the system computes all engineered features and risk scores in the background.
-          <a href="/templates/return">Download VAT Return CSV Template</a>
-        </p>
-        <form method="post" action="/upload/return" enctype="multipart/form-data">
-          <input type="file" name="file" accept=".csv,.json" />
-          <br/><br/>
-          <button type="submit">Upload and Predict</button>
-        </form>
-      </div>
-    </div>
-
-    {% if predictions %}
+      
+    {% elif predictions %}
+      <!-- BATCH RESULTS WITH EXPANDABLE DETAILS -->
       <div class="card">
-        <h3>Predictions (showing up to 200 rows)</h3>
-        <div style="overflow:auto; max-height: 500px;">
-          <table border="1" cellpadding="6" cellspacing="0" style="border-collapse: collapse; width: 100%;">
-            <thead>
-              <tr>
-                {% for k in predictions[0].keys() %}
-                  <th>{{ k }}</th>
-                {% endfor %}
-              </tr>
-            </thead>
-            <tbody>
-              {% for row in predictions %}
-                <tr>
-                  {% for v in row.values() %}
-                    <td>{{ v }}</td>
+        {% if is_batch %}
+          <h3>📊 Batch Analysis Results - {{ batch_count }} Claims Processed</h3>
+          <div class="alert alert-success" style="margin-bottom: 1.5rem;">
+            <strong>✓ Success!</strong> Analyzed {{ batch_count }} VAT refund claims. Click any row to see why it was flagged.
+          </div>
+
+          <!-- Summary Statistics -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+            <div style="background: #ffebee; padding: 1rem; border-radius: 8px; text-align: center; border-left: 4px solid #e74c3c;">
+              <div style="font-size: 2rem; font-weight: bold; color: #e74c3c;">
+                {{ predictions | selectattr('risk_level', 'equalto', 'HIGH') | list | length }}
+              </div>
+              <div style="color: #666;">High Risk</div>
+            </div>
+            <div style="background: #fff3e0; padding: 1rem; border-radius: 8px; text-align: center; border-left: 4px solid #f39c12;">
+              <div style="font-size: 2rem; font-weight: bold; color: #f39c12;">
+                {{ predictions | selectattr('risk_level', 'equalto', 'MEDIUM') | list | length }}
+              </div>
+              <div style="color: #666;">Medium Risk</div>
+            </div>
+            <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px; text-align: center; border-left: 4px solid #27ae60;">
+              <div style="font-size: 2rem; font-weight: bold; color: #27ae60;">
+                {{ predictions | selectattr('risk_level', 'equalto', 'LOW') | list | length }}
+              </div>
+              <div style="color: #666;">Low Risk</div>
+            </div>
+          </div>
+
+          <!-- Expandable Detailed Cards -->
+          {% for analysis in batch_analyses %}
+          <div style="margin-bottom: 1.5rem; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 5px solid {% if analysis.risk_level == 'HIGH' %}#e74c3c{% elif analysis.risk_level == 'MEDIUM' %}#f39c12{% else %}#27ae60{% endif %};">
+            <!-- Header (Always Visible - Clickable) -->
+            <div onclick="toggleDetails('detail-{{ loop.index }}')" style="cursor: pointer; padding: 1.5rem; background: {% if analysis.risk_level == 'HIGH' %}#fff2f2{% elif analysis.risk_level == 'MEDIUM' %}#fff8e1{% else %}#f3fff3{% endif %}; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s;">
+              <div style="flex: 1;">
+                <h4 style="margin: 0; color: #2c3e50; font-size: 1.2rem;">
+                  <span style="font-weight: normal; color: #666;">Claim:</span> {{ analysis.claim_id }}
+                  <span style="font-weight: normal; color: #666; margin-left: 1rem;">Taxpayer:</span> {{ analysis.taxpayer_id }}
+                </h4>
+                <div style="margin-top: 0.5rem;">
+                  <span class="badge badge-{{ analysis.risk_level.lower() }}" style="font-size: 0.9rem;">{{ analysis.risk_level }} RISK</span>
+                  <span style="margin-left: 1rem; font-weight: bold; color: {% if analysis.risk_level == 'HIGH' %}#e74c3c{% elif analysis.risk_level == 'MEDIUM' %}#f39c12{% else %}#27ae60{% endif %};">
+                    {{ '%.1f'|format(analysis.fraud_probability * 100) }}% Fraud Probability
+                  </span>
+                </div>
+              </div>
+              <div style="font-size: 1.5rem; color: #3498db; transition: transform 0.3s;" id="icon-{{ loop.index }}">
+                ▼
+              </div>
+            </div>
+
+            <!-- Expandable Details (Hidden by Default) -->
+            <div id="detail-{{ loop.index }}" style="display: none; padding: 1.5rem; background: white; border-top: 1px solid #e0e0e0;">
+
+              <!-- Key Ratios -->
+              <div style="margin-bottom: 1.5rem;">
+                <h4 style="color: #2c3e50; margin-bottom: 0.75rem; font-size: 1rem;">📊 Key Ratios</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div style="background: #f8f9fa; padding: 0.75rem; border-radius: 6px;">
+                    <div style="color: #666; font-size: 0.85rem;">Refund-to-Output Ratio</div>
+                    <div style="font-weight: bold; color: #2c3e50;">{{ analysis.key_ratios.refund_to_output }}</div>
+                  </div>
+                  <div style="background: #f8f9fa; padding: 0.75rem; border-radius: 6px;">
+                    <div style="color: #666; font-size: 0.85rem;">Input-Output VAT Ratio</div>
+                    <div style="font-weight: bold; color: #2c3e50;">{{ analysis.key_ratios.input_output }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Risk Factors and Protective Factors Side by Side -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <!-- Risk Factors -->
+                {% if analysis.top_risk_factors %}
+                <div>
+                  <h4 style="color: #e74c3c; margin-bottom: 0.75rem; font-size: 1rem;">⚠️ Top Risk Factors</h4>
+                  <ul style="margin: 0; padding-left: 1.25rem; list-style: none;">
+                    {% for risk in analysis.top_risk_factors %}
+                      <li style="margin-bottom: 0.5rem; padding-left: 1.5rem; position: relative; color: #d32f2f; font-size: 0.9rem; line-height: 1.4;">
+                        <span style="position: absolute; left: 0;">🔴</span>
+                        {{ risk }}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                {% endif %}
+
+                <!-- Protective Factors -->
+                {% if analysis.top_protective_factors %}
+                <div>
+                  <h4 style="color: #27ae60; margin-bottom: 0.75rem; font-size: 1rem;">✅ Protective Factors</h4>
+                  <ul style="margin: 0; padding-left: 1.25rem; list-style: none;">
+                    {% for factor in analysis.top_protective_factors %}
+                      <li style="margin-bottom: 0.5rem; padding-left: 1.5rem; position: relative; color: #388e3c; font-size: 0.9rem; line-height: 1.4;">
+                        <span style="position: absolute; left: 0;">🟢</span>
+                        {{ factor }}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                {% endif %}
+              </div>
+
+              <!-- Recommendations -->
+              {% if analysis.recommendations %}
+              <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px; border-left: 4px solid #2196f3;">
+                <h4 style="color: #1976d2; margin-top: 0; margin-bottom: 0.75rem; font-size: 1rem;">📋 Recommendations</h4>
+                <ol style="margin: 0; padding-left: 1.5rem;">
+                  {% for rec in analysis.recommendations %}
+                    <li style="margin-bottom: 0.5rem; color: #333; font-size: 0.9rem;">{{ rec }}</li>
                   {% endfor %}
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+                </ol>
+              </div>
+              {% endif %}
+
+            </div>
+          </div>
+          {% endfor %}
+
+          <script>
+          function toggleDetails(id) {
+            const element = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id.split('-')[1]);
+
+            if (element.style.display === 'none' || element.style.display === '') {
+              element.style.display = 'block';
+              icon.textContent = '▲';
+              icon.style.transform = 'rotate(180deg)';
+            } else {
+              element.style.display = 'none';
+              icon.textContent = '▼';
+              icon.style.transform = 'rotate(0deg)';
+            }
+          }
+          </script>
+
+        {% else %}
+          <h3>Analysis Results</h3>
+        {% endif %}
       </div>
     {% endif %}
   </div>
+
+  <footer>
+    <p><strong>ZRA VAT Fraud Detection System</strong></p>
+    <p>Powered by Advanced Machine Learning | Zambia Revenue Authority</p>
+    <p>&copy; 2025 ZRA - All Rights Reserved</p>
+  </footer>
 </body>
 </html>
