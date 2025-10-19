@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## OCR Suite Frontend
 
-## Getting Started
+This is a Next.js app (App Router) for the OCR Suite dashboard and landing experience.
 
-First, run the development server:
+## Requirements
+- Node.js 18+ (recommended LTS)
+- pnpm (preferred) or npm/yarn/bun
 
+## Install
 ```bash
-npm run dev
+pnpm install
 # or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Development
+```bash
+pnpm dev
+```
+- Runs Next.js with Turbopack on http://localhost:3000
+- Hot reload enabled
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Build & Run
+```bash
+pnpm build
+pnpm start
+```
+- Builds (Turbopack) and starts a production server
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Lint
+```bash
+pnpm lint
+```
 
-## Learn More
+## Environment variables
+- Create `.env.local` if needed for your environment.
+- If API calls are used in the UI, ensure your API base URL is configured appropriately (for example via a `NEXT_PUBLIC_...` variable). Consult `components/UploadForm.tsx` and any `lib/api` utilities for specifics.
 
-To learn more about Next.js, take a look at the following resources:
+## Project structure (high-level)
+- `app/` — App Router pages and routes
+  - `app/(main)/layout.tsx` — dashboard shell (navbar, sidenav overlay)
+  - `app/(main)/dashboard/` — dashboard pages
+  - `app/page.tsx` — landing page
+- `components/`
+  - `components/navigation/` — `SideNav`, `NavBar`
+  - `components/home/` — `FeatureCard`, `BenefitStat`, `StepCard`
+  - `components/ui/Modal.tsx` — reusable modal used for uploads
+  - `components/UploadForm.tsx` — upload + verify flow (used inside modal)
+- `store/` — client state (e.g., `useUploadsStore`)
+- `styles/` (if present) — global styles
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Theming
+- Tailwind CSS v4
+- Dark theme palette centered on `blue-950` with subtle borders/overlays
+- Components follow the dashboard theme for consistency
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Common tasks
+- Change port: `PORT=3001 pnpm dev`
+- Analyze build without telemetry: `NEXT_TELEMETRY_DISABLED=1 pnpm build`
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Scripts (package.json)
+- `dev` — `next dev --turbopack`
+- `build` — `next build --turbopack`
+- `start` — `next start`
+- `lint` — `eslint`
