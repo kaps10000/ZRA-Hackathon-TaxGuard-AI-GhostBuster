@@ -1,0 +1,190 @@
+{\rtf1\ansi\deff0{\fonttbl{\f0 Calibri;}}\fs22
+\b Smart Irrigation System – Comprehensive Documentation (API + Remote Usage + System Overview)\b0\par
+\par
+\b 1) Overview\b0\par
+Purpose: Provide real-time irrigation control, soil health analytics, and crop recommendations via a Flask web service integrated with an Arduino-based sensor/pump system.\par
+Stack: Flask (Python), Pandas/NumPy/Plotly, scikit-learn (optional), HTML/CSS/JS, Arduino over serial.\par
+Key files:\par
+- water_harvest_dashboard.py (Flask server, serial IO, decisions, APIs)\par
+- soil_health_monitor.py (historical soil analytics, charts, farmer summary)\par
+- crop_recommendation.py (synthetic dataset, model training, recommendations)\par
+- templates/*.html (UI pages)\par
+- models/* (datasets, model pickles, metadata)\par
+\par
+\b 2) Environments and Base URLs\b0\par
+- Local (same PC): http://127.0.0.1:5000\par
+- Remote (public, tunnel): e.g., https://earlene-unrecognizable-vaughn.ngrok-free.dev\par
+\par
+When calling from another machine or a mobile app, replace the local base URL with your public tunnel domain.\par
+\par
+\b 3) HTML Pages (Full UI)\b0\par
+- GET / – Main dashboard (live telemetry, decisions, alerts, log stats, controls)\par
+- GET /soil-health – Soil Health Analytics (charts + farmer-friendly summary)\par
+- GET /crop-recommend – Crop Recommendations (responsive on phones)\par
+\par
+\b 4) API Endpoints (JSON)\b0\par
+\ul 4.1 System Data (Live)\ul0\par
+GET /api/data\par
+Purpose: Current telemetry, decision, alerts, and log stats.\par
+Response 200 example:\par
+{\pard\li360\f0
+{\'7b}\par
+  "soil_moisture": 640,\par
+  "temperature": 29.8,\par
+  "humidity": 30.0,\par
+  "soil_status": "WET",\par
+  "weather": {\par
+    "description": "Partly cloudy",\par
+    "temperature": 29.0,\par
+    "humidity": 45,\par
+    "cloud_coverage": 60,\par
+    "rain_coming": false,\par
+    "precip_mm": 0\par
+  },\par
+  "decision": "STOP",\par
+  "model_decision": "STOP",\par
+  "water_saved": 10,\par
+  "irrigation_count": 7,\par
+  "last_update": "2025-10-18 15:19:08",\par
+  "system_status": "Connected",\par
+  "alerts": [{\par
+    "type":"info","message":"Irrigation #7 activated","time":"15:18:37"\par
+  }],\par
+  "log_stats": {\par
+    "total_entries": 123,\par
+    "file_size": "25.31 KB",\par
+    "date_range": "2025-10-14 to 2025-10-18"\par
+  }\par
+{\'7d}\par
+}\par
+\par
+\ul 4.2 Manual Test Actions\ul0\par
+GET /api/test/irrigate – Manually send IRRIGATE.\par
+Response 200: {"status":"success","message":"Irrigation triggered"}\par
+\par
+GET /api/test/rain – Manually send RAIN_ALERT.\par
+Response 200: {"status":"success","message":"Rain alert triggered"}\par
+\par
+\ul 4.3 Log Download\ul0\par
+GET /api/log/download – Download CSV log (irrigation_data_log.csv).\par
+Response: 200, file attachment (Content-Disposition).\par
+\par
+\ul 4.4 Soil Health Analytics (Historical)\ul0\par
+GET /api/soil-health – Historical soil metrics, alerts, farmer summary, Plotly visuals.\par
+Notes: visuals.* are Plotly HTML <div> strings; farmer_summary is plain-language guidance.\par
+\par
+\ul 4.5 Crop Recommendations\ul0\par
+POST /api/crop/recommend – Recommend crops for the season.\par
+Content-Type: application/json (recommended) or application/x-www-form-urlencoded\par
+Request JSON:\par
+{\pard\li360\f0
+{\'7b}"temperature":26.5,"rainfall":780,"season":"Rainy","soil_type":"Loam"{\'7d}\par
+}\par
+Response 200 (success):\par
+{\pard\li360\f0
+{\'7b}\par
+  "status":"success",\par
+  "input":{\par
+    "temperature":26.5,"rainfall":780,"season":"Rainy","soil_type":"Loam"\par
+  },\par
+  "recommendations":[\par
+    {"crop":"Maize","confidence":0.94},\par
+    {"crop":"Soybeans","confidence":0.78},\par
+    {"crop":"Groundnuts","confidence":0.72}\par
+  ],\par
+  "best":{\par
+    "crop":"Maize","score":0.91,"risk":"Low","message":"Favorable climate match expected."\par
+  }\par
+{\'7d}\par
+}\par
+\par
+\b 5) Remote Usage (Your PC as a Server)\b0\par
+- Start the Flask app locally: python water_harvest_dashboard.py\par
+- Ensure your tunnel maps public domain → localhost:5000 (e.g., your ngrok domain).\par
+- Share the domain (e.g., https://earlene-unrecognizable-vaughn.ngrok-free.dev).\par
+- Your friend’s app replaces http://127.0.0.1:5000 with the public domain in all requests.\par
+- CORS is enabled, so browser apps can call the APIs from a different origin.\par
+\par
+Example (remote cURL):\par
+{\pard\li360\f0
+curl -s -H "Content-Type: application/json" -X POST \\par
+  -d '{"temperature":26.5,"rainfall":780,"season":"Rainy","soil_type":"Loam"}' \\par
+  https://earlene-unrecognizable-vaughn.ngrok-free.dev/api/crop/recommend\par
+}\par
+\par
+\b 6) Irrigation Decision Logic (Server + Arduino)\b0\par
+- Sensor input from Arduino: DATA,<soil_moisture>,<temperature>,<humidity>\par
+- Moisture thresholds (tunable):\par
+  - DRY_SOIL_THRESHOLD: < 300 → DRY\par
+  - WET_SOIL_THRESHOLD: ≥ 600 → WET\par
+  - Edit at: water_harvest_dashboard.py lines 42–44 (also RETRY_WINDOW_SEC=30)\par
+- Control output to Arduino: IRRIGATE | STOP | RAIN_ALERT + LED8_ON/OFF (pin 8).\par
+- Guardrails:\par
+  - Sensor override for safety: if soil is DRY, irrigate even if model says STOP.\par
+  - Transition gating: ignore repeated IRRIGATE (send only on state change).\par
+  - 30s retry: if still DRY after 30s from last IRRIGATE, re-send IRRIGATE.\par
+\par
+\b 7) Machine Learning – Irrigation Model\b0\par
+Artifacts:\par
+- models/irrigation_decision_model_REAL.pkl (classifier), models/model_info_REAL.json (feature schema).\par
+Features: Soil_Moisture, Temperature_C, Humidity_Percent, Rain_Coming_Binary, Days_Since_Rain, Hour, Weather_Humidity, Weather_Temp_C.\par
+Training data: engineered from irrigation logs (models/processed_irrigation_data.csv).\par
+\par
+\ul Performance (test split: 10 samples)\ul0\par
+precision/recall/f1/support:\par
+- IRRIGATE: 1.00 / 1.00 / 1.00 (support 2)\par
+- STOP:     1.00 / 1.00 / 1.00 (support 8)\par
+accuracy: 1.00\par
+macro avg: precision 1.00 / recall 1.00 / f1 1.00 (support 10)\par
+weighted avg: precision 1.00 / recall 1.00 / f1 1.00 (support 10)\par
+\par
+Runtime: builds features from live sensor + weather, predicts IRRIGATE/STOP, then applies safety override, transition gating, and 30s retry before sending the final command to Arduino.\par
+\par
+\b 8) Soil Health Analytics\b0\par
+- Reads historical CSV, cleans timestamps, computes Soil_Health_Score vs ideal moisture (650).\par
+- Detects faster-than-normal drying (>20% above historic).\par
+- Alerts: TREND DETECTED, SOIL DEGRADATION (<40 score), MOISTURE CRITICAL (<300).\par
+- Plotly visuals: last 7/30-day moisture, health score history.\par
+- Farmer summary: traffic-light status, “Do now” action, reason, tips, and a simple guide describing the charts.\par
+\par
+\b 9) Crop Recommendation Engine\b0\par
+- Synthetic Zambia-like dataset (models/crop_synthetic_dataset.csv).\par
+- Trains models/crop_recommender.pkl if scikit-learn available; else uses rule-based scoring.\par
+- API: POST /api/crop/recommend → ranked crops, best crop + risk assessment.\par
+- Responsive UI at /crop-recommend (mobile-friendly form).\par
+\par
+\b 10) Security & Ops Notes\b0\par
+- Consider moving weather API keys to environment variables in production.\par
+- If exposing publicly, protect sensitive endpoints (/api/test/*) or add a simple token header (X-API-Key).\par
+- For hardware reliability, use a separate motor power supply with common ground and flyback diode.\par
+- Optionally cache weather (e.g., every 10–15 minutes) to reduce latency.\par
+\par
+\b 11) Example Client Snippets\b0\par
+cURL (local):\par
+{\pard\li360\f0 curl -s http://127.0.0.1:5000/api/data\par
+}\par
+\par
+JavaScript (remote):\par
+{\pard\li360\f0
+const BASE = 'https://earlene-unrecognizable-vaughn.ngrok-free.dev';\par
+fetch(`${BASE}/api/data`).then(r=>r.json()).then(console.log);\par
+}\par
+\par
+Python (requests):\par
+{\pard\li360\f0
+import requests\par
+BASE = 'https://earlene-unrecognizable-vaughn.ngrok-free.dev'\par
+print(requests.get(f'{BASE}/api/data').json())\par
+payload = {"temperature":26.5,"rainfall":780,"season":"Rainy","soil_type":"Loam"}\par
+print(requests.post(f'{BASE}/api/crop/recommend', json=payload).json())\par
+}\par
+\par
+\b 12) Configuration Quick Reference\b0\par
+- Moisture thresholds & retry window: water_harvest_dashboard.py lines 42–44\par
+- LED policy & command sending: process_arduino_data() in water_harvest_dashboard.py\par
+- Soil analytics config: soil_health_monitor.py (IDEAL_MOISTURE, visuals)\par
+- Crop model/data: crop_recommendation.py and models/*\par
+\par
+\par
+\b End of Document\b0\par
+}
