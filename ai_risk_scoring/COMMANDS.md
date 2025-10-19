@@ -181,12 +181,16 @@ curl -X POST http://127.0.0.1:5000/predict/manual \
 
 #### ML Model Prediction
 ```bash
-# Note: ML prediction requires full feature set (run test_api.py instead)
-# For manual testing, use the test script:
-python -c "
-from test_api import test_with_proper_features
-test_with_proper_features()
-"
+# Note: ML prediction requires 13 specific features:
+# amount, amount_log, amount_squared, sector_avg_amount, sector_std_amount,
+# amount_vs_sector_avg, amount_sector_zscore, region_avg_amount, 
+# region_std_amount, amount_vs_region_avg, is_high_amount, 
+# is_high_risk_sector, is_high_risk_region
+
+# Use the dedicated ML test script:
+python test_ml_model.py
+
+# This handles feature engineering automatically
 ```
 
 #### Comprehensive Testing
@@ -197,6 +201,40 @@ python test_api.py
 # Test individual functions
 python -c "from test_api import test_health; test_health()"
 python -c "from test_api import test_simple_manual_scoring; test_simple_manual_scoring()"
+```
+
+#### Test Trained ML Model
+```bash
+# Test the trained ML model (.pkl file) directly
+python test_ml_model.py
+
+# This will test:
+# 1. Direct model loading and prediction
+# 2. API endpoint with properly formatted features
+# 3. Show expected feature set and risk scores
+
+# Expected output:
+# ✅ ML model loaded successfully
+# ✅ ML API Prediction Success!
+# 🎉 All ML model tests passed!
+```
+
+#### Browser Testing
+```bash
+# Start API server
+python -m api.scoring_api &
+
+# Then open these URLs in your browser:
+# Main API Info: http://127.0.0.1:5000/
+# Health Check: http://127.0.0.1:5000/health
+
+# Test manual scoring from browser console:
+# Go to http://127.0.0.1:5000/ and paste in console:
+fetch('/predict/manual', {
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify([{amount: 8500}, {amount: 12000}])
+}).then(r => r.json()).then(console.log)
 ```
 
 ---
