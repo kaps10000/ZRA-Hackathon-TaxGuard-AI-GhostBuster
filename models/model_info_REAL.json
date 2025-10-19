@@ -1,0 +1,56 @@
+{
+    "feature_columns": [
+        "Soil_Moisture",
+        "Temperature_C",
+        "Humidity_Percent",
+        "Rain_Coming_Binary",
+        "Days_Since_Rain",
+        "Hour",
+        "Weather_Humidity",
+        "Weather_Temp_C"
+    ],
+    "target_classes": [
+        "IRRIGATE",
+        "STOP"
+    ],
+    "accuracy": 1.0,
+    "n_samples_total": 49,
+    "n_samples_train": 39,
+    "n_samples_test": 10,
+    "feature_importance": [
+        {
+            "feature": "Soil_Moisture",
+            "importance": 0.5806190146227578
+        },
+        {
+            "feature": "Days_Since_Rain",
+            "importance": 0.19432979079934712
+        },
+        {
+            "feature": "Humidity_Percent",
+            "importance": 0.11042888015894435
+        },
+        {
+            "feature": "Temperature_C",
+            "importance": 0.039348989656627344
+        },
+        {
+            "feature": "Weather_Temp_C",
+            "importance": 0.03330963156982455
+        },
+        {
+            "feature": "Weather_Humidity",
+            "importance": 0.021956933394601218
+        },
+        {
+            "feature": "Hour",
+            "importance": 0.0200067597978976
+        },
+        {
+            "feature": "Rain_Coming_Binary",
+            "importance": 0.0
+        }
+    ],
+    "created_date": "2025-10-17 21:44:20",
+    "data_source": "C:\\Users\\dell\\Desktop\\Smart irrigation system\\irrigation_log_20251016.csv"
+}
