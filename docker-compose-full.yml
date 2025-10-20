@@ -1,0 +1,393 @@
+# =====================================================
+# ZRA TaxGuard AI - COMPLETE Docker Compose Configuration
+# =====================================================
+# Full integrated microservices stack with ALL components:
+# - PostgreSQL Database (with all mock data)
+# - API Gateway (Node.js)
+# - Integrated Dashboard Frontend (React/Vite)
+# - VRT Guard Service (VAT Fraud Detection)
+# - Anomaly Tracker Service (AI Risk Scoring)
+# - GhostBuster Module (Ghost Company Detection)
+# - GhostBuster Backend
+# - OCR AI Service (Python/FastAPI)
+# - OCR Backend (Node.js)
+# - Blockchain Service
+# - WhistlePro Backend
+# =====================================================
+
+version: '3.8'
+
+services:
+  # =====================================================
+  # PostgreSQL Database with Mock Data
+  # =====================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: zra-postgres
+    environment:
+      POSTGRES_DB: zra_taxguard
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: zrapassword
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./ocr-backend/database/migrations:/docker-entrypoint-initdb.d
+      - ./ZRA_DATASETS:/docker-entrypoint-initdb.d/mock_data
+    networks:
+      - zra-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # =====================================================
+  # API Gateway (Central Hub)
+  # =====================================================
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: zra-api-gateway
+    environment:
+      - NODE_ENV=production
+      - PORT=4001
+      - VRT_GUARD_URL=http://vrt-guard:5002
+      - ANOMALY_TRACKER_URL=http://anomaly-tracker:5000
+      - GHOSTBUSTER_URL=http://ghostbuster-module:3004
+      - GHOSTBUSTER_BACKEND_URL=http://ghostbuster-backend:3005
+      - OCR_BACKEND_URL=http://ocr-backend:5000
+      - BLOCKCHAIN_URL=http://blockchain-service:3001
+      - WHISTLEPRO_URL=http://whistlepro-backend:4000
+    ports:
+      - "4001:4001"
+    depends_on:
+      - postgres
+    networks:
+      - zra-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # =====================================================
+  # Integrated Dashboard Frontend (React/Vite)
+  # =====================================================
+  dashboard-frontend:
+    build:
+      context: ./dashboard_integration/frontend
+      dockerfile: Dockerfile
+    container_name: zra-dashboard-frontend
+    environment:
+      - NODE_ENV=production
+      - VITE_API_GATEWAY_URL=http://localhost:4001
+      - VITE_OCR_BACKEND_URL=http://localhost:5000
+      - VITE_BLOCKCHAIN_URL=http://localhost:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api-gateway
+    networks:
+      - zra-network
+    restart: unless-stopped
+
+  # =====================================================
+  # VRT Guard Service (VAT Fraud Detection)
+  # =====================================================
+  vrt-guard:
+    build:
+      context: ./vrt_guard
+      dockerfile: Dockerfile
+    container_name: zra-vrt-guard
+    environment:
+      - FLASK_ENV=production
+      - PORT=5002
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=zra_taxguard
+      - DB_USER=postgres
+      - DB_PASSWORD=zrapassword
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./vrt_guard/data:/app/data
+      - ./vrt_guard/models:/app/models
+      - ./vrt_guard/ZRA_DATASETS:/app/ZRA_DATASETS
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - zra-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # =====================================================
+  # Anomaly Tracker Service (AI Risk Scoring)
+  # =====================================================
+  anomaly-tracker:
+    build:
+      context: ./ai_risk_scoring
+      dockerfile: Dockerfile
+    container_name: zra-anomaly-tracker
+    environment:
+      - FLASK_ENV=production
+      - PORT=5000
+      - PYTHONPATH=/app
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=zra_taxguard
+      - DB_USER=postgres
+      - DB_PASSWORD=zrapassword
+      - MODEL_PATH=/app/models/risk_model.pkl
+      - SCALER_PATH=/app/models/risk_scaler.pkl
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./ai_risk_scoring/models:/app/models
+      - ./ai_risk_scoring/data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - zra-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # =====================================================
+  # GhostBuster Module (Ghost Company Detection)
+  # =====================================================
+  ghostbuster-module:
+    build:
+      context: ./ghostbuster_module
+      dockerfile: Dockerfile
+    container_name: zra-ghostbuster-module
+    environment:
+      - FLASK_ENV=production
+      - PORT=3004
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=zra_taxguard
+      - DB_USER=postgres
+      - DB_PASSWORD=zrapassword
+    ports:
+      - "3004:3004"
+    volumes:
+      - ./ghostbuster_module/data:/app/data
+      - ./ghostbuster_module/models:/app/models
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - zra-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # =====================================================
+  # GhostBuster Backend
+  # =====================================================
+  ghostbuster-backend:
+    build:
+      context: ./ghostbuster/backend
+      dockerfile: Dockerfile
+    container_name: zra-ghostbuster-backend
+    environment:
+      - FLASK_ENV=production
+      - PORT=3005
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=zra_taxguard
+      - DB_USER=postgres
+      - DB_PASSWORD=zrapassword
+    ports:
+      - "3005:3005"
+    volumes:
+      - ./ghostbuster/backend/data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - zra-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # =====================================================
+  # OCR AI Service (Python/FastAPI)
+  # =====================================================
+  ocr-ai-service:
+    build:
+      context: ./ocr-ai-service
+      dockerfile: Dockerfile
+      target: production
+    container_name: zra-ocr-ai-service
+    environment:
+      - DEBUG=false
+      - PORT=8000
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=zra_taxguard
+      - DB_USER=postgres
+      - DB_PASSWORD=zrapassword
+      - BACKEND_URL=http://ocr-backend:5000
+      - BLOCKCHAIN_URL=http://blockchain-service:3001
+      - TESSERACT_PATH=/usr/bin/tesseract
+      - ENABLE_PREPROCESSING=true
+      - RISK_LOW_THRESHOLD=70.0
+      - RISK_MEDIUM_THRESHOLD=50.0
+      - RISK_HIGH_THRESHOLD=30.0
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ocr-ai-service/uploads:/app/uploads
+      - ./ocr-ai-service/logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - zra-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # =====================================================
+  # OCR Backend (Node.js)
+  # =====================================================
+  ocr-backend:
+    build:
+      context: ./ocr-backend
+      dockerfile: Dockerfile
+    container_name: zra-ocr-backend
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=zra_taxguard
+      - DB_USER=postgres
+      - DB_PASSWORD=zrapassword
+      - DB_SCHEMA=ocr
+      - OCR_AI_SERVICE_URL=http://ocr-ai-service:8000
+      - BLOCKCHAIN_SERVICE_URL=http://blockchain-service:3001
+      - JWT_SECRET=zra_jwt_secret_key_change_in_production
+      - ALLOWED_ORIGINS=http://localhost:3000,http://dashboard-frontend:3000
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./ocr-backend/uploads:/app/uploads
+      - ./ocr-backend/logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ocr-ai-service:
+        condition: service_healthy
+    networks:
+      - zra-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  # =====================================================
+  # Blockchain Service
+  # =====================================================
+  blockchain-service:
+    build:
+      context: ./blockchain
+      dockerfile: Dockerfile
+    container_name: zra-blockchain-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=zra_taxguard
+      - DB_USER=postgres
+      - DB_PASSWORD=zrapassword
+      - PRIVATE_KEY=0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+      - BLOCKCHAIN_NETWORK=sepolia
+      - CONTRACT_ADDRESS=0x0000000000000000000000000000000000000000
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - zra-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # =====================================================
+  # WhistlePro Backend
+  # =====================================================
+  whistlepro-backend:
+    build:
+      context: ./whistlepro_backend
+      dockerfile: Dockerfile
+    container_name: zra-whistlepro-backend
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=zra_taxguard
+      - DB_USER=postgres
+      - DB_PASSWORD=zrapassword
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - zra-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+# =====================================================
+# Networks
+# =====================================================
+networks:
+  zra-network:
+    driver: bridge
+    name: zra-taxguard-network
+
+# =====================================================
+# Volumes
+# =====================================================
+volumes:
+  postgres_data:
+    name: zra-postgres-data
