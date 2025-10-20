@@ -89,3 +89,39 @@ docker-compose.override.yml
 .github/workflows/*.local
 .artifacts
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+.eggs/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Log files
+api-gateway/logs/
+
+# Data files (don't commit test data)
+ghostbuster/backend/data/
+ghostbuster_module/test_data/
+

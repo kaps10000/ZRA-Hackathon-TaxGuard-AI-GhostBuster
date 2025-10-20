@@ -6,6 +6,10 @@ const DatabaseViewer = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [ocrDocCount, setOcrDocCount] = useState(0);
+  const [ghostDetectionCount, setGhostDetectionCount] = useState(0);
+  const [vrtDetectionCount, setVrtDetectionCount] = useState(0);
+  const [riskScoreCount, setRiskScoreCount] = useState(0);
 
   // Mock database tables with sample data
   const mockData = {
@@ -46,10 +50,176 @@ const DatabaseViewer = () => {
     { id: 'detections', name: 'Detections', icon: '🔍', count: mockData.detections.length },
     { id: 'transactions', name: 'Blockchain Transactions', icon: '⛓️', count: mockData.transactions.length },
     { id: 'cases', name: 'Investigation Cases', icon: '📋', count: mockData.cases.length },
+    { id: 'ocrDocuments', name: 'OCR Documents', icon: '📄', count: ocrDocCount },
+    { id: 'ghostDetections', name: 'Ghost Detections', icon: '👻', count: ghostDetectionCount },
+    { id: 'vrtDetections', name: 'VAT Fraud Detections', icon: '🛡️', count: vrtDetectionCount },
+    { id: 'riskScores', name: 'Risk Scores', icon: '📊', count: riskScoreCount },
   ];
 
+  // Fetch OCR document count on mount
   useEffect(() => {
-    setData(mockData[activeTable] || []);
+    const fetchOcrCount = async () => {
+      try {
+        const response = await axios.get('http://localhost:4001/api/ocr/documents');
+        setOcrDocCount(response.data.total || 0);
+      } catch (error) {
+        console.error('Error fetching OCR count:', error);
+        setOcrDocCount(0);
+      }
+    };
+    fetchOcrCount();
+  }, []);
+
+  // Fetch Ghost Detection count on mount
+  useEffect(() => {
+    const fetchGhostDetectionCount = async () => {
+      try {
+        const response = await axios.get('http://localhost:4001/api/ghostbuster/detections');
+        setGhostDetectionCount(response.data.total || 0);
+      } catch (error) {
+        console.error('Error fetching Ghost Detection count:', error);
+        setGhostDetectionCount(0);
+      }
+    };
+    fetchGhostDetectionCount();
+  }, []);
+
+  // Fetch VRT Detection count on mount
+  useEffect(() => {
+    const fetchVrtDetectionCount = async () => {
+      try {
+        const response = await axios.get('http://localhost:4001/api/vrtguard-db/detections');
+        setVrtDetectionCount(response.data.total || 0);
+      } catch (error) {
+        console.error('Error fetching VRT Detection count:', error);
+        setVrtDetectionCount(0);
+      }
+    };
+    fetchVrtDetectionCount();
+  }, []);
+
+  // Fetch Risk Score count on mount
+  useEffect(() => {
+    const fetchRiskScoreCount = async () => {
+      try {
+        const response = await axios.get('http://localhost:4001/api/anomaly-tracker-db/scores');
+        setRiskScoreCount(response.data.total || 0);
+      } catch (error) {
+        console.error('Error fetching Risk Score count:', error);
+        setRiskScoreCount(0);
+      }
+    };
+    fetchRiskScoreCount();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        switch(activeTable) {
+          case 'ocrDocuments':
+            const ocrResponse = await axios.get('http://localhost:4001/api/ocr/documents');
+            setData(ocrResponse.data.documents || []);
+            setOcrDocCount(ocrResponse.data.total || 0);
+            break;
+
+          case 'ghostDetections':
+            const ghostResponse = await axios.get('http://localhost:4001/api/ghostbuster/detections');
+            setData(ghostResponse.data.detections || []);
+            setGhostDetectionCount(ghostResponse.data.total || 0);
+            break;
+
+          case 'vrtDetections':
+            const vrtResponse = await axios.get('http://localhost:4001/api/vrtguard-db/detections');
+            setData(vrtResponse.data.detections || []);
+            setVrtDetectionCount(vrtResponse.data.total || 0);
+            break;
+
+          case 'riskScores':
+            const riskScoreResponse = await axios.get('http://localhost:4001/api/anomaly-tracker-db/scores');
+            setData(riskScoreResponse.data.scores || []);
+            setRiskScoreCount(riskScoreResponse.data.total || 0);
+            break;
+
+          case 'cases':
+            // Fetch real cases from WhistlePro API
+            try {
+              const casesResponse = await axios.get('http://localhost:4001/api/whistlepro/cases');
+              setData(casesResponse.data.cases || []);
+            } catch (err) {
+              console.error('Error fetching cases:', err);
+              setData(mockData.cases);
+            }
+            break;
+
+          case 'transactions':
+            // Fetch real blockchain transactions
+            try {
+              const txResponse = await axios.get('http://localhost:4001/api/blockchain/transactions');
+              setData(txResponse.data.transactions || []);
+            } catch (err) {
+              console.error('Error fetching transactions:', err);
+              setData(mockData.transactions);
+            }
+            break;
+
+          case 'detections':
+            // Combine all detection types into one view
+            try {
+              const [ghostResp, vrtResp, riskResp] = await Promise.all([
+                axios.get('http://localhost:4001/api/ghostbuster/detections'),
+                axios.get('http://localhost:4001/api/vrtguard-db/detections'),
+                axios.get('http://localhost:4001/api/anomaly-tracker-db/scores')
+              ]);
+
+              const ghostDets = (ghostResp.data.detections || []).map(d => ({
+                ...d,
+                type: 'Ghost Detection',
+                detectionSystem: 'GhostBuster'
+              }));
+
+              const vrtDets = (vrtResp.data.detections || []).map(d => ({
+                id: d.id,
+                type: 'VAT Fraud',
+                entityName: d.taxpayerName,
+                tin: d.tin,
+                riskScore: Math.round(d.fraudProbability * 100),
+                date: new Date(d.detectedAt).toISOString().split('T')[0],
+                status: d.status,
+                detectionSystem: 'VRT Guard'
+              }));
+
+              const riskDets = (riskResp.data.scores || []).map(d => ({
+                id: d.id,
+                type: 'Risk Score',
+                entityName: d.taxpayerName,
+                tin: d.tin,
+                riskScore: d.riskScore,
+                date: new Date(d.analyzedAt).toISOString().split('T')[0],
+                status: d.riskLevel,
+                detectionSystem: 'Anomaly Tracker'
+              }));
+
+              setData([...ghostDets, ...vrtDets, ...riskDets]);
+            } catch (err) {
+              console.error('Error fetching combined detections:', err);
+              setData(mockData.detections);
+            }
+            break;
+
+          default:
+            // For companies and employees, use mock data (can be replaced with real APIs later)
+            setData(mockData[activeTable] || []);
+        }
+      } catch (error) {
+        console.error(`Error fetching ${activeTable}:`, error);
+        setData(mockData[activeTable] || []);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, [activeTable]);
 
   const filteredData = data.filter(item => {
@@ -99,6 +269,10 @@ const DatabaseViewer = () => {
               }`}>
                 {value ? '✓ Verified' : '✗ Unverified'}
               </span>
+            ) : key === 'extractedData' ? (
+              <span className="text-xs text-gray-600">
+                {typeof value === 'object' ? JSON.stringify(value).substring(0, 50) + '...' : value?.toString() || 'N/A'}
+              </span>
             ) : (
               value?.toString() || 'N/A'
             )}
@@ -119,7 +293,7 @@ const DatabaseViewer = () => {
         </div>
 
         {/* Table Selector */}
-        <div className="grid grid-cols-5 gap-4 mb-6">
+        <div className="grid grid-cols-6 gap-4 mb-6">
           {tables.map(table => (
             <button
               key={table.id}
@@ -153,24 +327,31 @@ const DatabaseViewer = () => {
         {/* Table Display */}
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead>
-                <tr>
-                  {renderTableHeaders()}
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredData.length > 0 ? (
-                  renderTableRows()
-                ) : (
+            {loading ? (
+              <div className="px-4 py-12 text-center text-gray-500">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <p className="mt-4">Loading data...</p>
+              </div>
+            ) : (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead>
                   <tr>
-                    <td colSpan={100} className="px-4 py-8 text-center text-gray-500">
-                      {searchTerm ? 'No results found' : 'No data available'}
-                    </td>
+                    {renderTableHeaders()}
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredData.length > 0 ? (
+                    renderTableRows()
+                  ) : (
+                    <tr>
+                      <td colSpan={100} className="px-4 py-8 text-center text-gray-500">
+                        {searchTerm ? 'No results found' : 'No data available'}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
 

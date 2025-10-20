@@ -1,0 +1,2 @@
+tin,taxpayer_name,tax_period,total_sales,total_purchases,output_vat,input_vat,net_vat
+1001234567,Test Company Ltd,2025-Q1,500000,300000,80000,48000,32000

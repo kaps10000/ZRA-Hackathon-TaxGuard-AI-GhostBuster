@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import './index.css';
 import Dashboard from './pages/Dashboard';
-import GhostBusterDetection from './pages/GhostBusterDetection';
 import PredictiveAnalytics from './pages/PredictiveAnalytics';
-import NetworkAnalysis from './pages/NetworkAnalysis';
+import VRTGuard from './pages/VRTGuard';
 import PastCases from './pages/PastCases';
 import DatabaseViewer from './pages/DatabaseViewer';
 import OCRScanner from './pages/OCRScanner';
 import WhistlePro from './pages/WhistlePro';
 import BlockchainLedger from './pages/BlockchainLedger';
+import GhostBusterDetection from './pages/GhostBusterDetection';
+import AnomalyTracker from './pages/AnomalyTracker';
 
 function App() {
   const [activePage, setActivePage] = useState('dashboard');
@@ -20,8 +21,9 @@ function App() {
     { id: 'ocr', name: 'OCR Document Scanner', icon: '📄' },
     { id: 'whistlepro', name: 'WhistlePro Cases', icon: '📢' },
     { id: 'ghostbuster', name: 'GhostBuster Detection', icon: '👻' },
+    { id: 'anomalytracker', name: 'Anomaly Tracker', icon: '🎯' },
     { id: 'predictive', name: 'Predictive Analytics', icon: '📈' },
-    { id: 'network', name: 'Network Analysis', icon: '🔗' },
+    { id: 'vrtguard', name: 'VRT Guard', icon: '🛡️' },
     { id: 'blockchain', name: 'Blockchain Ledger', icon: '⛓️' },
     { id: 'cases', name: 'Past Cases', icon: '📋' },
   ];
@@ -32,10 +34,12 @@ function App() {
         return <Dashboard onNavigate={setActivePage} />;
       case 'ghostbuster':
         return <GhostBusterDetection />;
+      case 'anomalytracker':
+        return <AnomalyTracker />;
       case 'predictive':
         return <PredictiveAnalytics />;
-      case 'network':
-        return <NetworkAnalysis />;
+      case 'vrtguard':
+        return <VRTGuard />;
       case 'database':
         return <DatabaseViewer />;
       case 'blockchain':

@@ -7,6 +7,12 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const eventRoutes = require('./routes/events');
 const dashboardRoutes = require('./routes/dashboard');
+const ocrRoutes = require('./routes/ocr');
+const ghostbusterRoutes = require('./routes/ghostbuster');
+const vrtguardRoutes = require('./routes/vrtguard');
+const vrtguardDbRoutes = require('./routes/vrtguard-db');
+const anomalyTrackerRoutes = require('./routes/anomaly-tracker');
+const anomalyTrackerDbRoutes = require('./routes/anomaly-tracker-db');
 const logger = require('./utils/logger');
 const { errorHandler } = require('./middleware/errorHandler');
 const {
@@ -81,6 +87,12 @@ app.get('/metrics/json', async (req, res) => {
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/ocr', ocrRoutes);
+app.use('/api/ghostbuster', ghostbusterRoutes);
+app.use('/api/vrtguard', vrtguardRoutes);
+app.use('/api/vrtguard-db', vrtguardDbRoutes);
+app.use('/api/anomaly-tracker', anomalyTrackerRoutes);
+app.use('/api/anomaly-tracker-db', anomalyTrackerDbRoutes);
 app.use('/api', eventRoutes);
 
 // Simple API Links Page
