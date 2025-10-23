@@ -1,51 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const BlockchainLedger = () => {
   const [selectedBlock, setSelectedBlock] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const transactions = [
-    {
-      id: 1,
-      blockNumber: 12345,
-      txHash: '0xabc123def456789ghijklmnop',
-      timestamp: '2025-10-19 01:00:00',
-      action: 'OCR_SCAN_RECORDED',
-      data: { fileName: 'Tax_Return_ABC_Mining.pdf', status: 'FLAGGED', riskScore: 87 },
-      verified: true,
-      previousHash: '0x9876543210abcdef'
-    },
-    {
-      id: 2,
-      blockNumber: 12344,
-      txHash: '0xdef456ghi789012jklmnopqr',
-      timestamp: '2025-10-18 23:55:00',
-      action: 'GHOSTBUSTER_DETECTION',
-      data: { company: 'ABC Mining Ltd', classification: 'GHOST_COMPANY', riskScore: 92 },
-      verified: true,
-      previousHash: '0x8765432109876543'
-    },
-    {
-      id: 3,
-      blockNumber: 12343,
-      txHash: '0xghi789jkl012345mnopqrstu',
-      timestamp: '2025-10-18 22:30:00',
-      action: 'WHISTLEPRO_CASE_SUBMITTED',
-      data: { caseId: 'WP-001', category: 'Tax Evasion', priority: 'High' },
-      verified: true,
-      previousHash: '0x7654321098765432'
-    },
-    {
-      id: 4,
-      blockNumber: 12342,
-      txHash: '0xjkl012mno345678pqrstuvwx',
-      timestamp: '2025-10-18 21:00:00',
-      action: 'CASE_STATUS_UPDATE',
-      data: { caseId: 'WP-002', oldStatus: 'Open', newStatus: 'Under Investigation' },
-      verified: true,
-      previousHash: '0x6543210987654321'
-    }
-  ];
+  // Format timestamp to local time
+  const formatTimestamp = (isoString) => {
+    const date = new Date(isoString || new Date());
+    return date.toLocaleString('en-GB', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).replace(',', '');
+  };
+
+  // Fetch blockchain transactions from API
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        setLoading(true);
+        // Try blockchain service first, fallback to API gateway
+        let response = await fetch('http://localhost:3001/api/events');
+
+        if (!response.ok) {
+          // Fallback to API gateway
+          response = await fetch('http://localhost:4001/api/ocr/blockchain');
+        }
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch blockchain transactions');
+        }
+
+        const data = await response.json();
+        // Handle both response formats
+        const transactions = data.events || data.transactions || [];
+        setTransactions(transactions);
+      } catch (error) {
+        console.error('Error fetching blockchain transactions:', error);
+        setTransactions([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
+
+    // Poll for new transactions every 10 seconds
+    const interval = setInterval(fetchTransactions, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   const viewBlock = (tx) => {
     setSelectedBlock(tx);
@@ -66,11 +75,13 @@ const BlockchainLedger = () => {
         <div className="grid grid-cols-4 gap-4 mb-6">
           <div className="bg-purple-50 p-4 rounded-lg">
             <p className="text-sm text-gray-600">Total Blocks</p>
-            <p className="text-2xl font-bold text-purple-600">{transactions[0].blockNumber}</p>
+            <p className="text-2xl font-bold text-purple-600">
+              {loading ? '...' : transactions.length > 0 ? Math.max(...transactions.map(tx => tx.blockIndex || tx.blockNumber || 0)) : 0}
+            </p>
           </div>
           <div className="bg-blue-50 p-4 rounded-lg">
             <p className="text-sm text-gray-600">Verified Transactions</p>
-            <p className="text-2xl font-bold text-blue-600">{transactions.length}</p>
+            <p className="text-2xl font-bold text-blue-600">{loading ? '...' : transactions.length}</p>
           </div>
           <div className="bg-green-50 p-4 rounded-lg">
             <p className="text-sm text-gray-600">Network Status</p>
@@ -85,28 +96,41 @@ const BlockchainLedger = () => {
         {/* Transaction List */}
         <div className="space-y-3">
           <h3 className="font-semibold text-gray-800 mb-3">Recent Transactions</h3>
-          {transactions.map((tx) => (
-            <div key={tx.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-gray-600">Loading blockchain transactions...</p>
+            </div>
+          ) : transactions.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-600">No blockchain transactions found</p>
+            </div>
+          ) : (
+            transactions.map((tx) => (
+            <div key={tx.eventId || tx.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-2">
-                    <span className="font-mono text-sm text-gray-600">Block #{tx.blockNumber}</span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      tx.verified ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {tx.verified ? '✓ Verified' : 'Pending'}
+                    <span className="font-mono text-sm text-gray-600">Block #{tx.blockIndex || tx.blockNumber || 'N/A'}</span>
+                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                      ✓ Verified
                     </span>
                     <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-                      {tx.action}
+                      {tx.eventType || tx.action || 'Transaction'}
                     </span>
                   </div>
 
                   <p className="font-mono text-xs text-gray-500 mb-2">
-                    TX: {tx.txHash}
+                    Hash: {tx.hashOfPayload || tx.txHash || 'N/A'}
                   </p>
 
+                  {tx.notes && (
+                    <p className="text-sm text-gray-700 mb-2">
+                      {tx.notes}
+                    </p>
+                  )}
+
                   <p className="text-sm text-gray-600">
-                    {tx.timestamp}
+                    {formatTimestamp(tx.timestamp)}
                   </p>
                 </div>
 
@@ -118,7 +142,8 @@ const BlockchainLedger = () => {
                 </button>
               </div>
             </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* Info Panel */}
@@ -157,7 +182,7 @@ const BlockchainLedger = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-gray-600">Timestamp</p>
-                      <p className="font-medium">{selectedBlock.timestamp}</p>
+                      <p className="font-medium">{formatTimestamp(selectedBlock.timestamp)}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">Action Type</p>

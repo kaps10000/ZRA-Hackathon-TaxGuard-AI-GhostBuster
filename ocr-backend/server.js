@@ -49,59 +49,82 @@ if (process.env.NODE_ENV === 'production') {
 // Database Connection
 // =====================================================
 
-const { Sequelize } = require('sequelize');
+// Database connection with retry logic
+const { connectDatabase, getConnection } = require('./config/database');
 
-const sequelize = new Sequelize({
-    dialect: 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 5432,
-    database: process.env.DB_NAME || 'zra_taxguard',
-    username: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'zrapassword',
-    logging: process.env.NODE_ENV !== 'production' ? console.log : false,
-    pool: {
-        max: 5,
-        min: 0,
-        acquire: 30000,
-        idle: 10000
+async function connectWithRetry(retries = 5, delay = 5000) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            await connectDatabase();
+            console.log('✅ Database connection established successfully');
+            return true;
+        } catch (err) {
+            console.error(`❌ Unable to connect to database (attempt ${i + 1}/${retries}):`, err.message);
+            if (i < retries - 1) {
+                console.log(`⏳ Retrying in ${delay/1000} seconds...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
     }
+    console.error('❌ Failed to connect to database after multiple attempts');
+    return false;
+}
+
+// Initialize database connection and models
+let models;
+connectWithRetry().then(connected => {
+    if (connected) {
+        // Initialize models using the database module connection
+        const { initializeModels } = require('./models');
+        try {
+            const sequelize = getConnection();
+            models = initializeModels(sequelize);
+
+            // Make models available globally
+            app.locals.models = models;
+            app.locals.sequelize = sequelize;
+            console.log('✅ Models initialized successfully');
+        } catch (err) {
+            console.error('❌ Failed to initialize models:', err.message);
+        }
+    }
+}).catch(err => {
+    console.error('❌ Database connection failed:', err.message);
 });
-
-// Test database connection
-sequelize.authenticate()
-    .then(() => {
-        console.log('✅ Database connection established successfully');
-    })
-    .catch(err => {
-        console.error('❌ Unable to connect to database:', err.message);
-    });
-
-// Initialize models
-const { initializeModels } = require('./models');
-const models = initializeModels(sequelize);
-
-// Make models available globally
-app.locals.models = models;
-app.locals.sequelize = sequelize;
 
 // =====================================================
 // Routes
 // =====================================================
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-    res.json({
-        status: 'healthy',
-        service: 'ZRA TaxGuard OCR Backend',
-        version: '1.0.0',
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV || 'development',
-        database: sequelize.authenticate() ? 'connected' : 'disconnected',
-        services: {
-            ocrAI: process.env.OCR_AI_SERVICE_URL || 'http://ocr-ai-service:8000',
-            blockchain: process.env.BLOCKCHAIN_SERVICE_URL || 'http://blockchain-service:3001'
+app.get('/health', async (req, res) => {
+    try {
+        const sequelize = getConnection();
+        let dbStatus = 'disconnected';
+        if (sequelize) {
+            try {
+                await sequelize.authenticate();
+                dbStatus = 'connected';
+            } catch (err) {
+                dbStatus = 'error';
+            }
         }
-    });
+
+        res.json({
+            status: 'healthy',
+            service: 'ZRA TaxGuard OCR Backend',
+            version: '1.0.0',
+            timestamp: new Date().toISOString(),
+            environment: process.env.NODE_ENV || 'development',
+            database: dbStatus,
+            services: {
+                ocrAI: process.env.OCR_AI_SERVICE_URL || 'http://ocr-ai-service:8000',
+                blockchain: process.env.BLOCKCHAIN_SERVICE_URL || 'http://blockchain-service:3001'
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Root endpoint

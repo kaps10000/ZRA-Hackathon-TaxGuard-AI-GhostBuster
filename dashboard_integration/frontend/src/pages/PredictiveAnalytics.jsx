@@ -211,7 +211,34 @@ const PredictiveAnalytics = () => {
 
             {copperScenario && (
               <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
+                {/* Severity Banner */}
+                {copperScenario.severity && (
+                  <div className={`p-4 rounded-lg border-l-4 ${
+                    copperScenario.severity === 'CRITICAL' ? 'bg-red-50 border-red-600' :
+                    copperScenario.severity === 'HIGH' ? 'bg-orange-50 border-orange-600' :
+                    copperScenario.severity === 'MEDIUM' ? 'bg-yellow-50 border-yellow-600' :
+                    'bg-blue-50 border-blue-600'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-bold text-gray-800">Impact Severity: {copperScenario.severity}</p>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Total Impact: {copperScenario.total_impact >= 0 ? '+' : ''}{formatCurrency(copperScenario.total_impact)} over 10 months
+                        </p>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                        copperScenario.severity === 'CRITICAL' ? 'bg-red-600 text-white' :
+                        copperScenario.severity === 'HIGH' ? 'bg-orange-600 text-white' :
+                        copperScenario.severity === 'MEDIUM' ? 'bg-yellow-600 text-white' :
+                        'bg-blue-600 text-white'
+                      }`}>
+                        {copperScenario.severity}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-4 gap-4">
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <p className="text-sm text-gray-600 mb-1">Current Copper Price</p>
                     <p className="text-2xl font-bold text-blue-600">
@@ -219,12 +246,22 @@ const PredictiveAnalytics = () => {
                     </p>
                     <p className="text-xs text-gray-500 mt-1">{copperScenario.copper_price_source}</p>
                   </div>
+                  <div className="bg-indigo-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">Projected Price</p>
+                    <p className="text-2xl font-bold text-indigo-600">
+                      ${copperScenario.projected_copper_price}/ton
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {copperScenario.scenario_params?.price_change >= 0 ? '+' : ''}
+                      {copperScenario.scenario_params?.price_change}% change
+                    </p>
+                  </div>
                   <div className="bg-green-50 p-4 rounded-lg">
                     <p className="text-sm text-gray-600 mb-1">10-Month Forecasted Revenue</p>
                     <p className="text-2xl font-bold text-green-600">
                       {formatCurrency(copperScenario.forecasts?.[copperScenario.forecasts.length - 1]?.impacted_forecast || 0)}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">Based on current market factors</p>
+                    <p className="text-xs text-gray-500 mt-1">Copper contributes {copperScenario.copper_contribution_pct}%</p>
                   </div>
                   <div className="bg-purple-50 p-4 rounded-lg">
                     <p className="text-sm text-gray-600 mb-1">Economic Indicators</p>
@@ -232,7 +269,7 @@ const PredictiveAnalytics = () => {
                       Inflation: {copperScenario.current_economic_factors?.inflation_rate}%
                     </p>
                     <p className="text-lg font-bold text-purple-600">
-                      GDP Growth: {copperScenario.current_economic_factors?.gdp_growth_rate}%
+                      GDP: {copperScenario.current_economic_factors?.gdp_growth_rate}%
                     </p>
                   </div>
                 </div>
@@ -250,6 +287,12 @@ const PredictiveAnalytics = () => {
                           <span className={`text-sm font-medium ${item.copper_impact >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             Impact: {item.copper_impact >= 0 ? '+' : ''}{formatCurrency(item.copper_impact)}
                           </span>
+                          {item.breakdown && (
+                            <span className="text-xs text-gray-500">
+                              (Direct: {formatCurrency(item.breakdown.direct_mining_tax_impact)} |
+                              Indirect: {formatCurrency(item.breakdown.indirect_economic_impact)})
+                            </span>
+                          )}
                           <span className="text-lg font-bold text-blue-600">
                             Final: {formatCurrency(item.impacted_forecast)}
                           </span>
@@ -258,6 +301,41 @@ const PredictiveAnalytics = () => {
                     ))}
                   </div>
                 </div>
+
+                {/* Affected Sectors */}
+                {copperScenario.affected_sectors && copperScenario.affected_sectors.length > 0 && (
+                  <div className="bg-indigo-50 p-4 rounded-lg">
+                    <h4 className="font-bold text-gray-800 mb-3">Affected Revenue Sectors</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {copperScenario.affected_sectors.map((sector, idx) => (
+                        <span key={idx} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
+                          {sector.replace(/_/g, ' ').toUpperCase()}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Mitigation Strategies */}
+                {copperScenario.mitigation_strategies && copperScenario.mitigation_strategies.length > 0 && (
+                  <div className={`p-4 rounded-lg ${
+                    copperScenario.scenario_params?.price_change < 0 ? 'bg-orange-50 border border-orange-200' : 'bg-green-50 border border-green-200'
+                  }`}>
+                    <h4 className="font-bold text-gray-800 mb-3">
+                      {copperScenario.scenario_params?.price_change < 0 ? 'Mitigation Strategies' : 'Opportunity Strategies'}
+                    </h4>
+                    <ul className="space-y-2">
+                      {copperScenario.mitigation_strategies.map((strategy, idx) => (
+                        <li key={idx} className="flex items-start">
+                          <span className={`mr-2 mt-1 ${
+                            copperScenario.scenario_params?.price_change < 0 ? 'text-orange-600' : 'text-green-600'
+                          }`}>•</span>
+                          <span className="text-sm text-gray-700">{strategy}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -323,10 +401,89 @@ const PredictiveAnalytics = () => {
                   </div>
                 </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded p-4">
-                  <p className="text-sm font-medium text-blue-800">Investment Analysis</p>
-                  <p className="text-sm text-blue-700 mt-1">
-                    Improving tax compliance by {complianceScenario.scenario_params?.compliance_improvement}% would require an estimated investment of {formatCurrency(complianceScenario.enforcement_investment?.estimated_cost)} but generate {formatCurrency(complianceScenario.total_revenue_gain)} in additional revenue over 10 months, delivering an ROI of {complianceScenario.enforcement_investment?.roi_percentage}% with a payback period of {complianceScenario.enforcement_investment?.payback_months} months.
+                {/* Enhanced Investment Analysis */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded p-4">
+                    <p className="text-sm font-medium text-blue-800 mb-3">Investment Breakdown</p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-blue-700">Estimated Cost:</span>
+                        <span className="text-sm font-bold text-blue-900">
+                          {formatCurrency(complianceScenario.enforcement_investment?.estimated_cost)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-blue-700">Total Revenue Gain (10mo):</span>
+                        <span className="text-sm font-bold text-green-700">
+                          +{formatCurrency(complianceScenario.total_revenue_gain)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between border-t border-blue-300 pt-2">
+                        <span className="text-sm text-blue-700">ROI:</span>
+                        <span className="text-lg font-bold text-green-600">
+                          {complianceScenario.enforcement_investment?.roi_percentage}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-blue-700">Payback Period:</span>
+                        <span className="text-sm font-bold text-blue-900">
+                          {complianceScenario.enforcement_investment?.payback_months} months
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-green-50 border border-green-200 rounded p-4">
+                    <p className="text-sm font-medium text-green-800 mb-3">Compliance Improvement Details</p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-green-700">Current Rate:</span>
+                        <span className="text-sm font-bold text-green-900">
+                          {complianceScenario.current_compliance_rate}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-green-700">Target Rate:</span>
+                        <span className="text-sm font-bold text-green-900">
+                          {complianceScenario.target_compliance_rate}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between border-t border-green-300 pt-2">
+                        <span className="text-sm text-green-700">Improvement:</span>
+                        <span className="text-lg font-bold text-green-600">
+                          +{complianceScenario.scenario_params?.compliance_improvement}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-green-700">Avg Monthly Gain:</span>
+                        <span className="text-sm font-bold text-green-900">
+                          {formatCurrency(complianceScenario.total_revenue_gain / 10)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recommended Actions */}
+                {complianceScenario.recommended_actions && complianceScenario.recommended_actions.length > 0 && (
+                  <div className="bg-purple-50 border border-purple-200 rounded p-4">
+                    <h4 className="font-bold text-purple-800 mb-3">Recommended Actions</h4>
+                    <ul className="space-y-2">
+                      {complianceScenario.recommended_actions.map((action, idx) => (
+                        <li key={idx} className="flex items-start">
+                          <span className="text-purple-600 mr-2 mt-1">✓</span>
+                          <span className="text-sm text-gray-700">{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Investment Summary */}
+                <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded p-4">
+                  <p className="text-sm font-medium text-gray-800 mb-2">💡 Investment Summary</p>
+                  <p className="text-sm text-gray-700">
+                    Improving tax compliance by <strong>{complianceScenario.scenario_params?.compliance_improvement}%</strong> would require an estimated investment of <strong>{formatCurrency(complianceScenario.enforcement_investment?.estimated_cost)}</strong> but generate <strong className="text-green-700">{formatCurrency(complianceScenario.total_revenue_gain)}</strong> in additional revenue over 10 months, delivering an exceptional ROI of <strong className="text-green-700">{complianceScenario.enforcement_investment?.roi_percentage}%</strong> with a payback period of just <strong>{complianceScenario.enforcement_investment?.payback_months} months</strong>.
                   </p>
                 </div>
               </div>

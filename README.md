@@ -1,377 +1,322 @@
-# GhostBuster - ZRA Ghost Employee Detection System
+# ZRA TaxGuard AI - Ghost Company Detection & Tax Revenue Optimization
 
-**Part of: ZRA Hackathon - TaxGuard AI**
-**Branch: Ezra**
-
-A state-of-the-art system to detect ghost employees in the Zambian government using multi-source data analysis.
-
----
+![TaxGuard AI Banner](https://img.shields.io/badge/TaxGuard-AI-blue?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Production_Ready-success?style=for-the-badge)
 
 ## 🎯 Overview
 
-GhostBuster combines multiple government databases to automatically detect fraudulent employees:
-- **NAPSA** - Pension contribution verification
-- **Home Affairs** - Death registry & NRC validation
-- **Bank Transactions** - Pattern analysis across 10+ Zambian banks
-- **Age Verification** - Flags employees over retirement age (65+)
-- **Duplicate Detection** - Identifies identity theft
+**ZRA TaxGuard AI** is a comprehensive AI-powered platform designed to combat tax evasion, detect ghost companies, and optimize revenue collection for the Zambia Revenue Authority (ZRA).
+
+### Key Features
+
+- 🕵️ **GhostBuster Detection** - AI-powered ghost company identification
+- 📄 **OCR Scanner** - Automated document processing with batch upload
+- 🔮 **Predictive Analytics** - Revenue forecasting with copper price & compliance impact analysis
+- 🛡️ **VRT Guard** - VAT fraud detection system
+- 📊 **Anomaly Tracker** - AI-based risk scoring
+- 🔗 **Blockchain Ledger** - Immutable audit trail
+- 📢 **WhistlePro** - Secure whistleblower reporting
 
 ---
 
-## 🚀 Features
-
-### Multi-Source Cross-Referencing
-- NAPSA contribution database
-- Home Affairs death registry
-- Bank transaction analysis (10 Zambian banks)
-- Age-based detection
-- Duplicate NRC identification
-
-### Advanced Pattern Detection
-- **Bank Withdrawal Analysis** (Industry First!)
-  - Detects exact salary withdrawals
-  - Identifies shell company transfers
-  - Analyzes timing patterns
-  - Flags low-balance anomalies
-
-### Evidence-Based Scoring
-- **DEFINITIVE** - Death certificates, duplicate NRCs
-- **STRONG** - Bank patterns, NAPSA gaps
-- **MODERATE** - Age issues, contribution gaps
-- **WEAK** - Minor indicators
-
-### Modern Web Interface
-- Individual employee analysis
-- Batch processing (CSV/Excel upload)
-- Real-time statistics
-- Charts and visualizations
-- Export to CSV/JSON
-
-### Court-Ready Reporting
-- Detailed evidence trails
-- Source attribution
-- Severity levels
-- Actionable recommendations
-
----
-
-## 📊 Impact Potential
-
-**Test Results (10,000 employees):**
-- Ghost employees detected: **3,000 (30%)**
-  - 1,000 Deceased
-  - 800 Duplicates
-  - 700 Phantom workers
-  - 500 Over retirement age
-- **Annual savings: K360,000,000**
-
----
-
-## 🛠️ Tech Stack
-
-### Backend
-- **Python 3.8+**
-- Flask (REST API)
-- Pandas (Data processing)
-- NumPy (Statistical analysis)
-
-### Frontend
-- **React 18**
-- Material-UI (MUI)
-- Recharts (Visualization)
-- Axios (HTTP client)
-
-### Data
-- 10,000 employee records
-- 50,000+ NAPSA contributions
-- 500,000+ bank transactions
-- 10 Zambian banks covered
-
----
-
-## 🚀 Quick Start
+## 🚀 Quick Start (5 Minutes Setup!)
 
 ### Prerequisites
-- Python 3.8+ (with pip)
-- Node.js 16+ (with npm)
+- Node.js v18+
+- Python 3.10+
+- PostgreSQL 15+
 
-### Option 1: Quick Start (Windows)
+### One-Command Setup
+
 ```bash
-cd C:\Users\dell\Desktop\ghostbuster
-QUICKSTART.bat
-```
-Select option 5 to setup everything!
+# Clone the repository
+git clone <repository-url>
+cd ZRA-Hackathon-TaxGuard-AI-GhostBuster
 
-### Option 2: Manual Setup
-
-**Backend:**
-```bash
-cd backend
-pip install -r requirements.txt
-python generate_datasets.py
-python app.py
+# Start all services
+./start-all-services.sh
 ```
 
-**Frontend (new terminal):**
-```bash
-cd frontend
-npm install
-npm start
-```
-
-**Access:** http://localhost:3000
+That's it! Open your browser to **http://localhost:3000**
 
 ---
 
-## 📖 Documentation
+## 📖 Detailed Setup Guide
 
-Comprehensive documentation included:
+For detailed installation instructions, see **[SETUP.md](./SETUP.md)**
 
-- **README.md** - This file (Quick overview)
-- **INSTALLATION_GUIDE.md** - Detailed setup instructions
-- **USER_GUIDE.md** - Complete user manual (12,500 words)
-- **PITCH.md** - Hackathon presentation (9,600 words)
-- **DEMO_GUIDE.md** - Live demo script (10,800 words)
-- **TESTING_CHECKLIST.md** - QA guide (11,800 words)
-- **PROJECT_STRUCTURE.md** - Architecture details
-- **PROJECT_SUMMARY.md** - Executive summary
-- **QUICK_TROUBLESHOOTING.md** - Common issues & fixes
-
-**Total: 60,000+ words of documentation**
+The setup guide includes:
+- Complete prerequisite installation
+- Manual service startup instructions
+- Troubleshooting guide
+- Production deployment tips
 
 ---
 
-## 🎯 Usage
+## 🏗️ System Architecture
 
-### Individual Analysis
-1. Navigate to "Individual Analysis" tab
-2. Enter employee NRC (National Registration Card number)
-3. Click "Analyze Employee"
-4. Review detailed evidence and risk score
-
-### Batch Analysis
-1. Navigate to "Batch Analysis" tab
-2. Upload CSV/Excel file with NRC column
-3. Click "Analyze Batch"
-4. Export results to CSV or JSON
-
-### Sample Test Files
-- `test_dataset.csv` - Generic test data (10 records)
-- `test_dataset_real.csv` - Real test data with diverse ghost types (10 records)
+```
+┌─────────────────────────────────────────────────────────┐
+│                  Dashboard Frontend                      │
+│                    (Port 3000)                          │
+└─────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│                    API Gateway                           │
+│                    (Port 4001)                          │
+└─────────────────────────────────────────────────────────┘
+                          │
+         ┌───────────────┴───────────────┐
+         │                               │
+         ▼                               ▼
+┌──────────────────┐           ┌──────────────────┐
+│   VRT Guard      │           │  GhostBuster     │
+│   (Port 5002)    │           │  (Port 3005)     │
+└──────────────────┘           └──────────────────┘
+         │                               │
+         ▼                               ▼
+┌──────────────────┐           ┌──────────────────┐
+│ Anomaly Tracker  │           │ Predictive       │
+│  (Port 5001)     │           │ Analytics        │
+└──────────────────┘           │ (Port 3004)      │
+         │                     └──────────────────┘
+         ▼                               │
+┌──────────────────┐                    ▼
+│   OCR Services   │           ┌──────────────────┐
+│  AI: 8000        │           │   Blockchain     │
+│  Backend: 5000   │           │   (Port 3001)    │
+└──────────────────┘           └──────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────────────────────┐
+│              PostgreSQL Database                         │
+│                 (Port 5432)                             │
+└─────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## 🔍 Detection Methods
+## 🎨 Features Overview
 
-### 1. Death Registry Check ⚰️
-- **Evidence:** DEFINITIVE
-- **Source:** Home Affairs
-- Identifies deceased individuals still receiving salary
+### 1. OCR Scanner
+- **Single Document Upload**: Quick document processing
+- **Batch Upload**: Process multiple documents simultaneously
+- **Real-time Extraction**: Instant text and data extraction
+- **Validation**: Automated data validation and verification
 
-### 2. NAPSA Analysis 📊
-- **Evidence:** STRONG
-- **Source:** NAPSA Database
-- Detects phantom workers with no/low pension contributions
+### 2. Predictive Analytics
+Advanced revenue forecasting with:
 
-### 3. Bank Pattern Analysis 💰 (UNIQUE!)
-- **Evidence:** STRONG
-- **Source:** 10 Zambian banks
-- Analyzes withdrawal patterns:
-  - Exact salary withdrawals
-  - Immediate post-salary withdrawals
-  - Shell company transfers
-  - Low balance patterns
+**Copper Price Impact Analysis**
+- ⚠️ Severity indicators (CRITICAL/HIGH/MEDIUM/LOW)
+- 💡 Mitigation & opportunity strategies
+- 📊 Direct vs. indirect impact breakdown
+- 🏭 Affected revenue sectors
+- 📈 Monthly projections with confidence intervals
 
-### 4. Age Verification 👴
-- **Evidence:** STRONG
-- **Source:** Home Affairs birth records
-- Flags employees over 65 (retirement age)
+**Compliance Impact Analysis**
+- 💰 Investment ROI calculations
+- ✓ Recommended enforcement actions
+- 📊 Payback period analysis
+- 🎯 Target compliance rates
 
-### 5. Duplicate NRC Detection 🎭
-- **Evidence:** DEFINITIVE
-- **Source:** Cross-database matching
-- Identifies same NRC with different names
+### 3. GhostBuster Detection
+- AI-powered pattern recognition
+- Company verification
+- Risk scoring algorithm
+- Historical data analysis
+
+### 4. VRT Guard
+- VAT fraud detection
+- Anomaly identification
+- Compliance monitoring
+- Real-time alerts
+
+### 5. Blockchain Ledger
+- Immutable audit trail
+- 6 pre-loaded verified transactions
+- Real-time updates every 10 seconds
+- Transaction details and hashes
+- Complete transparency
+
+### 6. WhistlePro
+- Anonymous reporting system
+- Secure submissions
+- Case tracking
+- Protection mechanisms
+
+---
+
+## 📊 Service Ports
+
+| Service | Port | Description |
+|---------|------|-------------|
+| Dashboard Frontend | 3000 | Main user interface |
+| API Gateway | 4001 | Central routing hub |
+| VRT Guard | 5002 | VAT fraud detection |
+| Anomaly Tracker | 5001 | AI risk scoring |
+| Predictive Analytics | 3004 | Revenue forecasting |
+| GhostBuster Backend | 3005 | Ghost detection engine |
+| OCR AI Service | 8000 | Document processing |
+| OCR Backend | 5000 | OCR data management |
+| Blockchain Service | 3001 | Blockchain ledger |
+| WhistlePro | 3005 | Whistleblower system |
+| PostgreSQL | 5432 | Database |
+
+---
+
+## 🔧 Management Commands
+
+### Start All Services
+```bash
+./start-all-services.sh
+```
+
+### Stop All Services
+```bash
+./stop-all-services.sh
+```
+
+### Check Service Status
+```bash
+# API Gateway
+curl http://localhost:4001/health
+
+# All services
+for port in 4001 3000 5002 5001 3004 3005 8000 5000 3001; do
+  echo "Checking port $port..."
+  curl -s http://localhost:$port/health > /dev/null && echo "✅ Running" || echo "❌ Not running"
+done
+```
+
+### View Logs
+```bash
+# All logs are in /tmp/taxguard-logs/
+tail -f /tmp/taxguard-logs/api-gateway.log
+tail -f /tmp/taxguard-logs/frontend.log
+# etc.
+```
 
 ---
 
 ## 📁 Project Structure
 
 ```
-ghostbuster/
-├── README.md                    # This file
-├── INSTALLATION_GUIDE.md        # Setup guide
-├── USER_GUIDE.md                # User manual
-├── PITCH.md                     # Hackathon pitch
-├── DEMO_GUIDE.md                # Demo script
-├── TESTING_CHECKLIST.md         # QA guide
-├── QUICK_TROUBLESHOOTING.md     # Troubleshooting
-│
-├── backend/
-│   ├── app.py                   # Flask API (8 endpoints)
-│   ├── detection_engine.py      # Core detection logic
-│   ├── generate_datasets.py     # Dataset generator
-│   └── requirements.txt         # Python dependencies
-│
-├── frontend/
-│   ├── src/
-│   │   ├── App.js              # Main application
-│   │   └── components/         # React components
-│   └── package.json            # Node dependencies
-│
-├── test_dataset.csv            # Test data (generic)
-├── test_dataset_real.csv       # Test data (real patterns)
-│
-└── setup/start scripts (.bat)  # Windows launch scripts
+ZRA-Hackathon-TaxGuard-AI-GhostBuster/
+├── api-gateway/              # Central API routing
+├── dashboard_integration/
+│   └── frontend/             # React dashboard
+├── vrt_guard/                # VAT fraud detection
+├── ai_risk_scoring/          # Anomaly tracker
+├── predictive_analytics/     # Revenue forecasting
+├── ghostbuster/
+│   └── backend/              # Ghost detection engine
+├── ocr-ai-service/           # OCR AI processing
+├── ocr-backend/              # OCR data management
+├── blockchain/               # Blockchain ledger
+├── whistlepro_backend/       # Whistleblower system
+├── SETUP.md                  # Detailed setup guide
+├── README.md                 # This file
+├── start-all-services.sh     # Startup script
+└── stop-all-services.sh      # Shutdown script
 ```
 
 ---
 
-## 🎬 Demo
+## 🛠️ Development
 
-**Try it yourself:**
+### Adding New Features
 
-1. **Individual Analysis:**
-   - Load samples to see different ghost types
-   - Click any sample to auto-fill form
-   - Analyze to see detailed evidence
+Each service is independent. Navigate to the service directory and make changes:
 
-2. **Batch Analysis:**
-   - Upload `test_dataset_real.csv`
-   - See 10 employees analyzed instantly
-   - View risk distribution chart
+```bash
+cd <service-directory>
+# Make your changes
+# Restart the specific service
+```
 
-3. **Export Results:**
-   - CSV for investigators
-   - JSON for detailed evidence
+### Testing
 
----
-
-## 🏆 Why GhostBuster Wins
-
-### 1. Complete Solution ✅
-- Not a prototype - **production ready**
-- Full-stack application
-- Comprehensive documentation
-
-### 2. Real Innovation 💡
-- **Bank pattern analysis** (industry first)
-- No other system does this
-- Catches sophisticated fraud
-
-### 3. Evidence-Based 📊
-- Every flag has proof
-- Court-ready reports
-- Full audit trail
-
-### 4. Massive Impact 💰
-- **K360M annual savings**
-- 30% ghost detection rate
-- Immediate deployment
-
-### 5. Professional Quality ⭐
-- 5,687 lines of code
-- 60,000+ words of documentation
-- Modern tech stack
+```bash
+# Individual service testing
+cd <service-directory>
+npm test  # For Node.js services
+pytest    # For Python services
+```
 
 ---
 
-## 🔒 Security & Compliance
+## 🚫 No Docker Required!
 
-- Encrypted data storage
-- Role-based access control
-- Audit logging
-- GDPR-compliant design
-- Privacy by default
-
----
-
-## 🚧 Future Enhancements
-
-### Phase 2
-- Real-time monitoring
-- Email/SMS alerts
-- Biometric integration
-- Mobile app
-
-### Phase 3
-- Machine learning for pattern prediction
-- Network analysis (ghost worker rings)
-- Behavioral profiling
-- Automated report generation
+This project has been optimized to run **without Docker**. All services run natively, making it:
+- ✅ Easier to debug
+- ✅ Faster to start
+- ✅ Simpler to understand
+- ✅ More accessible to developers
 
 ---
 
-## 📞 Support
+## 📚 Documentation
 
-For issues or questions:
-1. Check **INSTALLATION_GUIDE.md**
-2. Review **QUICK_TROUBLESHOOTING.md**
-3. See **USER_GUIDE.md** for usage help
-4. Read **TESTING_CHECKLIST.md** for verification
+- **[Complete Setup Guide](./SETUP.md)** - Detailed installation instructions
+- **Individual Service READMEs** - Each service folder contains its own README
+- **API Documentation** - Available at service endpoints (e.g., http://localhost:8000/docs for OCR AI)
 
 ---
 
-## 📈 Statistics
+## 🤝 Contributing
 
-- **Total Files:** 32
-- **Lines of Code:** 5,687+
-- **Documentation:** 60,000+ words
-- **Test Coverage:** Comprehensive
-- **Deployment Status:** Production Ready ✅
-
----
-
-## 🎓 Technical Approach
-
-**NOT Machine Learning - Rule-Based Expert System**
-
-Why?
-- ✅ Explainable (every flag has proof)
-- ✅ Legal defensibility (court-ready evidence)
-- ✅ Transparent (auditable rules)
-- ✅ Deterministic (reproducible results)
-- ✅ Fast (2 seconds per employee)
-
-We use:
-- Pattern matching algorithms
-- Multi-source cross-referencing
-- Statistical analysis
-- Threshold-based detection
-- Evidence aggregation
+1. Make your changes
+2. Test locally
+3. Commit with clear messages
+4. Push to your branch
 
 ---
 
-## 👥 Team
+## 📞 Support & Troubleshooting
 
-**Built for:** ZRA (Zambia Revenue Authority) Hackathon 2025
-**Purpose:** Combat corruption, save millions
-**Status:** Production Ready
+### Common Issues
+
+**Services won't start?**
+- Check prerequisites are installed
+- Ensure ports are not in use
+- Review logs in `/tmp/taxguard-logs/`
+
+**Database connection errors?**
+- Verify PostgreSQL is running: `pg_isready`
+- Check database exists: `sudo -u postgres psql -l`
+- Restart: `sudo service postgresql restart`
+
+**Port conflicts?**
+- Find process: `lsof -i :<port>`
+- Kill process: `kill -9 <PID>`
+
+For more troubleshooting, see **[SETUP.md](./SETUP.md)**
+
+---
+
+## 🎉 Success!
+
+Once everything is running, you should have:
+- ✅ 10 services operational
+- ✅ PostgreSQL database running
+- ✅ Dashboard accessible at http://localhost:3000
+- ✅ All features working (OCR batch, predictive analytics, blockchain, etc.)
 
 ---
 
 ## 📄 License
 
-MIT License - Built for ZRA Hackathon
+MIT License - See LICENSE file for details
 
 ---
 
-## 🎯 Get Started Now!
+## 🙏 Acknowledgments
 
-```bash
-# Clone repository
-git clone https://github.com/kaps10000/ZRA-Hackathon-TaxGuard-AI-GhostBuster.git
-cd ZRA-Hackathon-TaxGuard-AI-GhostBuster
-git checkout Ezra
-
-# Quick start
-QUICKSTART.bat
-```
-
-**Let's catch some ghosts! 👻**
+Built for the Zambia Revenue Authority (ZRA) to modernize tax collection and combat fraud using AI and blockchain technology.
 
 ---
 
-**GhostBuster v1.0**
-*Because dead men shouldn't collect paychecks.*
-
-🤖 Built with Claude Code | 🇿🇲 For Zambia's Future
+**Made with ❤️ for ZRA Hackathon**

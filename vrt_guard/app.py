@@ -899,6 +899,11 @@ def index():
     )
 
 
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'healthy', 'service': 'vrt-guard'}), 200
+
+
 @app.route('/templates/<kind>', methods=['GET'])
 def download_template(kind: str):
     # kind in {'return','intake','features'} (keeping legacy ones if needed)
@@ -1186,4 +1191,4 @@ def api_predict():
 
 if __name__ == '__main__':
     load_artifacts()
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5002)), debug=True)

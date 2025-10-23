@@ -83,7 +83,6 @@ Thumbs.db
 
 # Docker
 docker-compose.override.yml
-.dockerignore
 
 # GitHub Actions artifacts
 .github/workflows/*.local

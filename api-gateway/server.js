@@ -26,10 +26,19 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+    crossOriginResourcePolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginEmbedderPolicy: false
+}));
+
+// CORS configuration - simple and permissive for development
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production' ? ['https://zra.gov.zm'] : true,
-    credentials: true
+    origin: true,  // Allow all origins in development
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Content-Range', 'X-Content-Range']
 }));
 
 // Rate limiting (increased for testing - adjust for production)
