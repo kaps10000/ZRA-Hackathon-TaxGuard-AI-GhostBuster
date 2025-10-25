@@ -119,6 +119,7 @@ htmlcov/
 
 # Log files
 api-gateway/logs/
+combined.log
 
 # Data files (don't commit test data)
 ghostbuster/backend/data/
