@@ -277,8 +277,10 @@ def health():
 # Run Flask
 # ---------------------------
 if __name__ == '__main__':
+    # Port 5001 - Anomaly Tracker (AI Risk Scoring)
+    port = int(os.environ.get('PORT', 5001))
     app.run(
         debug=False,  # Set to False in production
         host='0.0.0.0',  # Allow external connections
-        port=5001
+        port=port
     )

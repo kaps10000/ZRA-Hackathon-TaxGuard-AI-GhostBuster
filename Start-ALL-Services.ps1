@@ -30,6 +30,28 @@ Write-Host ""
 # Set UTF-8 encoding for Python services
 $env:PYTHONIOENCODING = 'utf-8'
 
+# Check for port conflicts and kill any existing services
+Write-Host ""
+Write-Host "========== CHECKING FOR PORT CONFLICTS ==========" -ForegroundColor Yellow
+Write-Host ""
+
+$ports = @(3000, 3001, 3004, 3005, 4000, 4001, 5001, 5002, 8000)
+foreach ($port in $ports) {
+    $process = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($process) {
+        Write-Host "Port $port is in use - attempting to free it..." -ForegroundColor Yellow
+        $processId = (Get-NetTCPConnection -LocalPort $port).OwningProcess | Select-Object -First 1
+        if ($processId) {
+            try {
+                Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
+                Write-Host "  Freed port $port" -ForegroundColor Green
+            } catch {
+                Write-Host "  Could not free port $port" -ForegroundColor Red
+            }
+        }
+    }
+}
+
 Write-Host ""
 Write-Host "========== STARTING CORE SERVICES ==========" -ForegroundColor Green
 Write-Host ""
@@ -39,14 +61,15 @@ Write-Host "[1/10] Starting Dashboard Frontend (Port 3000)..." -ForegroundColor 
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'Dashboard Frontend - Port 3000' -ForegroundColor Cyan; cd 'E:\ZRA PROJECT\dashboard_integration\frontend'; npm run dev"
 Start-Sleep -Seconds 3
 
-# CORE SERVICE 2: VRT Guard NEW (Port 5000)
-Write-Host "[2/10] Starting VRT Guard - NEW VERSION (Port 5000)..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'VRT Guard (NEW) - Port 5000' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; cd 'E:\ZRA PROJECT\ZRA Tax Refund NEW'; python app.py"
+# CORE SERVICE 2: VRT Guard NEW (Port 5002) - FIXED: Was conflicting with OCR Backend
+Write-Host "[2/10] Starting VRT Guard - NEW VERSION (Port 5002)..." -ForegroundColor Yellow
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'VRT Guard (NEW) - Port 5002' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; `$env:PORT='5002'; cd 'E:\ZRA PROJECT\ZRA Tax Refund NEW'; python app.py"
 Start-Sleep -Seconds 3
 
 # CORE SERVICE 3: GhostBuster Backend (Port 3005)
 Write-Host "[3/10] Starting GhostBuster Backend (Port 3005)..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'GhostBuster Backend - Port 3005' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; cd 'E:\ZRA PROJECT\GhostBuster\backend'; python app.py"
+Write-Host "    Using: E:\ZRA PROJECT\GhostBuster\backend (uppercase G)" -ForegroundColor Gray
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'GhostBuster Backend - Port 3005 (UPPERCASE G)' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; cd 'E:\ZRA PROJECT\GhostBuster\backend'; python app.py"
 Start-Sleep -Seconds 4
 
 # CORE SERVICE 4: GhostBuster Frontend (Port 3004)
@@ -78,14 +101,14 @@ Write-Host "[8/10] Starting WhistlePro Backend (Port 4000)..." -ForegroundColor 
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'WhistlePro Backend - Port 4000' -ForegroundColor Cyan; cd 'E:\ZRA PROJECT\whistlepro_backend'; node src/server.js"
 Start-Sleep -Seconds 2
 
-# ADDITIONAL SERVICE 9: Main Flask Backend - OCR (Port 5001)
-Write-Host "[9/10] Starting Main Flask Backend - OCR (Port 5001)..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'Main Flask Backend OCR - Port 5001' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; `$env:FLASK_RUN_PORT='5001'; cd 'E:\ZRA PROJECT'; python app.py"
+# ADDITIONAL SERVICE 9: Anomaly Tracker - AI Risk Scoring (Port 5001)
+Write-Host "[9/10] Starting Anomaly Tracker - AI Risk Scoring (Port 5001)..." -ForegroundColor Yellow
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'Anomaly Tracker - Port 5001' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; `$env:PORT='5001'; cd 'E:\ZRA PROJECT\ai_risk_scoring'; .\venv\Scripts\python.exe -m api.scoring_api"
 Start-Sleep -Seconds 3
 
-# ADDITIONAL SERVICE 10: Anomaly Tracker (Port 5002)
-Write-Host "[10/10] Starting Anomaly Tracker (Port 5002)..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'Anomaly Tracker - Port 5002' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; cd 'E:\ZRA PROJECT\ai_risk_scoring'; .\venv\Scripts\python.exe -m api.scoring_api"
+# ADDITIONAL SERVICE 10: OCR AI Service (Port 8000)
+Write-Host "[10/10] Starting OCR AI Service (Port 8000)..." -ForegroundColor Yellow
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'OCR AI Service - Port 8000' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; cd 'E:\ZRA PROJECT\ocr-ai-service'; .\venv\Scripts\python.exe main.py"
 Start-Sleep -Seconds 2
 
 Write-Host ""
@@ -104,16 +127,16 @@ Write-Host ""
 Write-Host "All Service URLs:" -ForegroundColor Green
 Write-Host "  Core Services:" -ForegroundColor Cyan
 Write-Host "    - Dashboard:              http://localhost:3000" -ForegroundColor White
-Write-Host "    - VRT Guard (NEW):        http://localhost:5000" -ForegroundColor White
+Write-Host "    - VRT Guard (NEW):        http://localhost:5002" -ForegroundColor White
 Write-Host "    - GhostBuster:            http://localhost:3004" -ForegroundColor White
+Write-Host "    - GhostBuster API:        http://localhost:3005/api/health" -ForegroundColor White
 Write-Host "    - API Gateway:            http://localhost:4001/health" -ForegroundColor White
-Write-Host "    - Predictive Analytics:   http://localhost:5003/health" -ForegroundColor White
 Write-Host ""
 Write-Host "  Additional Services:" -ForegroundColor Cyan
 Write-Host "    - Blockchain:             http://localhost:3001" -ForegroundColor White
 Write-Host "    - WhistlePro:             http://localhost:4000/api" -ForegroundColor White
-Write-Host "    - OCR Backend:            http://localhost:5001" -ForegroundColor White
-Write-Host "    - Anomaly Tracker:        http://localhost:5002" -ForegroundColor White
+Write-Host "    - Anomaly Tracker:        http://localhost:5001/health" -ForegroundColor White
+Write-Host "    - OCR AI Service:         http://localhost:8000/docs" -ForegroundColor White
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host "Complete system startup finished!" -ForegroundColor Green

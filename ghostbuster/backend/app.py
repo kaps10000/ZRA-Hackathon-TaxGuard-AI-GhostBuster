@@ -21,9 +21,9 @@ engine = GhostBusterEngine()
 # Load datasets on startup
 print("Loading datasets...")
 if engine.load_datasets():
-    print("✓ Datasets loaded successfully")
+    print("[OK] Datasets loaded successfully")
 else:
-    print("✗ Error loading datasets - run generate_datasets.py first")
+    print("[ERROR] Error loading datasets - run generate_datasets.py first")
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -348,9 +348,14 @@ def get_sample_data():
         return jsonify({'error': str(e), 'details': traceback.format_exc()}), 500
 
 if __name__ == '__main__':
+    # PERMANENT FIX: Use environment variable for port, default to 3006
+    # Port 3005 was conflicting with WhistlePro and other Node services
+    port = int(os.environ.get('GHOSTBUSTER_PORT', 3006))
+
     print("\n" + "=" * 60)
-    print("GhostBuster API Server")
+    print("GhostBuster API Server - PORT CONFLICT FIXED!")
     print("=" * 60)
+    print(f"\n🔌 Running on Port: {port} (Changed from 3005 to avoid conflicts)")
     print("\nAPI Endpoints:")
     print("  POST /api/analyze/individual - Analyze single employee")
     print("  POST /api/analyze/batch      - Analyze multiple employees")
@@ -360,7 +365,7 @@ if __name__ == '__main__':
     print("  GET  /api/search?q=<query>   - Search employees")
     print("  GET  /api/sample             - Get sample data")
     print("  GET  /api/health             - Health check")
-    print("\nStarting server on http://localhost:3005")
+    print(f"\nStarting server on http://localhost:{port}")
     print("=" * 60 + "\n")
 
-    app.run(debug=True, port=3005, host='0.0.0.0')
+    app.run(debug=True, port=port, host='0.0.0.0')

@@ -8,7 +8,7 @@ Write-Host ""
 Write-Host "This script will start the following services:" -ForegroundColor Green
 Write-Host ""
 Write-Host "  1. Dashboard Frontend         - Port 3000" -ForegroundColor White
-Write-Host "  2. VRT Guard (NEW)            - Port 5000" -ForegroundColor White
+Write-Host "  2. VRT Guard (NEW)            - Port 5002" -ForegroundColor White
 Write-Host "  3. GhostBuster Backend        - Port 3005" -ForegroundColor White
 Write-Host "  4. GhostBuster Frontend       - Port 3004" -ForegroundColor White
 Write-Host "  5. API Gateway                - Port 4001" -ForegroundColor White
@@ -16,21 +16,59 @@ Write-Host "  6. Predictive Analytics       - Port 5003" -ForegroundColor White
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Press any key to start all services..."
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+Write-Host "Starting services automatically in 3 seconds..."
+Write-Host "Press Ctrl+C to cancel or any key to start immediately"
+Write-Host ""
+
+# Wait for 3 seconds or until key is pressed
+$timeout = 3
+for ($i = $timeout; $i -gt 0; $i--) {
+    if ([Console]::KeyAvailable) {
+        $null = [Console]::ReadKey($true)
+        break
+    }
+    Write-Host "Starting in $i seconds..." -ForegroundColor Yellow
+    Start-Sleep -Seconds 1
+}
 Write-Host ""
 
 # Set UTF-8 encoding for Python services
 $env:PYTHONIOENCODING = 'utf-8'
+
+# Check for port conflicts and kill any existing services
+Write-Host ""
+Write-Host "========== CHECKING FOR PORT CONFLICTS ==========" -ForegroundColor Yellow
+Write-Host ""
+
+$ports = @(3000, 3004, 3005, 4001, 5002, 5003)
+foreach ($port in $ports) {
+    $process = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($process) {
+        Write-Host "Port $port is in use - attempting to free it..." -ForegroundColor Yellow
+        $processId = (Get-NetTCPConnection -LocalPort $port).OwningProcess | Select-Object -First 1
+        if ($processId) {
+            try {
+                Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
+                Write-Host "  Freed port $port" -ForegroundColor Green
+            } catch {
+                Write-Host "  Could not free port $port" -ForegroundColor Red
+            }
+        }
+    }
+}
+
+Write-Host ""
+Write-Host "========== STARTING CORE SERVICES ==========" -ForegroundColor Green
+Write-Host ""
 
 # Service 1: Dashboard Frontend (Port 3000)
 Write-Host "[1/6] Starting Dashboard Frontend (Port 3000)..." -ForegroundColor Yellow
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'Dashboard Frontend - Port 3000' -ForegroundColor Cyan; cd 'E:\ZRA PROJECT\dashboard_integration\frontend'; npm run dev"
 Start-Sleep -Seconds 3
 
-# Service 2: VRT Guard NEW (Port 5000)
-Write-Host "[2/6] Starting VRT Guard - NEW VERSION (Port 5000)..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'VRT Guard (NEW) - Port 5000' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; cd 'E:\ZRA PROJECT\ZRA Tax Refund NEW'; python app.py"
+# Service 2: VRT Guard NEW (Port 5002) - FIXED: Was conflicting with OCR Backend on 5000
+Write-Host "[2/6] Starting VRT Guard - NEW VERSION (Port 5002)..." -ForegroundColor Yellow
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'VRT Guard (NEW) - Port 5002' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; `$env:PORT='5002'; cd 'E:\ZRA PROJECT\ZRA Tax Refund NEW'; python app.py"
 Start-Sleep -Seconds 3
 
 # Service 3: GhostBuster Backend (Port 3005)
@@ -66,7 +104,7 @@ Write-Host "  - To stop a service, close its PowerShell window or press Ctrl+C" 
 Write-Host ""
 Write-Host "Access Points:" -ForegroundColor Green
 Write-Host "  Dashboard:              http://localhost:3000" -ForegroundColor Cyan
-Write-Host "  VRT Guard (NEW):        http://localhost:5000" -ForegroundColor Cyan
+Write-Host "  VRT Guard (NEW):        http://localhost:5002" -ForegroundColor Cyan
 Write-Host "  GhostBuster:            http://localhost:3004" -ForegroundColor Cyan
 Write-Host "  API Gateway:            http://localhost:4001/health" -ForegroundColor Cyan
 Write-Host "  Predictive Analytics:   http://localhost:5003/health" -ForegroundColor Cyan

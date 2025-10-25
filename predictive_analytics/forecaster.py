@@ -41,16 +41,16 @@ class RevenueForecaster:
             )
             with open(dataset_path, 'r') as f:
                 data = json.load(f)
-                print(f"✓ Loaded real Zambian economic data: {len(data.get('historical_revenue', []))} months of revenue data")
+                print(f"[OK] Loaded real Zambian economic data: {len(data.get('historical_revenue', []))} months of revenue data")
                 return data
         except FileNotFoundError:
-            print("⚠ Warning: Real data file not found, falling back to generated data")
+            print("[WARNING] Real data file not found, falling back to generated data")
             return {
                 'historical_revenue': self._generate_historical_data(),
                 'copper_prices': self._generate_copper_prices()
             }
         except Exception as e:
-            print(f"⚠ Error loading real data: {e}, falling back to generated data")
+            print(f"[WARNING] Error loading real data: {e}, falling back to generated data")
             return {
                 'historical_revenue': self._generate_historical_data(),
                 'copper_prices': self._generate_copper_prices()
@@ -59,7 +59,7 @@ class RevenueForecaster:
     def _fetch_live_copper_price(self) -> Dict:
         """Fetch live copper price from metals API"""
         if not requests:
-            print("⚠ requests library not available, using historical data for copper prices")
+            print("[WARNING] requests library not available, using historical data for copper prices")
             return None
 
         try:
@@ -78,16 +78,16 @@ class RevenueForecaster:
                     if copper_rate:
                         # Metals API returns price per gram, convert to ton (1 ton = 1,000,000 grams)
                         price_per_ton = (1 / copper_rate) * 1000000
-                        print(f"✓ Fetched live copper price: ${price_per_ton:.2f}/ton")
+                        print(f"[OK] Fetched live copper price: ${price_per_ton:.2f}/ton")
                         return {
                             'price_usd_per_ton': round(price_per_ton, 2),
                             'source': 'Live Metals API',
                             'timestamp': datetime.now().isoformat()
                         }
             else:
-                print(f"⚠ Metals API returned status {response.status_code}, using historical data")
+                print(f"[WARNING] Metals API returned status {response.status_code}, using historical data")
         except Exception as e:
-            print(f"⚠ Failed to fetch live copper price: {e}, using historical data")
+            print(f"[WARNING] Failed to fetch live copper price: {e}, using historical data")
 
         return None
 
@@ -112,9 +112,9 @@ class RevenueForecaster:
                     latest = observations[0]
                     live_data['inflation_rate'] = float(latest.get('value', 0))
                     live_data['inflation_date'] = latest.get('date')
-                    print(f"✓ Fetched live inflation rate: {live_data['inflation_rate']}% ({live_data['inflation_date']})")
+                    print(f"[OK] Fetched live inflation rate: {live_data['inflation_rate']}% ({live_data['inflation_date']})")
         except Exception as e:
-            print(f"⚠ Failed to fetch FRED inflation data: {e}")
+            print(f"[WARNING] Failed to fetch FRED inflation data: {e}")
 
         # Try World Bank API for GDP growth data
         try:
@@ -132,10 +132,10 @@ class RevenueForecaster:
                         if entry.get('value') is not None:
                             live_data['gdp_growth_rate'] = float(entry['value'])
                             live_data['gdp_year'] = entry['date']
-                            print(f"✓ Fetched live GDP growth: {live_data['gdp_growth_rate']}% ({live_data['gdp_year']})")
+                            print(f"[OK] Fetched live GDP growth: {live_data['gdp_growth_rate']}% ({live_data['gdp_year']})")
                             break
         except Exception as e:
-            print(f"⚠ Failed to fetch World Bank GDP data: {e}")
+            print(f"[WARNING] Failed to fetch World Bank GDP data: {e}")
 
         # Try World Bank API for Trade Balance
         try:
@@ -152,10 +152,10 @@ class RevenueForecaster:
                         if entry.get('value') is not None:
                             live_data['trade_balance_usd'] = float(entry['value'])
                             live_data['trade_balance_year'] = entry['date']
-                            print(f"✓ Fetched live trade balance: ${live_data['trade_balance_usd']/1e9:.2f}B ({live_data['trade_balance_year']})")
+                            print(f"[OK] Fetched live trade balance: ${live_data['trade_balance_usd']/1e9:.2f}B ({live_data['trade_balance_year']})")
                             break
         except Exception as e:
-            print(f"⚠ Failed to fetch World Bank trade data: {e}")
+            print(f"[WARNING] Failed to fetch World Bank trade data: {e}")
 
         # Try World Bank API for Government Expenditure
         try:
@@ -172,10 +172,10 @@ class RevenueForecaster:
                         if entry.get('value') is not None:
                             live_data['govt_expenditure_pct_gdp'] = float(entry['value'])
                             live_data['govt_exp_year'] = entry['date']
-                            print(f"✓ Fetched government expenditure: {live_data['govt_expenditure_pct_gdp']:.1f}% of GDP ({live_data['govt_exp_year']})")
+                            print(f"[OK] Fetched government expenditure: {live_data['govt_expenditure_pct_gdp']:.1f}% of GDP ({live_data['govt_exp_year']})")
                             break
         except Exception as e:
-            print(f"⚠ Failed to fetch World Bank government expenditure data: {e}")
+            print(f"[WARNING] Failed to fetch World Bank government expenditure data: {e}")
 
         return live_data if live_data else None
 

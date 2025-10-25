@@ -14,7 +14,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:3005/api';
+const API_BASE = 'http://localhost:3006/api';
 
 function IndividualAnalysis({ onAnalysisComplete, onError, onSuccess, setLoading }) {
   const [nrc, setNrc] = useState('');
