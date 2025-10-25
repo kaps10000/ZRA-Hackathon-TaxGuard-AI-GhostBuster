@@ -1,9 +1,8 @@
 @echo off
 echo ============================================================
-echo Starting GhostBuster Backend Server
+echo Starting WhistlePro Backend on Port 3006
 echo ============================================================
 echo.
-echo API will be available at: http://localhost:3005
-echo.
-cd backend
-python app.py
+
+set PORT=3006
+node src/server.js

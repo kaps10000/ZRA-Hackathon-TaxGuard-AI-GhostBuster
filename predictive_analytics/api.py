@@ -128,6 +128,6 @@ def copper_impact():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    port = 3004
+    port = 5003  # Changed from 3004 to avoid conflict with GhostBuster frontend
     logger.info(f"Starting Predictive Analytics API on port {port}")
     app.run(host='0.0.0.0', port=port, debug=True)

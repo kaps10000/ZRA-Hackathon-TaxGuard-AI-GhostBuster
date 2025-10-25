@@ -15,7 +15,7 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'http://localhost:3005/api';
 
 function Statistics({ onError }) {
   const [stats, setStats] = useState(null);
@@ -60,10 +60,17 @@ function Statistics({ onError }) {
   // Prepare chart data
   const ghostDistribution = stats.ghost_distribution
     ? Object.entries(stats.ghost_distribution).map(([type, count]) => ({
-        type: type.replace('_', ' '),
+        type: type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
         count,
       }))
     : [];
+  
+  // Calculate percentages
+  const totalEmployees = stats.total_employees || 0;
+  const ghostCount = stats.ghost_employees || 0;
+  const legitimateCount = stats.legitimate_employees || 0;
+  const ghostPercentage = totalEmployees > 0 ? ((ghostCount / totalEmployees) * 100).toFixed(2) : 0;
+  const monthlyCost = stats.ghost_salary_cost || 0;
 
   return (
     <Box>
@@ -82,7 +89,7 @@ function Statistics({ onError }) {
               <CardContent>
                 <PeopleIcon sx={{ fontSize: 40, mb: 1 }} />
                 <Typography variant="h4" fontWeight="bold">
-                  {stats.total_employees?.toLocaleString()}
+                  {totalEmployees.toLocaleString()}
                 </Typography>
                 <Typography variant="body2">
                   Total Employees
@@ -94,26 +101,15 @@ function Statistics({ onError }) {
           <Grid item xs={12} md={3}>
             <Card sx={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white' }}>
               <CardContent>
-                <AccountBalanceIcon sx={{ fontSize: 40, mb: 1 }} />
-                <Typography variant="h4" fontWeight="bold">
-                  {stats.total_napsa_records?.toLocaleString()}
-                </Typography>
-                <Typography variant="body2">
-                  NAPSA Records
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} md={3}>
-            <Card sx={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', color: 'white' }}>
-              <CardContent>
                 <PeopleIcon sx={{ fontSize: 40, mb: 1 }} />
                 <Typography variant="h4" fontWeight="bold">
-                  {stats.total_nrc_records?.toLocaleString()}
+                  {ghostCount.toLocaleString()}
                 </Typography>
                 <Typography variant="body2">
-                  NRC Registry Records
+                  Ghost Employees Detected
+                </Typography>
+                <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+                  {ghostPercentage}% of total
                 </Typography>
               </CardContent>
             </Card>
@@ -122,17 +118,87 @@ function Statistics({ onError }) {
           <Grid item xs={12} md={3}>
             <Card sx={{ background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', color: 'white' }}>
               <CardContent>
-                <ReceiptIcon sx={{ fontSize: 40, mb: 1 }} />
+                <PeopleIcon sx={{ fontSize: 40, mb: 1 }} />
                 <Typography variant="h4" fontWeight="bold">
-                  {stats.total_bank_transactions?.toLocaleString()}
+                  {legitimateCount.toLocaleString()}
                 </Typography>
                 <Typography variant="body2">
-                  Bank Transactions
+                  Legitimate Employees
+                </Typography>
+                <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+                  {(100 - ghostPercentage).toFixed(2)}% of total
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={3}>
+            <Card sx={{ background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', color: 'white' }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 1 }}>💰</Typography>
+                <Typography variant="h5" fontWeight="bold">
+                  K {(monthlyCost / 1000000).toFixed(2)}M
+                </Typography>
+                <Typography variant="body2">
+                  Monthly Ghost Cost
+                </Typography>
+                <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+                  K {(monthlyCost * 12 / 1000000).toFixed(2)}M annually
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
         </Grid>
+
+        {/* Data Source Cards */}
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+            Data Sources
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={4}>
+              <Card variant="outlined">
+                <CardContent>
+                  <AccountBalanceIcon sx={{ fontSize: 32, color: '#667eea', mb: 1 }} />
+                  <Typography variant="h5" fontWeight="bold">
+                    {stats.total_napsa_records?.toLocaleString()}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    NAPSA Contribution Records
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            
+            <Grid item xs={12} md={4}>
+              <Card variant="outlined">
+                <CardContent>
+                  <PeopleIcon sx={{ fontSize: 32, color: '#4facfe', mb: 1 }} />
+                  <Typography variant="h5" fontWeight="bold">
+                    {stats.total_nrc_records?.toLocaleString()}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Home Affairs Death Registry
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            
+            <Grid item xs={12} md={4}>
+              <Card variant="outlined">
+                <CardContent>
+                  <ReceiptIcon sx={{ fontSize: 32, color: '#43e97b', mb: 1 }} />
+                  <Typography variant="h5" fontWeight="bold">
+                    {stats.total_bank_transactions?.toLocaleString()}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Bank Transaction Records
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </Box>
       </Paper>
 
       {/* Ghost Distribution Chart */}

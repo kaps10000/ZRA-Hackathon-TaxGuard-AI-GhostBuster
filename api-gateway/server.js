@@ -23,7 +23,7 @@ const {
 } = require('./middleware/monitoring');
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4001;
 
 // Security middleware
 app.use(helmet({

@@ -32,28 +32,56 @@ _feature_config: Dict[str, Any] = {}
 _metrics: Dict[str, Any] = {}
 _summary: Dict[str, Any] = {}
 
+@app.before_request
+def before_request():
+    """Ensure artifacts are loaded before handling any request"""
+    ensure_loaded()
+
 
 def load_artifacts():
     global _model, _feature_config, _metrics, _summary
+    print(f"Loading artifacts from {MODELS_DIR}...")
+    
     if FEATURE_CONFIG_PATH.exists():
         _feature_config = json.loads(FEATURE_CONFIG_PATH.read_text())
+        print(f"✓ Loaded feature config with {len(_feature_config.get('features', []))} features")
+    else:
+        print(f"⚠ Warning: Feature config not found at {FEATURE_CONFIG_PATH}")
+        
     if METRICS_PATH.exists():
         _metrics = json.loads(METRICS_PATH.read_text())
+        print(f"✓ Loaded model metrics")
+    else:
+        print(f"⚠ Warning: Metrics not found at {METRICS_PATH}")
+        
     if SUMMARY_PATH.exists():
         _summary = json.loads(SUMMARY_PATH.read_text())
+        print(f"✓ Loaded summary")
+    else:
+        print(f"⚠ Warning: Summary not found at {SUMMARY_PATH}")
+        
     if MODEL_PATH.exists():
         try:
             _model = joblib.load(MODEL_PATH)
-            print(f"✓ Model loaded successfully from {MODEL_PATH}")
+            print(f"✓ Model loaded successfully: {type(_model)}")
         except Exception as e:
-            print(f"⚠ Warning: Could not load model from {MODEL_PATH}: {e}")
+            print(f"✗ Error loading model from {MODEL_PATH}: {e}")
+            import traceback
+            traceback.print_exc()
             print("  Service will run in limited mode without predictions.")
             _model = None
+    else:
+        print(f"✗ Model file not found at {MODEL_PATH}")
+        _model = None
 
 
 def ensure_loaded():
+    global _model, _feature_config
     if _model is None or not _feature_config:
+        print("Ensuring artifacts are loaded...")
         load_artifacts()
+    if _model is None:
+        print("WARNING: Model is still None after load_artifacts()")
 
 
 def _allowed_file(filename: str) -> bool:
@@ -64,70 +92,8 @@ def _allowed_dataset_bundle(filename: str) -> bool:
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'zip', 'xlsx'}
 
 
-def _rule_based_fraud_detection(df_features: pd.DataFrame) -> pd.DataFrame:
-    """Rule-based fraud detection fallback when ML model is not available."""
-    # Simple heuristic-based fraud detection using common fraud indicators
-    fraud_scores = []
-
-    for idx in range(len(df_features)):
-        score = 0.0
-        indicators = []
-
-        # Check if we have the basic VAT data
-        has_vat_data = any(col in df_features.columns for col in ['output_vat', 'input_vat', 'total_sales', 'total_purchases'])
-
-        if has_vat_data:
-            output_vat = df_features.get('output_vat', pd.Series([0])).iloc[idx] if 'output_vat' in df_features.columns else 0
-            input_vat = df_features.get('input_vat', pd.Series([0])).iloc[idx] if 'input_vat' in df_features.columns else 0
-            total_sales = df_features.get('total_sales', pd.Series([0])).iloc[idx] if 'total_sales' in df_features.columns else 0
-            total_purchases = df_features.get('total_purchases', pd.Series([0])).iloc[idx] if 'total_purchases' in df_features.columns else 0
-
-            # Rule 1: Unusually high input VAT compared to output VAT
-            if output_vat > 0 and input_vat / output_vat > 2.0:
-                score += 0.25
-                indicators.append('High input VAT ratio')
-
-            # Rule 2: Input VAT exceeds output VAT significantly (potential refund fraud)
-            if input_vat > output_vat * 1.5 and input_vat > 10000:
-                score += 0.30
-                indicators.append('Suspicious refund claim')
-
-            # Rule 3: Unusually low VAT rate
-            if total_sales > 0:
-                vat_rate = output_vat / total_sales
-                if vat_rate < 0.10:  # Assuming 16% VAT rate, anything < 10% is suspicious
-                    score += 0.20
-                    indicators.append('Low effective VAT rate')
-
-            # Rule 4: Very high purchase-to-sales ratio
-            if total_sales > 0 and total_purchases / total_sales > 1.5:
-                score += 0.15
-                indicators.append('High purchase ratio')
-
-            # Rule 5: Large amounts (higher risk)
-            if total_sales > 1000000 or total_purchases > 1000000:
-                score += 0.10
-                indicators.append('Large transaction amounts')
-        else:
-            # No VAT data available, use a moderate risk score
-            score = 0.35
-            indicators = ['Insufficient data for analysis']
-
-        fraud_scores.append(min(score, 0.99))  # Cap at 0.99
-
-    probs = np.array(fraud_scores)
-    preds = (probs >= 0.5).astype(int)
-
-    return pd.DataFrame({'fraud_probability': probs, 'prediction': preds})
-
-
 def _predict_dataframe(df_features: pd.DataFrame) -> pd.DataFrame:
     """Ensure feature order and run predictions, returning df with outputs."""
-    # If model is not available, use rule-based detection
-    if _model is None:
-        print("⚠ Using rule-based fraud detection (ML model not available)")
-        return _rule_based_fraud_detection(df_features)
-
     features = _feature_config.get('features', [])
     if not features:
         raise RuntimeError('Feature config not found. Train the model first.')
@@ -899,11 +865,6 @@ def index():
     )
 
 
-@app.route('/health', methods=['GET'])
-def health():
-    return jsonify({'status': 'healthy', 'service': 'vrt-guard'}), 200
-
-
 @app.route('/templates/<kind>', methods=['GET'])
 def download_template(kind: str):
     # kind in {'return','intake','features'} (keeping legacy ones if needed)
@@ -1068,35 +1029,22 @@ def _featureize_from_vat_return(df: pd.DataFrame) -> pd.DataFrame:
 @app.route('/upload/return', methods=['POST'])
 def upload_vat_return():
     ensure_loaded()
-    # Note: Model check removed - will use rule-based fallback if model is not available
+    if _model is None:
+        return jsonify({'error': 'Model not found. Please run the training notebook.'}), 400
 
     f = request.files.get('file')
-    if not f:
-        print("⚠ Error: No file uploaded")
-        return jsonify({'error': 'No file uploaded'}), 400
-
-    if not _allowed_file(f.filename):
-        print(f"⚠ Error: Invalid file type - {f.filename}")
+    if not f or not _allowed_file(f.filename):
         return jsonify({'error': 'Please upload a CSV (recommended) or JSON VAT Return file.'}), 400
 
-    print(f"✓ Processing file: {f.filename}")
-
-    try:
-        if f.filename.lower().endswith('.json'):
-            payload = json.load(io.TextIOWrapper(f.stream, encoding='utf-8'))
-            df_return = pd.DataFrame(payload if isinstance(payload, list) else [payload])
-        else:
-            df_return = pd.read_csv(f)
-    except Exception as e:
-        print(f"⚠ Error reading file: {e}")
-        return jsonify({'error': f'Failed to read file: {str(e)}'}), 400
+    if f.filename.lower().endswith('.json'):
+        payload = json.load(io.TextIOWrapper(f.stream, encoding='utf-8'))
+        df_return = pd.DataFrame(payload if isinstance(payload, list) else [payload])
+    else:
+        df_return = pd.read_csv(f)
 
     # Check batch size limit
     if len(df_return) > 1000:
         return jsonify({'error': 'Batch size limit exceeded. Maximum 1000 claims per upload.'}), 400
-
-    print(f"✓ File loaded with {len(df_return)} records")
-    print(f"✓ Columns: {list(df_return.columns)}")
 
     try:
         df_features = _featureize_from_vat_return(df_return)
@@ -1147,10 +1095,7 @@ def upload_vat_return():
                 batch_analyses.append(summary)
 
     except Exception as e:
-        import traceback
-        print(f"⚠ Error processing VAT return: {e}")
-        print(f"⚠ Traceback: {traceback.format_exc()}")
-        return jsonify({'error': f'VAT return processing failed: {str(e)}'}), 400
+        return jsonify({'error': f'VAT return processing failed: {e}'}), 400
 
     # For batch, show summary table; for single, show detailed analysis
     if is_batch:

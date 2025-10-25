@@ -1,10 +1,7 @@
 {
-  "model_name": "Gradient Boosting",
-  "cv_best_model": "gradient_boosting",
-  "cv_best_auc": 0.9995972222222221,
-  "test_auc": 0.9999000000000001,
-  "test_f1": 0.9950248756218906,
-  "test_precision": 0.9900990099009901,
-  "test_recall": 1.0,
-  "trained_at": "2025-10-19 23:35:36"
+  "accuracy": 1.0,
+  "auc_roc": 1.0,
+  "n_features": 47,
+  "training_samples": 800,
+  "retrained_date": "2025-10-25T03:26:23.641190"
 }

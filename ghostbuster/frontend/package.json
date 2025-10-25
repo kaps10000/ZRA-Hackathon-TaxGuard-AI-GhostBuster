@@ -17,7 +17,7 @@
     "react-dropzone": "^14.2.3"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "set PORT=3004 && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

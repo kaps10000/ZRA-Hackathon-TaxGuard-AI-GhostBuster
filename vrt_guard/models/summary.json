@@ -1,13 +1,6 @@
 {
-  "n_rows": 2000,
-  "n_cols": 47,
-  "target": "is_fraud",
-  "class_counts": {
-    "0": 1600,
-    "1": 400
-  },
-  "class_ratio": {
-    "0": 0.8,
-    "1": 0.2
-  }
+  "model_type": "XGBoost with SMOTE",
+  "sklearn_version": "1.5.2",
+  "status": "ready",
+  "retrained": true
 }

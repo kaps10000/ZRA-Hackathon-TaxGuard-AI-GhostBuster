@@ -16,7 +16,7 @@ const PredictiveAnalytics = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`http://localhost:3004/revenue-forecast?months=${forecastMonths}`);
+      const response = await axios.get(`http://localhost:5003/revenue-forecast?months=${forecastMonths}`);
       setForecast(response.data);
     } catch (err) {
       console.error('Forecast error:', err);
@@ -43,7 +43,7 @@ const PredictiveAnalytics = () => {
     try {
       // Use realistic market volatility scenario: -5% copper price projection
       // Based on historical LME copper price fluctuations
-      const response = await axios.post('http://localhost:3004/copper-impact', {
+      const response = await axios.post('http://localhost:5003/copper-impact', {
         price_change_percent: -5
       });
       setCopperScenario(response.data);
@@ -59,7 +59,7 @@ const PredictiveAnalytics = () => {
     setError(null);
     try {
       // Use 5% improvement as baseline forecast with current market factors
-      const response = await axios.post('http://localhost:3004/scenario-analysis', {
+      const response = await axios.post('http://localhost:5003/scenario-analysis', {
         compliance_change_percent: 5
       });
       setComplianceScenario(response.data);

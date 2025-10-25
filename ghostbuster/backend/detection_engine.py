@@ -8,6 +8,7 @@ import numpy as np
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
 import json
+import os
 
 class GhostBusterEngine:
     def __init__(self):
@@ -16,6 +17,10 @@ class GhostBusterEngine:
         self.home_affairs_df = None
         self.bank_df = None
         self.master_df = None
+        
+        # Set base directory to the backend folder
+        self.base_dir = os.path.dirname(os.path.abspath(__file__))
+        self.data_dir = os.path.join(self.base_dir, 'data')
 
         # Thresholds
         self.RETIREMENT_AGE = 65
@@ -33,13 +38,33 @@ class GhostBusterEngine:
     def load_datasets(self):
         """Load all datasets"""
         try:
-            self.napsa_df = pd.read_csv('data/napsa_contributions.csv', parse_dates=['contribution_date'])
-            self.home_affairs_df = pd.read_csv('data/home_affairs_registry.csv', parse_dates=['date_of_birth', 'death_date'])
-            self.bank_df = pd.read_csv('data/bank_transactions.csv', parse_dates=['transaction_date'])
-            self.master_df = pd.read_csv('data/master_records.csv', parse_dates=['date_of_birth', 'employment_start_date', 'death_date'])
+            print(f"Loading datasets from: {self.data_dir}")
+            napsa_path = os.path.join(self.data_dir, 'napsa_contributions.csv')
+            home_affairs_path = os.path.join(self.data_dir, 'home_affairs_registry.csv')
+            bank_path = os.path.join(self.data_dir, 'bank_transactions.csv')
+            master_path = os.path.join(self.data_dir, 'master_records.csv')
+            
+            print(f"Loading NAPSA contributions from {napsa_path}")
+            self.napsa_df = pd.read_csv(napsa_path, parse_dates=['contribution_date'])
+            print(f"[OK] Loaded {len(self.napsa_df)} NAPSA records")
+            
+            print(f"Loading Home Affairs registry from {home_affairs_path}")
+            self.home_affairs_df = pd.read_csv(home_affairs_path, parse_dates=['date_of_birth', 'death_date'])
+            print(f"[OK] Loaded {len(self.home_affairs_df)} Home Affairs records")
+            
+            print(f"Loading bank transactions from {bank_path}")
+            self.bank_df = pd.read_csv(bank_path, parse_dates=['transaction_date'])
+            print(f"[OK] Loaded {len(self.bank_df)} bank transaction records")
+            
+            print(f"Loading master records from {master_path}")
+            self.master_df = pd.read_csv(master_path, parse_dates=['date_of_birth', 'employment_start_date', 'death_date'])
+            print(f"[OK] Loaded {len(self.master_df)} master records")
+            
             return True
         except Exception as e:
-            print(f"Error loading datasets: {e}")
+            print(f"[ERROR] Error loading datasets: {e}")
+            import traceback
+            traceback.print_exc()
             return False
 
     def calculate_age(self, date_of_birth):

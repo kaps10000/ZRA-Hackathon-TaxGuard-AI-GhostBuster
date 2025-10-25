@@ -33,7 +33,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Ba
 import axios from 'axios';
 import { saveAs } from 'file-saver';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'http://localhost:3005/api';
 
 const RISK_COLORS = {
   CRITICAL: '#d32f2f',

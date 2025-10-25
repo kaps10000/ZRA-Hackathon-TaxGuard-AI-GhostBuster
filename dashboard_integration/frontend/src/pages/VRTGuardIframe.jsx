@@ -8,12 +8,12 @@ const VRTGuard = () => {
           <span className="text-3xl">🛡️</span>
           <div>
             <h2 className="text-2xl font-bold">VRT Guard - VAT Fraud Detection</h2>
-            <p className="text-sm opacity-90">AI-Powered VAT Return Fraud Analysis System - Running on Port 5000</p>
+            <p className="text-sm opacity-90">AI-Powered VAT Return Fraud Analysis System - Running on Port 5002</p>
           </div>
         </div>
       </div>
       <iframe 
-        src="http://localhost:5000" 
+        src="http://localhost:5002" 
         className="w-full border-2 border-gray-300 rounded-lg shadow-lg"
         style={{ height: 'calc(100vh - 250px)' }}
         title="VRT Guard VAT Fraud Detection"
