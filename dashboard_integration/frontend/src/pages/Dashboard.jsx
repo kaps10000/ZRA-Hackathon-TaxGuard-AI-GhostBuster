@@ -7,6 +7,7 @@ import WhistleProPanel from '../components/WhistleProPanel';
 import GhostBusterPanel from '../components/GhostBusterPanel';
 import PredictivePanel from '../components/PredictivePanel';
 import BlockchainAudit from '../components/BlockchainAudit';
+import { Network, RotateCcw } from "lucide-react"
 
 const Dashboard = ({ onNavigate }) => {
   const { data, loading, error, refresh } = useDashboardData();
@@ -52,13 +53,12 @@ const Dashboard = ({ onNavigate }) => {
             <div className="flex items-center space-x-4">
               <button 
                 onClick={refresh}
-                className="bg-blue-700 hover:bg-blue-600 px-3 py-2 rounded text-sm"
+                className="flex items-center gap-1 bg-blue-700 hover:bg-blue-600 px-3 py-2 rounded text-sm"
               >
-                🔄 Refresh
+                  <RotateCcw size={17} />
+                Refresh
               </button>
-              <div className="text-sm">
-                <span className="text-blue-200">User:</span> John Doe (Auditor)
-              </div>
+              
             </div>
           </div>
         </div>
@@ -72,31 +72,55 @@ const Dashboard = ({ onNavigate }) => {
         {/* Recent Alerts */}
         <RecentAlerts data={data} onNavigate={onNavigate} />
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          {/* OCR Monitor */}
-          <div onClick={() => onNavigate && onNavigate('ocr')} className="cursor-pointer hover:shadow-xl transition-shadow">
-            <OCRMonitor data={data?.ocr} />
+      {/* Two-column rows with equal-height cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 items-stretch">
+        <div
+          onClick={() => onNavigate && onNavigate('ocr')}
+          className="cursor-pointer hover:shadow-xl transition-shadow group h-full"
+        >
+          <div className="h-full min-h-[220px] flex flex-col">
+            <div className="flex-1">
+              <OCRMonitor data={data?.ocr} />
+            </div>
           </div>
+        </div>
 
-          {/* GhostBuster Panel */}
-          <div onClick={() => onNavigate && onNavigate('ghostbuster')} className="cursor-pointer hover:shadow-xl transition-shadow">
-            <GhostBusterPanel data={data?.ghostbuster} />
+        <div
+          onClick={() => onNavigate && onNavigate('ghostbuster')}
+          className="cursor-pointer hover:shadow-xl transition-shadow group h-full"
+        >
+          <div className="h-full min-h-[220px] flex flex-col">
+            <div className="flex-1">
+              <GhostBusterPanel data={data?.ghostbuster} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 items-stretch">
+        <div
+          onClick={() => onNavigate && onNavigate('whistlepro')}
+          className="cursor-pointer hover:shadow-xl transition-shadow group h-full"
+        >
+          <div className="h-full min-h-[220px] flex flex-col">
+            <div className="flex-1">
+              <WhistleProPanel data={data?.whistlepro} />
+            </div>
           </div>
         </div>
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          {/* WhistlePro Panel */}
-          <div onClick={() => onNavigate && onNavigate('whistlepro')} className="cursor-pointer hover:shadow-xl transition-shadow">
-            <WhistleProPanel data={data?.whistlepro} />
-          </div>
-
-          {/* Predictive Panel */}
-          <div onClick={() => onNavigate && onNavigate('predictive')} className="cursor-pointer hover:shadow-xl transition-shadow">
-            <PredictivePanel data={data?.predictive} />
+        <div
+          onClick={() => onNavigate && onNavigate('predictive')}
+          className="cursor-pointer hover:shadow-xl transition-shadow group h-full"
+        >
+          <div className="h-full min-h-[220px] flex flex-col">
+            <div className="flex-1">
+              <PredictivePanel data={data?.predictive} />
+            </div>
           </div>
         </div>
+      </div>
+
 
         {/* Network Analysis Button */}
         <div className="mt-6">
@@ -104,7 +128,7 @@ const Dashboard = ({ onNavigate }) => {
             onClick={() => onNavigate && onNavigate('network')}
             className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-3"
           >
-            <span className="text-2xl">🔗</span>
+            <Network size={28} aria-hidden="true" className="text-white" />
             <span className="text-lg font-bold">Analyze Entity Networks & Relationships</span>
             <span className="text-sm bg-white/20 px-3 py-1 rounded-full">Click to Explore</span>
           </button>
