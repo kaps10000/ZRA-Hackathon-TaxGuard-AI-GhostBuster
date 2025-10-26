@@ -15,7 +15,7 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'http://localhost:3006/api';
 
 function Statistics({ onError }) {
   const [stats, setStats] = useState(null);

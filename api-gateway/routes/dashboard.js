@@ -1,5 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const axios = require('axios');
+
+// Service URLs
+const GHOSTBUSTER_API = process.env.GHOSTBUSTER_API || 'http://localhost:3006';
 
 // Mock data aggregation functions (will be replaced with real API calls)
 const getOCRStats = async () => {
@@ -25,13 +29,50 @@ const getWhistleProStats = async () => {
 };
 
 const getGhostBusterStats = async () => {
-  return {
-    phantom_employees_detected: 12,
-    ghost_companies_flagged: 5,
-    shell_entities: 3,
-    related_networks: 8,
-    trend: 8
-  };
+  try {
+    // Fetch real data from GhostBuster backend
+    const response = await axios.get(`${GHOSTBUSTER_API}/api/stats`, {
+      timeout: 5000
+    });
+
+    const data = response.data;
+    const ghostDistribution = data.ghost_distribution || {};
+
+    // Calculate totals from real data
+    const totalGhosts = (ghostDistribution.DECEASED || 0) +
+                        (ghostDistribution.DUPLICATE || 0) +
+                        (ghostDistribution.PHANTOM || 0) +
+                        (ghostDistribution.OVER_AGE || 0);
+
+    return {
+      phantom_employees_detected: ghostDistribution.PHANTOM || 0,
+      deceased_employees: ghostDistribution.DECEASED || 0,
+      duplicate_employees: ghostDistribution.DUPLICATE || 0,
+      over_age_employees: ghostDistribution.OVER_AGE || 0,
+      total_ghosts: totalGhosts,
+      legitimate_employees: ghostDistribution.LEGITIMATE || 0,
+      total_employees: data.total_employees || 0,
+      total_napsa_records: data.total_napsa_records || 0,
+      total_bank_transactions: data.total_bank_transactions || 0,
+      trend: 8,
+      data_loaded: true
+    };
+  } catch (error) {
+    console.error('GhostBuster backend error:', error.message);
+    // Fallback to mock data if backend unavailable
+    return {
+      phantom_employees_detected: 0,
+      deceased_employees: 0,
+      duplicate_employees: 0,
+      over_age_employees: 0,
+      total_ghosts: 0,
+      legitimate_employees: 0,
+      total_employees: 0,
+      error: 'Unable to load statistics',
+      data_loaded: false,
+      trend: 0
+    };
+  }
 };
 
 const getPredictiveStats = async () => {

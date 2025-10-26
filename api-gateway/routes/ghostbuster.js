@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
+const axios = require('axios');
+
+// GhostBuster backend URL
+const GHOSTBUSTER_API = process.env.GHOSTBUSTER_API || 'http://localhost:3006';
 
 // In-memory storage for GhostBuster detections
 const ghostDetections = [];
@@ -81,9 +85,20 @@ router.get('/recent', (req, res) => {
   }
 });
 
-// GET /api/ghostbuster/stats - Get detection statistics
-router.get('/stats', (req, res) => {
+// GET /api/ghostbuster/stats - Proxy to GhostBuster backend
+router.get('/stats', async (req, res) => {
   try {
+    // Try to get stats from GhostBuster backend
+    const response = await axios.get(`${GHOSTBUSTER_API}/api/stats`, {
+      timeout: 5000
+    });
+
+    res.json(response.data);
+
+  } catch (error) {
+    console.error('GhostBuster backend stats error:', error.message);
+
+    // Fallback to in-memory stats if backend is unavailable
     const total = ghostDetections.length;
     const ghosts = ghostDetections.filter(d => d.isGhost).length;
     const legitimate = total - ghosts;
@@ -92,12 +107,10 @@ router.get('/stats', (req, res) => {
       total: total,
       ghosts: ghosts,
       legitimate: legitimate,
-      ghostRate: total > 0 ? ((ghosts / total) * 100).toFixed(2) : 0
+      ghostRate: total > 0 ? ((ghosts / total) * 100).toFixed(2) : 0,
+      fallback: true,
+      error: 'Using cached data - backend unavailable'
     });
-
-  } catch (error) {
-    console.error('GhostBuster stats error:', error);
-    res.status(500).json({ error: 'Failed to get statistics' });
   }
 });
 

@@ -15,7 +15,7 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { useDropzone } from 'react-dropzone';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'http://localhost:3006/api';
 
 function BatchAnalysis({ onAnalysisComplete, onError, onSuccess, setLoading }) {
   const [file, setFile] = useState(null);

@@ -295,7 +295,8 @@ if __name__ == '__main__':
     print("  GET  /api/search?q=<query>   - Search employees")
     print("  GET  /api/sample             - Get sample data")
     print("  GET  /api/health             - Health check")
-    print("\nStarting server on http://localhost:5000")
+    port = int(os.environ.get('GHOSTBUSTER_PORT', 5000))
+    print(f"\nStarting server on http://localhost:{port}")
     print("=" * 60 + "\n")
 
-    app.run(debug=True, port=5000, host='0.0.0.0')
+    app.run(debug=True, port=port, host='0.0.0.0')
