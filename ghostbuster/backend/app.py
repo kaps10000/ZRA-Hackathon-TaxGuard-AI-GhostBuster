@@ -355,7 +355,7 @@ if __name__ == '__main__':
     print("\n" + "=" * 60)
     print("GhostBuster API Server - PORT CONFLICT FIXED!")
     print("=" * 60)
-    print(f"\n🔌 Running on Port: {port} (Changed from 3005 to avoid conflicts)")
+    print(f"\nRunning on Port: {port} (Changed from 3005 to avoid conflicts)")
     print("\nAPI Endpoints:")
     print("  POST /api/analyze/individual - Analyze single employee")
     print("  POST /api/analyze/batch      - Analyze multiple employees")

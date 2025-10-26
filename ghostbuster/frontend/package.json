@@ -18,6 +18,7 @@
   },
   "scripts": {
     "start": "set PORT=3004 && react-scripts start",
+    "start:unix": "PORT=3004 DISABLE_ESLINT_PLUGIN=true react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
