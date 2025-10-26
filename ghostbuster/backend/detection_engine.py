@@ -57,21 +57,16 @@ class GhostBusterEngine:
             print(f"[OK] Loaded {len(self.home_affairs_df)} Home Affairs records")
             
             print(f"Loading bank transactions from {bank_path}")
-            # Skip bank transactions for now due to memory constraints
-            # Create a minimal dummy dataset for compatibility
-            print(f"[INFO] Skipping large bank transactions file due to memory constraints")
-            print(f"[INFO] Creating minimal bank dataset for core functionality...")
-            
-            # Create a small dummy bank dataset with the expected structure
-            self.bank_df = pd.DataFrame({
-                'account_number': ['ACC001', 'ACC002', 'ACC003'],
-                'nrc': ['123456/78/9', '987654/32/1', '456789/01/2'], 
-                'transaction_date': pd.to_datetime(['2024-01-01', '2024-01-02', '2024-01-03']),
-                'amount': [1000.0, 2000.0, 1500.0],
-                'transaction_type': ['DEPOSIT', 'WITHDRAWAL', 'DEPOSIT'],
-                'description': ['Salary', 'ATM Withdrawal', 'Bonus']
-            })
-            print(f"[OK] Created minimal bank dataset with {len(self.bank_df)} records for testing")
+            # Load bank transactions with memory optimization
+            # Use efficient dtypes to reduce memory usage for 3M+ records
+            self.bank_df = pd.read_csv(bank_path,
+                                      parse_dates=['transaction_date'],
+                                      dtype={'account_number': 'str',
+                                            'nrc': 'str',
+                                            'amount': 'float32',
+                                            'transaction_type': 'str',
+                                            'description': 'str'})
+            print(f"[OK] Loaded {len(self.bank_df):,} bank transaction records")
             
             print(f"Loading master records from {master_path}")
             self.master_df = pd.read_csv(master_path, parse_dates=['date_of_birth', 'employment_start_date', 'death_date'])
