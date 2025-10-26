@@ -68,28 +68,34 @@ The setup guide includes:
 │                    (Port 4001)                          │
 └─────────────────────────────────────────────────────────┘
                           │
-         ┌───────────────┴───────────────┐
-         │                               │
-         ▼                               ▼
-┌──────────────────┐           ┌──────────────────┐
-│   VRT Guard      │           │  GhostBuster     │
-│   (Port 5002)    │           │  (Port 3005)     │
-└──────────────────┘           └──────────────────┘
-         │                               │
-         ▼                               ▼
-┌──────────────────┐           ┌──────────────────┐
-│ Anomaly Tracker  │           │ Predictive       │
-│  (Port 5001)     │           │ Analytics        │
-└──────────────────┘           │ (Port 3004)      │
-         │                     └──────────────────┘
-         ▼                               │
-┌──────────────────┐                    ▼
-│   OCR Services   │           ┌──────────────────┐
-│  AI: 8000        │           │   Blockchain     │
-│  Backend: 5000   │           │   (Port 3001)    │
-└──────────────────┘           └──────────────────┘
-         │
-         ▼
+         ┌────────────────┼────────────────┐
+         │                │                │
+         ▼                ▼                ▼
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│ GhostBuster  │  │  Whistlepro  │  │   VRT Guard  │
+│ Frontend     │  │  Backend     │  │  (Port 5003) │
+│ (Port 3004)  │  │ (Port 3005)  │  └──────────────┘
+└──────────────┘  └──────────────┘         │
+       │                  │                 ▼
+       ▼                  ▼          ┌──────────────┐
+┌──────────────┐  ┌──────────────┐  │  Anomaly     │
+│ GhostBuster  │  │ Whistlepro/  │  │  Tracker     │
+│ Backend      │  │ VRT Module   │  │ (Port 5002)  │
+│ (Port 5001)  │  │ (Port 3006)  │  └──────────────┘
+└──────────────┘  └──────────────┘         │
+       │                  │                 │
+       └──────────────────┼─────────────────┘
+                          ▼
+         ┌────────────────┼────────────────┐
+         │                │                │
+         ▼                ▼                ▼
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│ OCR Backend  │  │  OCR AI      │  │  Blockchain  │
+│ (Port 4000)  │  │ (Port 5000)  │  │ (Port 3001)  │
+└──────────────┘  └──────────────┘  └──────────────┘
+         │                │                │
+         └────────────────┼────────────────┘
+                          ▼
 ┌─────────────────────────────────────────────────────────┐
 │              PostgreSQL Database                         │
 │                 (Port 5432)                             │
@@ -154,15 +160,16 @@ Advanced revenue forecasting with:
 | Service | Port | Description |
 |---------|------|-------------|
 | Dashboard Frontend | 3000 | Main user interface |
-| API Gateway | 4001 | Central routing hub |
-| VRT Guard | 5002 | VAT fraud detection |
-| Anomaly Tracker | 5001 | AI risk scoring |
-| Predictive Analytics | 3004 | Revenue forecasting |
-| GhostBuster Backend | 3005 | Ghost detection engine |
-| OCR AI Service | 8000 | Document processing |
-| OCR Backend | 5000 | OCR data management |
 | Blockchain Service | 3001 | Blockchain ledger |
-| WhistlePro | 3005 | Whistleblower system |
+| GhostBuster Frontend | 3004 | Ghost detection UI |
+| Whistlepro Backend | 3005 | Whistleblower system |
+| Whistlepro/VRT Module | 3006 | Additional module |
+| OCR Backend | 4000 | Document processing backend |
+| API Gateway | 4001 | Central routing hub |
+| OCR AI Service | 5000 | ML/OCR processing |
+| GhostBuster Backend | 5001 | Ghost detection engine |
+| Anomaly Tracker (Predictive Analytics) | 5002 | AI risk scoring & revenue forecasting |
+| VRT Guard | 5003 | VAT fraud detection |
 | PostgreSQL | 5432 | Database |
 
 ---
@@ -205,21 +212,21 @@ tail -f /tmp/taxguard-logs/frontend.log
 
 ```
 ZRA-Hackathon-TaxGuard-AI-GhostBuster/
-├── api-gateway/              # Central API routing
 ├── dashboard_integration/
-│   └── frontend/             # React dashboard
-├── vrt_guard/                # VAT fraud detection
-├── ai_risk_scoring/          # Anomaly tracker
-├── predictive_analytics/     # Revenue forecasting
-├── ghostbuster/
-│   └── backend/              # Ghost detection engine
-├── ocr-ai-service/           # OCR AI processing
-├── ocr-backend/              # OCR data management
-├── blockchain/               # Blockchain ledger
-├── whistlepro_backend/       # Whistleblower system
+│   └── frontend/             # Port 3000 - React dashboard
+├── blockchain/               # Port 3001 - Blockchain ledger
+├── GhostBuster/
+│   ├── frontend/             # Port 3004 - Ghost detection UI
+│   └── backend/              # Port 5001 - Ghost detection engine
+├── whistlepro_backend/       # Port 3005 - Whistleblower system
+├── ocr-backend/              # Port 4000 - Document processing backend
+├── api-gateway/              # Port 4001 - Central API routing
+├── ai-service/               # Port 5000 - OCR AI processing
+├── predictive_analytics/     # Port 5002 - Anomaly tracker & revenue forecasting
+├── vrt_guard/                # Port 5003 - VAT fraud detection
 ├── SETUP.md                  # Detailed setup guide
 ├── README.md                 # This file
-├── start-all-services.sh     # Startup script
+├── start-all-linux.sh        # Startup script
 └── stop-all-services.sh      # Shutdown script
 ```
 
@@ -300,10 +307,11 @@ For more troubleshooting, see **[SETUP.md](./SETUP.md)**
 ## 🎉 Success!
 
 Once everything is running, you should have:
-- ✅ 10 services operational
+- ✅ 12 services operational
 - ✅ PostgreSQL database running
 - ✅ Dashboard accessible at http://localhost:3000
-- ✅ All features working (OCR batch, predictive analytics, blockchain, etc.)
+- ✅ GhostBuster UI at http://localhost:3004
+- ✅ All features working (OCR batch, predictive analytics, blockchain, ghost detection, etc.)
 
 ---
 

@@ -14,9 +14,9 @@
 - Professional design
 
 **Services Covered:**
-- ✅ OCR AI Service (Port 8000)
+- ✅ OCR AI Service (Port 5000)
 - ✅ Blockchain API (Port 3001)
-- ✅ OCR Backend (Port 5000)
+- ✅ OCR Backend (Port 4000)
 - ✅ Service Status Overview
 
 **Open in browser:**
@@ -98,10 +98,17 @@ python3 generate_mock_data.py --type invoice --quality good --count 5 --output b
 
 | Service | Port | Status | Health | URL |
 |---------|------|--------|--------|-----|
-| **OCR AI Service** | 8000 | ✅ Running | Healthy | http://localhost:8000 |
-| **Blockchain API** | 3001 | ✅ Running | Unhealthy (functional) | http://localhost:3001 |
-| **OCR Backend** | 5000 | ⚠️ Restarting | Model issues | http://localhost:5000 |
-| **Frontend** | 3000 | ✅ Running | Unhealthy (functional) | http://localhost:3000 |
+| **Dashboard Frontend** | 3000 | ✅ Running | Healthy | http://localhost:3000 |
+| **Blockchain API** | 3001 | ✅ Running | Healthy | http://localhost:3001 |
+| **GhostBuster Frontend** | 3004 | ✅ Running | Healthy | http://localhost:3004 |
+| **Whistlepro Backend** | 3005 | ✅ Running | Healthy | http://localhost:3005 |
+| **Whistlepro/VRT Module** | 3006 | ✅ Running | Healthy | http://localhost:3006 |
+| **OCR Backend** | 4000 | ✅ Running | Healthy | http://localhost:4000 |
+| **API Gateway** | 4001 | ✅ Running | Healthy | http://localhost:4001 |
+| **OCR AI Service** | 5000 | ✅ Running | Healthy | http://localhost:5000 |
+| **GhostBuster Backend** | 5001 | ✅ Running | Healthy | http://localhost:5001 |
+| **Anomaly Tracker** | 5002 | ✅ Running | Healthy | http://localhost:5002 |
+| **VRT Guard** | 5003 | ✅ Running | Healthy | http://localhost:5003 |
 | **PostgreSQL** | 5432 | ✅ Running | Healthy | localhost:5432 |
 
 ---
@@ -111,10 +118,10 @@ python3 generate_mock_data.py --type invoice --quality good --count 5 --output b
 ### **Test OCR AI Service:**
 ```bash
 # Health check
-curl http://localhost:8000/health
+curl http://localhost:5000/health
 
 # Verify document (requires file upload)
-curl -X POST http://localhost:8000/api/verify \
+curl -X POST http://localhost:5000/api/verify \
   -F "file=@/home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/ocr-backend/test-invoice.png"
 ```
 
@@ -152,17 +159,18 @@ xdg-open http://localhost:3001/explorer
 
 ## 🔗 Quick Access Links
 
-- **OCR AI Swagger Docs:** http://localhost:8000/docs
-- **OCR AI ReDoc:** http://localhost:8000/redoc
-- **Blockchain API Docs:** http://localhost:3001/api-docs
+- **Dashboard Frontend:** http://localhost:3000
+- **GhostBuster Frontend:** http://localhost:3004
 - **Blockchain Explorer:** http://localhost:3001/explorer
-- **Frontend App:** http://localhost:3000
+- **Blockchain API Docs:** http://localhost:3001/api-docs
+- **OCR AI Service:** http://localhost:5000
+- **API Gateway:** http://localhost:4001
 
 ---
 
 ## 📋 All API Endpoints Summary
 
-### **OCR AI Service (Port 8000)**
+### **OCR AI Service (Port 5000)**
 1. `GET /health` - Health check
 2. `GET /` - API information
 3. `POST /api/ocr/process` - OCR processing
@@ -195,8 +203,8 @@ xdg-open http://localhost:3001/explorer
 22. `GET /explorer` - Blockchain explorer
 23. `GET /api-docs` - API documentation
 
-### **OCR Backend (Port 5000)** - ⚠️ Currently Restarting
-Status: Under development / Model initialization issues
+### **OCR Backend (Port 4000)** - ✅ Running
+Status: Operational
 
 ---
 
@@ -214,9 +222,9 @@ Status: Under development / Model initialization issues
 **Cause:** Service not running
 **Solution:** Check `docker-compose ps` and restart if needed
 
-### Issue: OCR Backend Restarting
-**Cause:** Model initialization errors
-**Solution:** Use OCR AI Service (port 8000) instead - it's fully functional
+### Issue: Service Not Responding
+**Cause:** Service may not be running
+**Solution:** Check service status with health endpoints or use ./check-all-services.sh
 
 ---
 
@@ -224,12 +232,13 @@ Status: Under development / Model initialization issues
 
 1. **Start with Health Checks:**
    ```bash
-   curl http://localhost:8000/health
-   curl http://localhost:3001/health
+   curl http://localhost:4001/health  # API Gateway
+   curl http://localhost:5000/health  # OCR AI Service
+   curl http://localhost:3001/health  # Blockchain
    ```
 
 2. **Test OCR AI Service:**
-   - Open Swagger UI: http://localhost:8000/docs
+   - Visit: http://localhost:5000
    - Try "Verify Document" endpoint
    - Upload test-invoice.png
 
@@ -247,11 +256,11 @@ Status: Under development / Model initialization issues
 
 ## 📊 Statistics
 
-- **Total Services:** 4 (5 including database)
-- **Total Endpoints:** 40+
-- **Operational Services:** 3/4 (75%)
-- **Documentation Files:** 4
-- **Test Files:** 2
+- **Total Services:** 12 (including database)
+- **Total Endpoints:** 50+
+- **Operational Services:** 12/12 (100%)
+- **Documentation Files:** 10+
+- **Test Files:** 2+
 - **Supported File Types:** PNG, JPG, JPEG, PDF, TIFF
 
 ---
@@ -280,16 +289,23 @@ Status: Under development / Model initialization issues
 
 ## 🎉 What's Working
 
-✅ OCR AI Service - Full verification workflow
-✅ Blockchain API - Event management & analytics
-✅ Frontend - Web interface
-✅ PostgreSQL - Database
+✅ Dashboard Frontend (3000) - Main web interface
+✅ Blockchain API (3001) - Event management & analytics
+✅ GhostBuster Frontend (3004) - Ghost detection UI
+✅ Whistlepro Backend (3005) - Whistleblower system
+✅ Whistlepro/VRT Module (3006) - Additional module
+✅ OCR Backend (4000) - Document processing backend
+✅ API Gateway (4001) - Central routing
+✅ OCR AI Service (5000) - Full verification workflow
+✅ GhostBuster Backend (5001) - Ghost detection engine
+✅ Anomaly Tracker (5002) - AI risk scoring
+✅ VRT Guard (5003) - VAT tracking
+✅ PostgreSQL (5432) - Database
 ✅ API Documentation - Complete guides
 ✅ Postman Collections - Ready to import
-⚠️ OCR Backend - Restarting (use OCR AI Service instead)
 
 ---
 
-**Last Updated:** 2025-10-12
-**Version:** 1.0.0
-**Status:** Production Ready
+**Last Updated:** 2025-10-26
+**Version:** 2.0.0
+**Status:** Production Ready - All 12 Services Operational

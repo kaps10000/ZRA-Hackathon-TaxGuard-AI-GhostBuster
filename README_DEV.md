@@ -26,7 +26,7 @@ cd dashboard_integration\api_integration; npm install; cd ..\frontend; npm insta
 .\dev-start.ps1
 ```
 
-This script will open two new PowerShell windows: one runs the mock API (port 4000) and the other runs the Vite dev server (port 5173). The frontend is configured to proxy API calls to `http://localhost:4000` by default.
+This script will open two new PowerShell windows: one runs the mock API (port 4000) and the other runs the Vite dev server (port 3000). The frontend is configured to proxy API calls to `http://localhost:4000` by default.
 
 Notes
 - Settings -> GhostBuster runtime allows switching between `mock` and `proxy` and will POST the runtime config to the mock API endpoint `/api/_ghost-config`.
