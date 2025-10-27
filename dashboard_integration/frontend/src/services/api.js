@@ -4,10 +4,21 @@ import { io } from 'socket.io-client';
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4001';
 const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:4001';
+const WHISTLEPRO_BASE_URL = import.meta.env.VITE_WHISTLEPRO_URL || 'http://localhost:3005';
+const WHISTLEPRO_WS_URL = import.meta.env.VITE_WHISTLEPRO_WS_URL || 'http://localhost:3005';
 
 // Axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+// WhistlePro-specific axios instance (port 3005)
+const whistleproApi = axios.create({
+  baseURL: WHISTLEPRO_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
@@ -40,6 +51,7 @@ api.interceptors.response.use(
 
 // WebSocket connection
 let socket = null;
+let whistleproSocket = null;
 
 export const connectWebSocket = () => {
   if (!socket) {
@@ -70,6 +82,49 @@ export const disconnectWebSocket = () => {
 
 export const getSocket = () => socket;
 
+// WhistlePro real-time WebSocket connection
+export const connectWhistleProWebSocket = () => {
+  if (!whistleproSocket) {
+    whistleproSocket = io(WHISTLEPRO_WS_URL, {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5
+    });
+
+    whistleproSocket.on('connect', () => {
+      console.log('✅ WhistlePro WebSocket connected');
+    });
+
+    whistleproSocket.on('disconnect', () => {
+      console.log('❌ WhistlePro WebSocket disconnected');
+    });
+
+    whistleproSocket.on('connected', (data) => {
+      console.log('📡 WhistlePro real-time service connected:', data);
+    });
+
+    // Listen for real-time events
+    whistleproSocket.on('newReport', (data) => {
+      console.log('📢 New report received:', data.report);
+    });
+
+    whistleproSocket.on('statusChanged', (data) => {
+      console.log('🔄 Report status changed:', data);
+    });
+  }
+  return whistleproSocket;
+};
+
+export const disconnectWhistleProWebSocket = () => {
+  if (whistleproSocket) {
+    whistleproSocket.disconnect();
+    whistleproSocket = null;
+  }
+};
+
+export const getWhistleProSocket = () => whistleproSocket;
+
 // Dashboard API
 export const dashboardAPI = {
   getFeed: () => api.get('/api/dashboard/feed'),
@@ -85,11 +140,17 @@ export const ocrAPI = {
   getStats: () => api.get('/api/ocr/stats')
 };
 
-// WhistlePro API
+// WhistlePro API - Direct connection to port 3005
 export const whistleproAPI = {
-  submit: (report) => api.post('/api/whistlepro/submit', report),
-  getCases: (params) => api.get('/api/whistlepro/cases', { params }),
-  getStats: () => api.get('/api/whistlepro/stats')
+  submit: (report) => whistleproApi.post('/api/reports', report),
+  getCases: (params) => whistleproApi.get('/api/reports', { params }),
+  getCase: (caseId) => whistleproApi.get(`/api/reports/${caseId}`),
+  updateStatus: (caseId, status) => whistleproApi.patch(`/api/reports/${caseId}/status`, { status }),
+  getStats: () => whistleproApi.get('/api/realtime/status'),
+  // File upload support
+  uploadFiles: (formData) => whistleproApi.post('/api/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
 };
 
 // GhostBuster API

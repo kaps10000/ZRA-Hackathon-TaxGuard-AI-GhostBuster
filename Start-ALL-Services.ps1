@@ -58,33 +58,33 @@ Write-Host ""
 
 # CORE SERVICE 1: Dashboard Frontend (Port 3000)
 Write-Host "[1/10] Starting Dashboard Frontend (Port 3000)..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'Dashboard Frontend - Port 3000' -ForegroundColor Cyan; cd 'E:\ZRA PROJECT\dashboard_integration\frontend'; npm run dev"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'Dashboard Frontend - Port 3000' -ForegroundColor Cyan; cd 'C:\Users\EPHRAIM\Downloads\ZRA-Hackathon-TaxGuard-AI-GhostBuster\dashboard_integration\frontend'; npm run dev"
 Start-Sleep -Seconds 3
 
 # CORE SERVICE 2: VRT Guard NEW (Port 5002) - FIXED: Was conflicting with OCR Backend
 Write-Host "[2/10] Starting VRT Guard - NEW VERSION (Port 5002)..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'VRT Guard (NEW) - Port 5002' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; `$env:PORT='5002'; cd 'E:\ZRA PROJECT\ZRA Tax Refund NEW'; python app.py"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'VRT Guard (NEW) - Port 5002' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; `$env:PORT='5002'; cd 'C:\Users\EPHRAIM\Downloads\ZRA-Hackathon-TaxGuard-AI-GhostBuster\ZRA Tax Refund NEW'; python app.py"
 Start-Sleep -Seconds 3
 
 # CORE SERVICE 3: GhostBuster Backend (Port 3005)
 Write-Host "[3/10] Starting GhostBuster Backend (Port 3005)..." -ForegroundColor Yellow
-Write-Host "    Using: E:\ZRA PROJECT\GhostBuster\backend (uppercase G)" -ForegroundColor Gray
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'GhostBuster Backend - Port 3005 (UPPERCASE G)' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; cd 'E:\ZRA PROJECT\GhostBuster\backend'; python app.py"
+Write-Host "    Using: C:\Users\EPHRAIM\Downloads\ZRA-Hackathon-TaxGuard-AI-GhostBuster\GhostBuster\backend (uppercase G)" -ForegroundColor Gray
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'GhostBuster Backend - Port 3005 (UPPERCASE G)' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; cd 'C:\Users\EPHRAIM\Downloads\ZRA-Hackathon-TaxGuard-AI-GhostBuster\GhostBuster\backend'; python app.py"
 Start-Sleep -Seconds 4
 
 # CORE SERVICE 4: GhostBuster Frontend (Port 3004)
 Write-Host "[4/10] Starting GhostBuster Frontend (Port 3004)..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'GhostBuster Frontend - Port 3004' -ForegroundColor Cyan; cd 'E:\ZRA PROJECT\GhostBuster\frontend'; npm start"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'GhostBuster Frontend - Port 3004' -ForegroundColor Cyan; cd 'C:\Users\EPHRAIM\Downloads\ZRA-Hackathon-TaxGuard-AI-GhostBuster\GhostBuster\frontend'; npm start"
 Start-Sleep -Seconds 3
 
 # CORE SERVICE 5: API Gateway (Port 4001)
 Write-Host "[5/10] Starting API Gateway (Port 4001)..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'API Gateway - Port 4001' -ForegroundColor Cyan; cd 'E:\ZRA PROJECT\api-gateway'; node server.js"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'API Gateway - Port 4001' -ForegroundColor Cyan; cd 'C:\Users\EPHRAIM\Downloads\ZRA-Hackathon-TaxGuard-AI-GhostBuster\api-gateway'; node server.js"
 Start-Sleep -Seconds 2
 
 # CORE SERVICE 6: Predictive Analytics (Port 5003)
 Write-Host "[6/10] Starting Predictive Analytics (Port 5003)..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'Predictive Analytics - Port 5003' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; cd 'E:\ZRA PROJECT\predictive_analytics'; .\venv\Scripts\python.exe api.py"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'Predictive Analytics - Port 5003' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; cd 'C:\Users\EPHRAIM\Downloads\ZRA-Hackathon-TaxGuard-AI-GhostBuster\predictive_analytics'; .\venv\Scripts\python.exe api.py"
 Start-Sleep -Seconds 2
 
 Write-Host ""
@@ -93,22 +93,22 @@ Write-Host ""
 
 # ADDITIONAL SERVICE 7: Blockchain Service (Port 3001)
 Write-Host "[7/10] Starting Blockchain Service (Port 3001)..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'Blockchain Service - Port 3001' -ForegroundColor Cyan; cd 'E:\ZRA PROJECT\blockchain'; npm start"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'Blockchain Service - Port 3001' -ForegroundColor Cyan; cd 'C:\Users\EPHRAIM\Downloads\ZRA-Hackathon-TaxGuard-AI-GhostBuster\blockchain'; npm start"
 Start-Sleep -Seconds 3
 
 # ADDITIONAL SERVICE 8: WhistlePro Backend (Port 4000)
 Write-Host "[8/10] Starting WhistlePro Backend (Port 4000)..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'WhistlePro Backend - Port 4000' -ForegroundColor Cyan; cd 'E:\ZRA PROJECT\whistlepro_backend'; node src/server.js"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'WhistlePro Backend - Port 4000' -ForegroundColor Cyan; cd 'C:\Users\EPHRAIM\Downloads\ZRA-Hackathon-TaxGuard-AI-GhostBuster\whistlepro_backend'; node src/server.js"
 Start-Sleep -Seconds 2
 
 # ADDITIONAL SERVICE 9: Anomaly Tracker - AI Risk Scoring (Port 5001)
 Write-Host "[9/10] Starting Anomaly Tracker - AI Risk Scoring (Port 5001)..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'Anomaly Tracker - Port 5001' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; `$env:PORT='5001'; cd 'E:\ZRA PROJECT\ai_risk_scoring'; .\venv\Scripts\python.exe -m api.scoring_api"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'Anomaly Tracker - Port 5001' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; `$env:PORT='5001'; cd 'C:\Users\EPHRAIM\Downloads\ZRA-Hackathon-TaxGuard-AI-GhostBuster\ai_risk_scoring'; .\venv\Scripts\python.exe -m api.scoring_api"
 Start-Sleep -Seconds 3
 
 # ADDITIONAL SERVICE 10: OCR AI Service (Port 8000)
 Write-Host "[10/10] Starting OCR AI Service (Port 8000)..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'OCR AI Service - Port 8000' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; cd 'E:\ZRA PROJECT\ocr-ai-service'; .\venv\Scripts\python.exe main.py"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Write-Host 'OCR AI Service - Port 8000' -ForegroundColor Cyan; `$env:PYTHONIOENCODING='utf-8'; cd 'C:\Users\EPHRAIM\Downloads\ZRA-Hackathon-TaxGuard-AI-GhostBuster\ocr-ai-service'; .\venv\Scripts\python.exe main.py"
 Start-Sleep -Seconds 2
 
 Write-Host ""
