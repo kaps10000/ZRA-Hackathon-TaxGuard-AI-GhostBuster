@@ -4,7 +4,7 @@ RESTful API for ghost employee detection system
 """
 
 from flask import Flask, request, jsonify, send_file
-from flask_cors import CORS
+from flask-cors import CORS
 from detection_engine import GhostBusterEngine
 import pandas as pd
 import json

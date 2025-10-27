@@ -3,13 +3,22 @@ const router = express.Router();
 const axios = require('axios');
 
 // Configuration
-const ANOMALY_TRACKER_URL = process.env.ANOMALY_TRACKER_URL || 'http://localhost:5000';
+const ANOMALY_TRACKER_URL = process.env.ANOMALY_TRACKER_URL || 'http://localhost:5001';
 
 // POST /api/anomaly-tracker/predict/ml - ML-based risk scoring
 router.post('/predict/ml', async (req, res) => {
   try {
     const response = await axios.post(`${ANOMALY_TRACKER_URL}/predict/ml`, req.body);
-    res.json(response.data);
+    // Map ai_risk_scoring response -> dashboard expected schema
+    const input = Array.isArray(req.body) ? req.body : [];
+    const scores = Array.isArray(response.data?.risk_scores) ? response.data.risk_scores : [];
+    const level = (s) => (s >= 70 ? 'High' : s >= 40 ? 'Medium' : 'Low');
+    const results = input.map((rec, i) => ({
+      ...rec,
+      risk_score: typeof scores[i] === 'number' ? Math.round(scores[i] * 100) / 100 : 0,
+      risk_level: level(typeof scores[i] === 'number' ? scores[i] : 0),
+    }));
+    res.json({ success: true, results });
   } catch (error) {
     console.error('Anomaly Tracker ML prediction error:', error.message);
     if (error.response) {
@@ -24,7 +33,16 @@ router.post('/predict/ml', async (req, res) => {
 router.post('/predict/manual', async (req, res) => {
   try {
     const response = await axios.post(`${ANOMALY_TRACKER_URL}/predict/manual`, req.body);
-    res.json(response.data);
+    // Map manual scoring response -> dashboard expected schema
+    const input = Array.isArray(req.body) ? req.body : [];
+    const scores = Array.isArray(response.data?.risk_scores) ? response.data.risk_scores : [];
+    const level = (s) => (s >= 70 ? 'High' : s >= 40 ? 'Medium' : 'Low');
+    const results = input.map((rec, i) => ({
+      ...rec,
+      risk_score: typeof scores[i] === 'number' ? Math.round(scores[i] * 100) / 100 : 0,
+      risk_level: level(typeof scores[i] === 'number' ? scores[i] : 0),
+    }));
+    res.json({ success: true, results });
   } catch (error) {
     console.error('Anomaly Tracker manual prediction error:', error.message);
     if (error.response) {

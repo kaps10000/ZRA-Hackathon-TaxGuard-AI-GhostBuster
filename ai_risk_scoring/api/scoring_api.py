@@ -1,3 +1,18 @@
+from typing import Any
+# ---------------------------
+# Helpers
+# ---------------------------
+def parse_json_request() -> tuple[Any, str]:
+    """Robustly parse JSON body, returning (data, raw_text)."""
+    raw = request.get_data(cache=False, as_text=True) or ""
+    data = request.get_json(silent=True)
+    if data is None and raw:
+        try:
+            data = json.loads(raw)
+        except Exception as e:
+            logger.error(f"JSON parse error: {e}; raw_prefix={raw[:200]}")
+            return None, raw
+    return data, raw
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
@@ -5,7 +20,11 @@ import joblib
 import os
 import logging
 from typing import Dict, List, Any
-from models.risk_scoring_improved import RiskScorer
+from pathlib import Path
+from ai_risk_scoring.models.risk_scoring_improved import RiskScorer
+from ai_risk_scoring.data_processing.feature_engineering import create_features, prepare_features_for_model
+import json
+import numpy as np
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -16,7 +35,9 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend integration
 
 # Configuration
-MODEL_PATH = os.path.join("models", "risk_model.pkl")
+# Resolve paths relative to the package root so execution location doesn't matter
+PKG_ROOT = Path(__file__).resolve().parent.parent  # ai_risk_scoring/
+MODEL_PATH = str(PKG_ROOT / "models" / "risk_model.pkl")
 REQUIRED_FEATURES = ['amount']
 OPTIONAL_FEATURES = ['transaction_count', 'avg_transaction', 'sector', 'region']
 
@@ -39,7 +60,7 @@ def load_ml_model():
 
 # Load models
 ml_model = load_ml_model()
-scorer = RiskScorer()
+scorer = RiskScorer(scaler_path=str(PKG_ROOT / "models" / "risk_scaler.pkl"))
 
 # ---------------------------
 # Validation Functions
@@ -126,34 +147,49 @@ def predict_ml():
             }), 503
         
         # Get and validate data
-        data = request.get_json()
+        data, raw = parse_json_request()
+        if data is None:
+            return jsonify({"error": "Invalid JSON", "message": "Request body must be valid JSON"}), 400
         is_valid, message = validate_request_data(data)
         
         if not is_valid:
             return jsonify({"error": "Invalid input", "message": message}), 400
         
-        # Create DataFrame and sanitize
+        # Create DataFrame, sanitize, and engineer features to match training pipeline
         df = pd.DataFrame(data)
         df = sanitize_dataframe(df)
-        
         if df.empty:
             return jsonify({
                 "error": "No valid records",
                 "message": "All records contain invalid data"
             }), 400
         
-        # Select only numeric columns for prediction
-        numeric_df = df.select_dtypes(include=['number'])
-        
-        if numeric_df.empty:
+        # Engineer features and select the same numeric matrix used in training
+        features_df = create_features(df, group_by_taxpayer=False)
+        X, _ = prepare_features_for_model(features_df, 'risk_label')
+        # Replace problematic values to ensure JSON/ML compatibility
+        X = X.replace([np.inf, -np.inf], 0).fillna(0)
+        if X.empty:
             return jsonify({
-                "error": "No numeric features",
-                "message": "Unable to find numeric features for prediction"
+                "error": "No valid features",
+                "message": "Unable to engineer valid features for prediction"
             }), 400
+        # Align columns to the scaler's fitted features (ensures order/coverage match training)
+        try:
+            expected_cols = list(getattr(scorer.scaler, 'feature_names_in_', []))
+            if expected_cols:
+                # Missing cols -> fill with 0; Extra cols -> drop
+                for c in expected_cols:
+                    if c not in X.columns:
+                        X[c] = 0
+                X = X[expected_cols]
+        except Exception as e:
+            logger.warning(f"Feature alignment warning (ML): {e}")
+        logger.info(f"ML request len={len(raw)} cols={list(X.columns)[:5]}... total_cols={X.shape[1]} rows={X.shape[0]}")
         
         # Predict risk scores
         try:
-            risk_probabilities = ml_model.predict_proba(numeric_df)
+            risk_probabilities = ml_model.predict_proba(X)
             if risk_probabilities.shape[1] > 1:
                 risk_scores = risk_probabilities[:, 1] * 100  # High risk class probability
             else:
@@ -185,34 +221,48 @@ def predict_manual():
     """Manual formula-based risk scoring with validation"""
     try:
         # Get and validate data
-        data = request.get_json()
+        data, raw = parse_json_request()
+        if data is None:
+            return jsonify({"error": "Invalid JSON", "message": "Request body must be valid JSON"}), 400
         is_valid, message = validate_request_data(data)
         
         if not is_valid:
             return jsonify({"error": "Invalid input", "message": message}), 400
         
-        # Create DataFrame and sanitize
+        # Create DataFrame, sanitize, and engineer features to match training pipeline
         df = pd.DataFrame(data)
         df = sanitize_dataframe(df)
-        
         if df.empty:
             return jsonify({
                 "error": "No valid records",
                 "message": "All records contain invalid data"
             }), 400
         
-        # Select numeric features
-        numeric_df = df.select_dtypes(include=['number'])
-        
-        if numeric_df.empty:
+        # Engineer features and select the same numeric matrix used in training
+        features_df = create_features(df, group_by_taxpayer=False)
+        X, _ = prepare_features_for_model(features_df, 'risk_label')
+        # Replace problematic values
+        X = X.replace([np.inf, -np.inf], 0).fillna(0)
+        if X.empty:
             return jsonify({
-                "error": "No numeric features",
-                "message": "Unable to find numeric features for scoring"
+                "error": "No valid features",
+                "message": "Unable to engineer valid features for scoring"
             }), 400
+        # Align columns to the scaler's fitted features
+        try:
+            expected_cols = list(getattr(scorer.scaler, 'feature_names_in_', []))
+            if expected_cols:
+                for c in expected_cols:
+                    if c not in X.columns:
+                        X[c] = 0
+                X = X[expected_cols]
+        except Exception as e:
+            logger.warning(f"Feature alignment warning (manual): {e}")
+        logger.info(f"Manual request len={len(raw)} cols={list(X.columns)[:5]}... total_cols={X.shape[1]} rows={X.shape[0]}")
         
         # Compute risk scores
         try:
-            risk_scores = scorer.compute_risk_score(numeric_df)
+            risk_scores = scorer.compute_risk_score(X)
         except Exception as e:
             logger.error(f"Manual scoring error: {e}")
             return jsonify({
@@ -238,11 +288,19 @@ def predict_manual():
 def health():
     """Enhanced health check with detailed status"""
     try:
-        # Test scorer
-        test_data = pd.DataFrame([{"amount": 1000}])
+        # Test scorer with engineered/aligned features to match training
         scorer_status = True
         try:
-            _ = scorer.compute_risk_score(test_data)
+            df = pd.DataFrame([{"amount": 1000, "sector": "Retail", "region": "Ndola"}])
+            features_df = create_features(df, group_by_taxpayer=False)
+            X, _ = prepare_features_for_model(features_df, 'risk_label')
+            expected_cols = list(getattr(scorer.scaler, 'feature_names_in_', []))
+            if expected_cols:
+                for c in expected_cols:
+                    if c not in X.columns:
+                        X[c] = 0
+                X = X[expected_cols]
+            _ = scorer.compute_risk_score(X)
         except Exception as e:
             scorer_status = False
             logger.error(f"Scorer health check failed: {e}")
