@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 const API_BASE = 'http://localhost:4001/api/anomaly-tracker';
-const API_TRAIN = 'http://localhost:5001/train';
+const API_TRAIN = 'http://localhost:4001/api/anomaly-tracker/train';
 const API_DB = 'http://localhost:4001/api/anomaly-tracker-db';
 
 const AnomalyTracker = () => {

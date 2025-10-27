@@ -1,9 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+const multer = require('multer');
+const FormData = require('form-data');
 
 // Configuration
 const ANOMALY_TRACKER_URL = process.env.ANOMALY_TRACKER_URL || 'http://localhost:5001';
+
+// Multer setup for multipart uploads
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 // POST /api/anomaly-tracker/predict/ml - ML-based risk scoring
 router.post('/predict/ml', async (req, res) => {
@@ -76,3 +82,34 @@ router.get('/', async (req, res) => {
 });
 
 module.exports = router;
+
+// POST /api/anomaly-tracker/train - Proxy training CSV upload to Flask
+router.post('/train', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    const { originalname, mimetype, buffer } = req.file;
+    // Prepare form-data for Flask
+    const form = new FormData();
+    form.append('file', buffer, { filename: originalname, contentType: mimetype, knownLength: buffer.length });
+    // Forward optional fields
+    const passthrough = ['features', 'target', 'learning_rate', 'n_trees', 'n_estimators', 'test_size'];
+    for (const key of passthrough) {
+      if (req.body && typeof req.body[key] !== 'undefined' && req.body[key] !== null) {
+        form.append(key, String(req.body[key]));
+      }
+    }
+
+    const headers = form.getHeaders();
+    const response = await axios.post(`${ANOMALY_TRACKER_URL}/train`, form, { headers });
+    res.json(response.data);
+  } catch (error) {
+    console.error('Anomaly Tracker training proxy error:', error.message);
+    if (error.response) {
+      res.status(error.response.status).json(error.response.data);
+    } else {
+      res.status(500).json({ error: 'Failed to train model', message: error.message });
+    }
+  }
+});
