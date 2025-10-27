@@ -25,6 +25,10 @@ from ai_risk_scoring.models.risk_scoring_improved import RiskScorer
 from ai_risk_scoring.data_processing.feature_engineering import create_features, prepare_features_for_model
 import json
 import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
+from xgboost import XGBClassifier
+import io
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -330,6 +334,144 @@ def health():
             "status": "ERROR",
             "message": "Health check failed"
         }), 500
+
+# ---------------------------
+# Training Endpoint
+# ---------------------------
+@app.route('/train', methods=['POST'])
+def train():
+    """Train an XGBoost model on uploaded CSV with selected features and params.
+
+    Expects multipart/form-data with fields:
+    - file: CSV file
+    - features: JSON array of feature column names
+    - target: target column name
+    - learning_rate: float (optional)
+    - n_estimators: int (optional)
+    - test_size: float between 0 and 0.9 (optional)
+    """
+    try:
+        if 'file' not in request.files:
+            return jsonify({"error": "No file provided"}), 400
+
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({"error": "Empty filename"}), 400
+
+        try:
+            df = pd.read_csv(file)
+        except Exception as e:
+            logger.error(f"CSV read error: {e}")
+            return jsonify({"error": "Invalid CSV file"}), 400
+
+        features_raw = request.form.get('features', '[]')
+        try:
+            features = json.loads(features_raw)
+            if not isinstance(features, list):
+                features = []
+        except Exception:
+            features = []
+
+        target = request.form.get('target')
+        if not target:
+            return jsonify({"error": "Missing target column"}), 400
+
+        if not features:
+            # default: all numeric columns except target
+            features = [c for c in df.select_dtypes(include=[np.number]).columns if c != target]
+
+        missing_cols = [c for c in features + [target] if c not in df.columns]
+        if missing_cols:
+            return jsonify({"error": f"Missing columns: {missing_cols}"}), 400
+
+        # Build X, y
+        data = df[features + [target]].dropna()
+        if data.empty:
+            return jsonify({"error": "No valid rows after dropping NaNs"}), 400
+        X = data[features]
+        y = data[target]
+
+        # Params
+        try:
+            learning_rate = float(request.form.get('learning_rate', 0.1))
+        except Exception:
+            learning_rate = 0.1
+        try:
+            n_estimators = int(request.form.get('n_trees', request.form.get('n_estimators', 100)))
+        except Exception:
+            n_estimators = 100
+        try:
+            test_size = float(request.form.get('test_size', 0.2))
+            if test_size <= 0 or test_size >= 0.9:
+                test_size = 0.2
+        except Exception:
+            test_size = 0.2
+
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=test_size, random_state=42, stratify=y if len(y.unique()) > 1 else None
+        )
+
+        model = XGBClassifier(
+            use_label_encoder=False,
+            eval_metric='logloss',
+            learning_rate=learning_rate,
+            n_estimators=n_estimators
+        )
+        model.fit(X_train, y_train)
+
+        # Metrics
+        y_pred = model.predict(X_test)
+        acc = float(accuracy_score(y_test, y_pred))
+        f1 = float(f1_score(y_test, y_pred, average='weighted'))
+        cm = confusion_matrix(y_test, y_pred)
+        cm_list = cm.tolist()
+
+        # Feature importances (if available)
+        importances = []
+        try:
+            fi = getattr(model, 'feature_importances_', None)
+            if fi is not None:
+                importances = [
+                    {"feature": f, "importance": float(v)} for f, v in zip(features, fi)
+                ]
+                importances.sort(key=lambda x: x["importance"], reverse=True)
+        except Exception as e:
+            logger.warning(f"Feature importance not available: {e}")
+
+        # Save model and update in-memory reference
+        try:
+            joblib.dump(model, MODEL_PATH)
+            global ml_model
+            ml_model = model
+        except Exception as e:
+            logger.error(f"Failed to save model: {e}")
+
+        # Fit and save scaler for manual scorer on the same features
+        try:
+            manual_scorer = RiskScorer()
+            manual_scorer.fit_scaler(X)
+        except Exception as e:
+            logger.warning(f"Failed to fit scaler: {e}")
+
+        return jsonify({
+            "success": True,
+            "metrics": {
+                "accuracy": acc,
+                "f1": f1,
+                "confusion_matrix": cm_list
+            },
+            "features_used": features,
+            "feature_importance": importances,
+            "rows_used": int(len(data)),
+            "test_size": test_size,
+            "params": {
+                "learning_rate": learning_rate,
+                "n_estimators": n_estimators
+            }
+        })
+    except Exception as e:
+        logger.error(f"Training error: {e}")
+        return jsonify({"error": "Training failed", "message": str(e)}), 500
 
 # ---------------------------
 # Run Flask

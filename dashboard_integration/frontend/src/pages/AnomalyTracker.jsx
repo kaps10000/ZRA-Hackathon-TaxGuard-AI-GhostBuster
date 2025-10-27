@@ -2,13 +2,24 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 const API_BASE = 'http://localhost:4001/api/anomaly-tracker';
+const API_TRAIN = 'http://localhost:5001/train';
 const API_DB = 'http://localhost:4001/api/anomaly-tracker-db';
 
 const AnomalyTracker = () => {
-  const [activeTab, setActiveTab] = useState('manual'); // 'manual', 'ml', 'results'
+  const [activeTab, setActiveTab] = useState('manual'); // 'manual', 'results', 'training'
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState(null);
   const [method, setMethod] = useState('ml'); // 'ml' or 'manual'
+
+  // Training state
+  const [trainingFile, setTrainingFile] = useState(null);
+  const [columns, setColumns] = useState([]);
+  const [selectedFeatures, setSelectedFeatures] = useState([]);
+  const [target, setTarget] = useState('');
+  const [params, setParams] = useState({ learningRate: 0.1, nTrees: 100, testSize: 0.2 });
+  const [training, setTraining] = useState(false);
+  const [trainingMsg, setTrainingMsg] = useState('');
+  const [trainingResult, setTrainingResult] = useState(null);
 
   // Manual input state for single taxpayer
   const [taxpayerData, setTaxpayerData] = useState({
@@ -172,6 +183,89 @@ const AnomalyTracker = () => {
     setActiveTab('manual');
   };
 
+  // Training helpers
+  const handleCSVChange = (e) => {
+    const file = e.target.files?.[0];
+    setTrainingFile(file || null);
+    setTrainingResult(null);
+    setTrainingMsg('');
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const text = reader.result?.toString() || '';
+        const firstLine = text.split(/\r?\n/)[0] || '';
+        // naive CSV split; backend will validate
+        const hdrs = firstLine.split(',').map(h => h.trim()).filter(Boolean);
+        setColumns(hdrs);
+        // Default: all except last as features, last as target
+        if (hdrs.length > 1) {
+          setSelectedFeatures(hdrs.slice(0, -1));
+          setTarget(hdrs[hdrs.length - 1]);
+        } else {
+          setSelectedFeatures([]);
+          setTarget('');
+        }
+      } catch (err) {
+        console.error('Failed to parse CSV headers', err);
+        setColumns([]);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const toggleFeature = (col) => {
+    setSelectedFeatures(prev => (
+      prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col]
+    ));
+  };
+
+  const handleParamChange = (e) => {
+    const { name, value } = e.target;
+    setParams(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleTrain = async () => {
+    if (!trainingFile) {
+      alert('Please upload a CSV file.');
+      return;
+    }
+    if (!target) {
+      alert('Please select a target column.');
+      return;
+    }
+    setTraining(true);
+    setTrainingMsg('Uploading data and starting training...');
+    setTrainingResult(null);
+    try {
+      const fd = new FormData();
+      fd.append('file', trainingFile);
+      fd.append('target', target);
+      fd.append('features', JSON.stringify(selectedFeatures));
+      fd.append('learning_rate', String(params.learningRate || 0.1));
+      fd.append('n_trees', String(params.nTrees || 100));
+      fd.append('test_size', String(params.testSize || 0.2));
+
+      const resp = await axios.post(API_TRAIN, fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (e) => {
+          if (e.total) {
+            const pct = Math.round((e.loaded / e.total) * 100);
+            setTrainingMsg(`Uploading... ${pct}%`);
+          }
+        }
+      });
+      setTrainingMsg('Training complete.');
+      setTrainingResult(resp.data);
+    } catch (err) {
+      console.error('Training failed', err);
+      alert(err.response?.data?.error || 'Training failed');
+      setTrainingMsg('');
+    } finally {
+      setTraining(false);
+    }
+  };
+
   // Get risk color
   const getRiskColor = (riskLevel) => {
     switch (riskLevel) {
@@ -221,6 +315,16 @@ const AnomalyTracker = () => {
             title={!results ? 'Run an analysis first to view results' : 'View analysis results'}
           >
             Analysis Results {!results && '(Run Analysis First)'}
+          </button>
+          <button
+            onClick={() => setActiveTab('training')}
+            className={`px-6 py-3 font-medium transition-colors ${
+              activeTab === 'training'
+                ? 'border-b-2 border-blue-600 text-blue-600'
+                : 'text-gray-600 hover:text-blue-600'
+            }`}
+          >
+            Training Model
           </button>
         </div>
 
@@ -418,6 +522,180 @@ const AnomalyTracker = () => {
           </div>
         )}
 
+        {/* Training Tab */}
+        {activeTab === 'training' && (
+          <div className="space-y-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-2">
+              <h3 className="font-semibold text-blue-800 mb-2">Train ML Model</h3>
+              <p className="text-sm text-blue-700">Upload a CSV, choose features and target, set parameters, and train an XGBoost model. The trained model is saved and used by the ML prediction method.</p>
+            </div>
+
+            {/* Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Training Data (CSV)</label>
+              <input type="file" accept=".csv" onChange={handleCSVChange} className="block w-full text-sm text-gray-700" />
+              {trainingFile && (
+                <p className="text-xs text-gray-500 mt-1">{trainingFile.name}</p>
+              )}
+            </div>
+
+            {/* Feature and target selection */}
+            {columns.length > 0 && (
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Select Features</label>
+                  <div className="border rounded-lg p-3 max-h-56 overflow-auto">
+                    {columns.map(col => (
+                      <label key={col} className="flex items-center space-x-2 py-1">
+                        <input
+                          type="checkbox"
+                          checked={selectedFeatures.includes(col)}
+                          onChange={() => toggleFeature(col)}
+                        />
+                        <span className="text-sm text-gray-800">{col}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Target Column</label>
+                  <select
+                    value={target}
+                    onChange={(e) => setTarget(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select target</option>
+                    {columns.map(col => (
+                      <option key={col} value={col}>{col}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {/* Parameters */}
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Learning Rate</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  name="learningRate"
+                  value={params.learningRate}
+                  onChange={handleParamChange}
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Number of Trees</label>
+                <input
+                  type="number"
+                  name="nTrees"
+                  value={params.nTrees}
+                  onChange={handleParamChange}
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Test Size</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.05"
+                  max="0.9"
+                  name="testSize"
+                  value={params.testSize}
+                  onChange={handleParamChange}
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+            </div>
+
+            {/* Train action */}
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={handleTrain}
+                disabled={training || !trainingFile || !target}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium flex items-center space-x-2"
+              >
+                {training ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Training...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>🏋️</span>
+                    <span>Train Model</span>
+                  </>
+                )}
+              </button>
+              {trainingMsg && <span className="text-sm text-gray-600">{trainingMsg}</span>}
+            </div>
+
+            {/* Results */}
+            {trainingResult && (
+              <div className="space-y-6">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-green-800 mb-2">Training Metrics</h4>
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <div className="text-gray-600">Accuracy</div>
+                      <div className="text-xl font-bold text-green-700">{(trainingResult.metrics?.accuracy || 0).toFixed(3)}</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-600">F1 Score</div>
+                      <div className="text-xl font-bold text-green-700">{(trainingResult.metrics?.f1 || 0).toFixed(3)}</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-600">Rows Used</div>
+                      <div className="text-xl font-bold text-green-700">{trainingResult.rows_used || 0}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Confusion Matrix */}
+                {Array.isArray(trainingResult.metrics?.confusion_matrix) && (
+                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <h4 className="font-semibold text-gray-800 mb-3">Confusion Matrix</h4>
+                    <table className="min-w-[300px] text-center">
+                      <tbody>
+                        {trainingResult.metrics.confusion_matrix.map((row, i) => (
+                          <tr key={i}>
+                            {row.map((val, j) => (
+                              <td key={`${i}-${j}`} className="border px-4 py-2">{val}</td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Feature Importance */}
+                {Array.isArray(trainingResult.feature_importance) && trainingResult.feature_importance.length > 0 && (
+                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <h4 className="font-semibold text-gray-800 mb-3">Feature Importance</h4>
+                    <div className="space-y-2">
+                      {trainingResult.feature_importance.map((fi) => (
+                        <div key={fi.feature} className="flex items-center space-x-3">
+                          <div className="w-40 text-sm text-gray-700">{fi.feature}</div>
+                          <div className="flex-1 bg-gray-100 h-3 rounded">
+                            <div
+                              className="bg-blue-600 h-3 rounded"
+                              style={{ width: `${Math.min(100, (fi.importance || 0) * 100)}%` }}
+                            />
+                          </div>
+                          <div className="w-16 text-right text-sm text-gray-600">{fi.importance.toFixed(3)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
         {/* Results Tab */}
         {activeTab === 'results' && results && (
           <div className="space-y-6">
