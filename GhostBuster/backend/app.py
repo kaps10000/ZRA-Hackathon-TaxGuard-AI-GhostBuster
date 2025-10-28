@@ -4,7 +4,7 @@ RESTful API for ghost employee detection system
 """
 
 from flask import Flask, request, jsonify, send_file
-from flask_cors import CORS
+from flask-cors import CORS
 from detection_engine import GhostBusterEngine
 import pandas as pd
 import json
@@ -299,4 +299,4 @@ if __name__ == '__main__':
     print(f"\nStarting server on http://localhost:{port}")
     print("=" * 60 + "\n")
 
-    app.run(debug=False, port=port, host='0.0.0.0')
+    app.run(debug=True, port=port, host='0.0.0.0')
