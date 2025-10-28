@@ -1,60 +1,79 @@
 import React from 'react';
+import { FileText, ClipboardList, AlertTriangle, DollarSign } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const MetricCard = ({ title, value, trend, icon, severity = 'normal' }) => {
-  const severityColors = {
-    normal: 'bg-white border-gray-200',
-    warning: 'bg-yellow-50 border-yellow-300',
-    danger: 'bg-red-50 border-red-300',
-    success: 'bg-green-50 border-green-300'
+  const severityStyles = {
+    normal: 'bg-white border-gray-200 hover:shadow-lg',
+    warning: 'bg-yellow-50 border-yellow-200 hover:shadow-lg',
+    danger: 'bg-red-50 border-red-200 hover:shadow-lg',
+    success: 'bg-green-50 border-green-200 hover:shadow-lg'
   };
 
   const trendColor = trend >= 0 ? 'text-green-600' : 'text-red-600';
+  const trendSymbol = trend >= 0 ? '▲' : '▼';
 
   return (
-    <div className={severityColors[severity] + ' border rounded-lg p-6 shadow-sm'}>
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="text-gray-600 text-sm font-medium">{title}</p>
-          <p className="text-3xl font-bold mt-2">{value || '0'}</p>
-          {trend !== undefined && (
-            <p className={trendColor + ' text-sm mt-1'}>
-              {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}% (24h)
-            </p>
-          )}
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      transition={{ type: 'spring', stiffness: 200 }}
+      className={`
+        relative border rounded-2xl p-5 sm:p-6 transition-all duration-300 
+        ${severityStyles[severity]} shadow-sm overflow-hidden group
+      `}
+    >
+      {/* Animated top border only */}
+      <span
+        className="absolute top-0 left-1/2 h-[3px] w-0 bg-gradient-to-r from-blue-500 to-indigo-500 
+                   transition-all duration-500 ease-out group-hover:w-full group-hover:left-0 rounded-t-2xl"
+      ></span>
+
+      <div className="relative flex justify-between items-center">
+        <div className="flex flex-col">
+          <p className="text-sm text-gray-500 font-medium">{title}</p>
+          <h3 className="text-3xl font-semibold text-gray-800 mt-2 tracking-tight">
+            {value || '0'}
+          </h3>
         </div>
-        <div className="text-3xl">{icon}</div>
+        <div className="p-3 rounded-xl bg-gray-100">{icon}</div>
       </div>
-    </div>
+
+      {trend !== undefined && (
+        <div className={`relative mt-4 text-sm font-medium ${trendColor}`}>
+          {trendSymbol} {Math.abs(trend)}% <span className="text-gray-500">(last 24h)</span>
+        </div>
+      )}
+    </motion.div>
   );
 };
 
 const MetricsOverview = ({ data }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
       <MetricCard
         title="Documents Processed"
         value={data?.ocr?.documents_processed || 0}
         trend={15}
-        icon="📄"
+        icon={<FileText size={28} className="text-blue-600" />}
       />
       <MetricCard
         title="Active Cases"
         value={data?.whistlepro?.active_cases || 0}
         trend={-5}
-        icon="📋"
+        icon={<ClipboardList size={28} className="text-indigo-600" />}
       />
       <MetricCard
         title="Detections"
         value={data?.ghostbuster?.phantom_employees_detected || 0}
         trend={8}
-        icon="🚨"
+        icon={<AlertTriangle size={28} className="text-yellow-600" />}
         severity="warning"
       />
       <MetricCard
         title="Revenue Forecast"
         value="ZMW 42M"
         trend={15}
-        icon="💰"
+        icon={<DollarSign size={28} className="text-green-600" />}
         severity="success"
       />
     </div>

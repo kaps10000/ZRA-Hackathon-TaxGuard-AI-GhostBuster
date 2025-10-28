@@ -7,6 +7,7 @@ import WhistleProPanel from '../components/WhistleProPanel';
 import GhostBusterPanel from '../components/GhostBusterPanel';
 import PredictivePanel from '../components/PredictivePanel';
 import BlockchainAudit from '../components/BlockchainAudit';
+import { Network } from 'lucide-react';
 
 const Dashboard = ({ onNavigate }) => {
   const { data, loading, error, refresh } = useDashboardData();
@@ -104,7 +105,7 @@ const Dashboard = ({ onNavigate }) => {
             onClick={() => onNavigate && onNavigate('network')}
             className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-3"
           >
-            <span className="text-2xl">🔗</span>
+             <Network size={28} aria-hidden="true" className="text-white" />
             <span className="text-lg font-bold">Analyze Entity Networks & Relationships</span>
             <span className="text-sm bg-white/20 px-3 py-1 rounded-full">Click to Explore</span>
           </button>
