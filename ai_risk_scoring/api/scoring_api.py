@@ -1,18 +1,3 @@
-from typing import Any
-# ---------------------------
-# Helpers
-# ---------------------------
-def parse_json_request() -> tuple[Any, str]:
-    """Robustly parse JSON body, returning (data, raw_text)."""
-    raw = request.get_data(cache=False, as_text=True) or ""
-    data = request.get_json(silent=True)
-    if data is None and raw:
-        try:
-            data = json.loads(raw)
-        except Exception as e:
-            logger.error(f"JSON parse error: {e}; raw_prefix={raw[:200]}")
-            return None, raw
-    return data, raw
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
@@ -27,12 +12,18 @@ import json
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
-from xgboost import XGBClassifier
 import io
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+try:
+    from xgboost import XGBClassifier
+    HAS_XGBOOST = True
+except ImportError:
+    HAS_XGBOOST = False
+    logger.warning("XGBoost not available - ML model training disabled")
 
 # Initialize Flask with CORS
 app = Flask(__name__)
@@ -65,6 +56,21 @@ def load_ml_model():
 # Load models
 ml_model = load_ml_model()
 scorer = RiskScorer(scaler_path=str(PKG_ROOT / "models" / "risk_scaler.pkl"))
+
+# ---------------------------
+# Helpers
+# ---------------------------
+def parse_json_request() -> tuple[Any, str]:
+    """Robustly parse JSON body, returning (data, raw_text)."""
+    raw = request.get_data(cache=False, as_text=True) or ""
+    data = request.get_json(silent=True)
+    if data is None and raw:
+        try:
+            data = json.loads(raw)
+        except Exception as e:
+            logger.error(f"JSON parse error: {e}; raw_prefix={raw[:200]}")
+            return None, raw
+    return data, raw
 
 # ---------------------------
 # Validation Functions
@@ -351,6 +357,8 @@ def train():
     - test_size: float between 0 and 0.9 (optional)
     """
     try:
+        if not HAS_XGBOOST:
+            return jsonify({"error": "XGBoost not available", "message": "Install xgboost to enable model training"}), 503
         if 'file' not in request.files:
             return jsonify({"error": "No file provided"}), 400
 

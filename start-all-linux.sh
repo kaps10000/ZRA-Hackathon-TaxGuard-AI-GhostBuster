@@ -43,11 +43,28 @@ echo "[4/11] Starting Anomaly Tracker (Port 5001)..."
 cd "$SCRIPT_DIR/ai_risk_scoring"
 # Ensure virtual environment and dependencies
 if [ ! -d "venv" ]; then
+    echo "  Creating virtual environment..."
     python3 -m venv venv
     source venv/bin/activate
-    pip install -r requirements.txt --quiet > /dev/null 2>&1
+    echo "  Installing dependencies..."
+    pip install -r requirements.txt > /tmp/zra-anomaly-install.log 2>&1
+    if [ $? -ne 0 ]; then
+        echo "  ⚠️ Warning: Dependency installation may have issues. Check /tmp/zra-anomaly-install.log"
+    else
+        echo "  ✓ Dependencies installed"
+    fi
 else
     source venv/bin/activate
+    # Check if Flask is installed, if not reinstall dependencies
+    if ! python3 -c "import flask" 2>/dev/null; then
+        echo "  Missing dependencies detected, reinstalling..."
+        pip install -r requirements.txt > /tmp/zra-anomaly-install.log 2>&1
+        if [ $? -ne 0 ]; then
+            echo "  ⚠️ Warning: Dependency installation may have issues. Check /tmp/zra-anomaly-install.log"
+        else
+            echo "  ✓ Dependencies installed"
+        fi
+    fi
 fi
 # Run with correct PYTHONPATH so package imports resolve
 PYTHONPATH="$SCRIPT_DIR" PORT=5001 python3 api/scoring_api.py > /tmp/zra-anomaly.log 2>&1 &
