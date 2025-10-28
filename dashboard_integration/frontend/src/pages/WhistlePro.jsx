@@ -14,7 +14,7 @@ const WhistlePro = () => {
     const fetchCases = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:4000/api/reports');
+        const response = await axios.get('http://localhost:4001/api/whistlepro/reports');
         setCases(response.data.reports || []);
         setError(null);
       } catch (err) {

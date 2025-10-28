@@ -27,18 +27,35 @@
 - Python 3.10+
 - PostgreSQL 15+
 
-### One-Command Setup
+### One-Command Complete Setup (Recommended)
 
 ```bash
 # Clone the repository
 git clone <repository-url>
 cd ZRA-Hackathon-TaxGuard-AI-GhostBuster
 
+# Run complete setup (installs all dependencies and starts all services)
+./complete-setup.sh
+```
+
+### Alternative: Start Services Only (if dependencies already installed)
+
+```bash
 # Start all services
 ./start-all-services.sh
 ```
 
 That's it! Open your browser to **http://localhost:3000**
+
+---
+
+## 🔧 Troubleshooting
+
+If you encounter any issues, see **[TROUBLESHOOTING_AND_SETUP.md](./TROUBLESHOOTING_AND_SETUP.md)** for:
+- Common issues and solutions
+- Detailed setup instructions
+- Service verification commands
+- Configuration details
 
 ---
 
