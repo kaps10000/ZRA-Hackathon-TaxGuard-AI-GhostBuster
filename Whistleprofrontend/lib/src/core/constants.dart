@@ -1,8 +1,10 @@
 // App Constants
 class AppConstants {
   // App Info
-  static const String appName = 'WhistlePro';
-  static const String appTagline = 'Report Tax Evasion Anonymously';
+  static const String appName = 'ZRA WhistlePro';
+  static const String appTagline = 'Zambia Revenue Authority - Confidential Reporting System';
+  static const String organizationName = 'Zambia Revenue Authority';
+  static const String organizationWebsite = 'www.zra.org.zm';
 
   // API Configuration
   static const String baseUrl = 'http://172.16.200.136:4000'; // Your WiFi IP for phone access
