@@ -315,7 +315,7 @@ function AppContent() {
               </motion.header>
 
               {/* Page Content */}
-              <div className="pt-[88px] p-6 overflow-y-auto h-screen">
+              <div className="pt-[88px] p-6 overflow-y-auto h-screen mt-10">
                 {renderPage()}
               </div>
             </main>

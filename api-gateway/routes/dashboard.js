@@ -6,7 +6,7 @@ const axios = require('axios');
 const GHOSTBUSTER_API = process.env.GHOSTBUSTER_API || 'http://localhost:3006';
 const WHISTLEPRO_API = process.env.WHISTLEPRO_API || 'http://localhost:3005';
 const BLOCKCHAIN_API = process.env.BLOCKCHAIN_API || 'http://localhost:3001';
-const VRT_GUARD_API = process.env.VRT_GUARD_API || 'http://localhost:5000';
+const VRT_GUARD_API = process.env.VRT_GUARD_API || 'http://localhost:5002';
 
 // Real-time data aggregation functions
 const getOCRStats = async () => {
