@@ -21,34 +21,30 @@ const BlockchainLedger = () => {
   };
 
   // Fetch blockchain transactions from API
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        setLoading(true);
-        // Try blockchain service first, fallback to API gateway
-        let response = await fetch('http://localhost:3001/api/events');
+  const fetchTransactions = async () => {
+    try {
+      setLoading(true);
+      // Use the real blockchain service
+      const response = await fetch('http://localhost:3001/api/events');
 
-        if (!response.ok) {
-          // Fallback to API gateway
-          response = await fetch('http://localhost:4001/api/ocr/blockchain');
-        }
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch blockchain transactions');
-        }
-
-        const data = await response.json();
-        // Handle both response formats
-        const transactions = data.events || data.transactions || [];
-        setTransactions(transactions);
-      } catch (error) {
-        console.error('Error fetching blockchain transactions:', error);
-        setTransactions([]);
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error('Failed to fetch blockchain transactions');
       }
-    };
 
+      const data = await response.json();
+      console.log('⛓️  Blockchain transactions fetched:', data);
+      // Handle blockchain service response format
+      const transactions = data.events || [];
+      setTransactions(transactions);
+    } catch (error) {
+      console.error('❌ Error fetching blockchain transactions:', error);
+      setTransactions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchTransactions();
 
     // Poll for new transactions every 10 seconds
@@ -64,11 +60,21 @@ const BlockchainLedger = () => {
   return (
     <div className="max-w-7xl mx-auto">
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Blockchain Ledger Viewer</h2>
-          <p className="text-gray-600 mt-1">
-            Immutable audit trail of all system transactions
-          </p>
+        <div className="mb-6 flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">Blockchain Ledger Viewer</h2>
+            <p className="text-gray-600 mt-1">
+              Immutable audit trail of all system transactions
+            </p>
+          </div>
+          <button
+            onClick={fetchTransactions}
+            disabled={loading}
+            className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 font-semibold flex items-center space-x-2"
+          >
+            <span>🔄</span>
+            <span>{loading ? 'Refreshing...' : 'Refresh Ledger'}</span>
+          </button>
         </div>
 
         {/* Blockchain Stats */}
@@ -76,7 +82,7 @@ const BlockchainLedger = () => {
           <div className="bg-purple-50 p-4 rounded-lg">
             <p className="text-sm text-gray-600">Total Blocks</p>
             <p className="text-2xl font-bold text-purple-600">
-              {loading ? '...' : transactions.length > 0 ? Math.max(...transactions.map(tx => tx.blockIndex || tx.blockNumber || 0)) : 0}
+              {loading ? '...' : transactions.length}
             </p>
           </div>
           <div className="bg-blue-50 p-4 rounded-lg">
@@ -110,17 +116,17 @@ const BlockchainLedger = () => {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-2">
-                    <span className="font-mono text-sm text-gray-600">Block #{tx.blockIndex || tx.blockNumber || 'N/A'}</span>
+                    <span className="font-mono text-sm text-gray-600">Block #{tx.blockIndex || 'N/A'}</span>
                     <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
                       ✓ Verified
                     </span>
                     <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-                      {tx.eventType || tx.action || 'Transaction'}
+                      {tx.eventType || 'Transaction'}
                     </span>
                   </div>
 
                   <p className="font-mono text-xs text-gray-500 mb-2">
-                    Hash: {tx.hashOfPayload || tx.txHash || 'N/A'}
+                    Hash: {tx.hashOfPayload || 'N/A'}
                   </p>
 
                   {tx.notes && (
@@ -165,8 +171,8 @@ const BlockchainLedger = () => {
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-800">Block #{selectedBlock.blockNumber}</h3>
-                  <p className="text-gray-600 font-mono text-sm">{selectedBlock.txHash}</p>
+                  <h3 className="text-2xl font-bold text-gray-800">Block #{selectedBlock.blockIndex}</h3>
+                  <p className="text-gray-600 font-mono text-sm">{selectedBlock.eventId}</p>
                 </div>
                 <button
                   onClick={() => setShowDetails(false)}
@@ -185,25 +191,28 @@ const BlockchainLedger = () => {
                       <p className="font-medium">{formatTimestamp(selectedBlock.timestamp)}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Action Type</p>
-                      <p className="font-medium">{selectedBlock.action}</p>
+                      <p className="text-sm text-gray-600">Event Type</p>
+                      <p className="font-medium">{selectedBlock.eventType}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">Status</p>
                       <p className="font-medium text-green-600">✓ Verified</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Previous Hash</p>
-                      <p className="font-mono text-xs">{selectedBlock.previousHash}</p>
+                      <p className="text-sm text-gray-600">Payload Hash</p>
+                      <p className="font-mono text-xs">{selectedBlock.hashOfPayload}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-blue-800 mb-2">Transaction Data</h4>
-                  <pre className="text-sm bg-white p-3 rounded overflow-x-auto">
-                    {JSON.stringify(selectedBlock.data, null, 2)}
-                  </pre>
+                  <h4 className="font-semibold text-blue-800 mb-2">Event Details</h4>
+                  <div className="bg-white p-3 rounded">
+                    <p className="text-sm"><strong>User ID:</strong> {selectedBlock.anonymizedUserId}</p>
+                    {selectedBlock.notes && (
+                      <p className="text-sm mt-2"><strong>Notes:</strong> {selectedBlock.notes}</p>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex space-x-3 pt-4">

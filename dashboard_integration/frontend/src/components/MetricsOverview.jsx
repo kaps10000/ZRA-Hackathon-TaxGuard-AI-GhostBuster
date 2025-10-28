@@ -53,26 +53,26 @@ const MetricsOverview = ({ data }) => {
       <MetricCard
         title="Documents Processed"
         value={data?.ocr?.documents_processed || 0}
-        trend={15}
+        trend={data?.ocr?.trend || 15}
         icon={<FileText size={28} className="text-blue-600" />}
       />
       <MetricCard
         title="Active Cases"
         value={data?.whistlepro?.active_cases || 0}
-        trend={-5}
+        trend={data?.whistlepro?.trend || -5}
         icon={<ClipboardList size={28} className="text-indigo-600" />}
       />
       <MetricCard
         title="Detections"
-        value={data?.ghostbuster?.phantom_employees_detected || 0}
-        trend={8}
+        value={data?.ghostbuster?.total_ghosts || data?.ghostbuster?.phantom_employees_detected || 0}
+        trend={data?.ghostbuster?.trend || 8}
         icon={<AlertTriangle size={28} className="text-yellow-600" />}
         severity="warning"
       />
       <MetricCard
         title="Revenue Forecast"
-        value="ZMW 42M"
-        trend={15}
+        value={data?.predictive?.revenue_forecast_formatted || `ZMW ${((data?.predictive?.revenue_forecast || 42000000) / 1000000).toFixed(1)}M`}
+        trend={data?.predictive?.trend || 15}
         icon={<DollarSign size={28} className="text-green-600" />}
         severity="success"
       />

@@ -37,4 +37,30 @@ router.post('/report', async (req, res) => {
   }
 });
 
+// Get all cases (formatted reports for database viewer)
+router.get('/cases', async (req, res) => {
+  try {
+    const response = await axios.get(`${WHISTLEPRO_API}/api/reports`);
+    const reports = response.data.reports || [];
+
+    // Format reports as cases for database viewer
+    const cases = reports.map((report, index) => ({
+      id: report.id || index + 1,
+      caseId: report.caseId || `CASE-${String(report.id || index + 1).padStart(3, '0')}`,
+      type: report.type || 'Whistleblower Report',
+      entity: report.companyName || report.entityName || 'Unknown',
+      investigator: 'Assigned Officer',
+      status: report.status || 'Open',
+      priority: report.severity || report.priority || 'Medium',
+      date: report.submittedAt || report.createdAt || new Date().toISOString().split('T')[0]
+    }));
+
+    res.json({ cases, total: cases.length });
+  } catch (error) {
+    console.error('WhistlePro API error:', error.message);
+    // Return empty array if WhistlePro service is down
+    res.json({ cases: [], total: 0 });
+  }
+});
+
 module.exports = router;
