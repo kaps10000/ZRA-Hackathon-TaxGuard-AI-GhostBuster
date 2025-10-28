@@ -50,6 +50,15 @@ if ! pg_isready -p 5433 &> /dev/null; then
 fi
 echo -e "${GREEN}✅ PostgreSQL running on port 5433${NC}"
 
+# Initialize databases
+echo ""
+echo "🔧 Initializing databases..."
+if [ -f "$SCRIPT_DIR/init-database.sh" ]; then
+    bash "$SCRIPT_DIR/init-database.sh"
+else
+    echo -e "${YELLOW}⚠️  Database init script not found, skipping...${NC}"
+fi
+
 echo ""
 echo "🚀 Starting services..."
 echo ""
