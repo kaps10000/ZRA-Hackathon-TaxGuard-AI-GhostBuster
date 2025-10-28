@@ -124,7 +124,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', uptime: process.uptime() });
 });
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 4001;
 const server = app.listen(port, () => console.log(`Mock API server listening on http://localhost:${port}`));
 
 server.on('error', (err) => {

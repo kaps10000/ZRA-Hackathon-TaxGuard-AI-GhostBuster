@@ -4,7 +4,7 @@ RESTful API for ghost employee detection system
 """
 
 from flask import Flask, request, jsonify, send_file
-from flask-cors import CORS
+from flask_cors import CORS
 from detection_engine import GhostBusterEngine
 import pandas as pd
 import json
@@ -21,9 +21,9 @@ engine = GhostBusterEngine()
 # Load datasets on startup
 print("Loading datasets...")
 if engine.load_datasets():
-    print("✓ Datasets loaded successfully")
+    print("[OK] Datasets loaded successfully")
 else:
-    print("✗ Error loading datasets - run generate_datasets.py first")
+    print("[ERROR] Error loading datasets - run generate_datasets.py first")
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -295,7 +295,7 @@ if __name__ == '__main__':
     print("  GET  /api/search?q=<query>   - Search employees")
     print("  GET  /api/sample             - Get sample data")
     print("  GET  /api/health             - Health check")
-    port = int(os.environ.get('GHOSTBUSTER_PORT', 5000))
+    port = int(os.environ.get('GHOSTBUSTER_PORT', 3006))
     print(f"\nStarting server on http://localhost:{port}")
     print("=" * 60 + "\n")
 

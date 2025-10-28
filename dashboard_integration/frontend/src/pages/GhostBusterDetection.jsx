@@ -12,7 +12,7 @@ const GhostBusterDetection = () => {
           </div>
         </div>
       </div>
-      <iframe 
+      <iframe
         src="http://localhost:3004" 
         className="w-full border-2 border-gray-300 rounded-lg shadow-lg"
         style={{ height: 'calc(100vh - 250px)' }}
