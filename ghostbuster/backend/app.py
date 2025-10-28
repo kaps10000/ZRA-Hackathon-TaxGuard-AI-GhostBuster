@@ -21,9 +21,9 @@ engine = GhostBusterEngine()
 # Load datasets on startup
 print("Loading datasets...")
 if engine.load_datasets():
-    print("[OK] Datasets loaded successfully")
+    print("✓ Datasets loaded successfully")
 else:
-    print("[ERROR] Error loading datasets - run generate_datasets.py first")
+    print("✗ Error loading datasets - run generate_datasets.py first")
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -217,53 +217,20 @@ def export_detailed():
 def get_statistics():
     """Get overall system statistics"""
     try:
-        if engine.master_df is None:
-            return jsonify({
-                'error': 'Datasets not loaded',
-                'total_employees': 0,
-                'total_napsa_records': 0,
-                'total_nrc_records': 0,
-                'total_bank_transactions': 0,
-                'ghost_distribution': {}
-            }), 500
-        
         stats = {
-            'total_employees': int(len(engine.master_df)),
-            'total_napsa_records': int(len(engine.napsa_df)) if engine.napsa_df is not None else 0,
-            'total_nrc_records': int(len(engine.home_affairs_df)) if engine.home_affairs_df is not None else 0,
-            'total_bank_transactions': int(len(engine.bank_df)) if engine.bank_df is not None else 0,
+            'total_employees': len(engine.master_df) if engine.master_df is not None else 0,
+            'total_napsa_records': len(engine.napsa_df) if engine.napsa_df is not None else 0,
+            'total_nrc_records': len(engine.home_affairs_df) if engine.home_affairs_df is not None else 0,
+            'total_bank_transactions': len(engine.bank_df) if engine.bank_df is not None else 0,
         }
 
-        # Calculate ghost distribution with proper handling of NaN values
-        if 'ghost_type' in engine.master_df.columns:
-            # Drop NaN values and get counts
-            ghost_counts = engine.master_df['ghost_type'].dropna().value_counts()
-            stats['ghost_distribution'] = {str(k): int(v) for k, v in ghost_counts.to_dict().items()}
-            
-            # Add legitimate employees count (where ghost_type is NaN or 'legitimate')
-            legitimate_count = len(engine.master_df[engine.master_df['ghost_type'].isna() | (engine.master_df['ghost_type'] == 'legitimate')])
-            if legitimate_count > 0 and 'legitimate' not in stats['ghost_distribution']:
-                stats['ghost_distribution']['legitimate'] = int(legitimate_count)
-        else:
-            stats['ghost_distribution'] = {}
-
-        # Add additional useful statistics
         if engine.master_df is not None:
-            stats['ghost_employees'] = int(len(engine.master_df[engine.master_df['is_ghost'] == True])) if 'is_ghost' in engine.master_df.columns else 0
-            stats['legitimate_employees'] = int(len(engine.master_df)) - stats['ghost_employees']
-            
-            # Calculate total monthly cost of ghost employees
-            if 'is_ghost' in engine.master_df.columns and 'salary' in engine.master_df.columns:
-                ghost_salary_total = engine.master_df[engine.master_df['is_ghost'] == True]['salary'].sum()
-                stats['ghost_salary_cost'] = float(ghost_salary_total) if not pd.isna(ghost_salary_total) else 0.0
+            stats['ghost_distribution'] = engine.master_df['ghost_type'].value_counts().to_dict()
 
         return jsonify(stats)
 
     except Exception as e:
-        import traceback
-        print(f"Error in /api/stats: {e}")
-        traceback.print_exc()
-        return jsonify({'error': str(e), 'details': traceback.format_exc()}), 500
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/search', methods=['GET'])
 def search_employee():
@@ -304,58 +271,21 @@ def get_sample_data():
         if engine.master_df is None:
             return jsonify({'error': 'Datasets not loaded'}), 500
 
+        # Get samples from each ghost type
         samples = {}
-        
-        # Get samples from each ghost type (excluding NaN)
-        if 'ghost_type' in engine.master_df.columns:
-            unique_types = engine.master_df['ghost_type'].dropna().unique()
-            
-            for ghost_type in unique_types:
-                sample_df = engine.master_df[engine.master_df['ghost_type'] == ghost_type].head(5)
-                
-                # Convert to records with proper data type handling
-                records = []
-                for _, row in sample_df.iterrows():
-                    records.append({
-                        'nrc': str(row['nrc']),
-                        'full_name': str(row['full_name']),
-                        'salary': float(row['salary']) if not pd.isna(row['salary']) else 0.0,
-                        'ghost_type': str(row['ghost_type']) if not pd.isna(row['ghost_type']) else 'unknown'
-                    })
-                
-                samples[str(ghost_type)] = records
-        
-        # Add a few legitimate employees as well
-        if 'is_ghost' in engine.master_df.columns:
-            legitimate_sample = engine.master_df[engine.master_df['is_ghost'] == False].head(5)
-            if len(legitimate_sample) > 0:
-                records = []
-                for _, row in legitimate_sample.iterrows():
-                    records.append({
-                        'nrc': str(row['nrc']),
-                        'full_name': str(row['full_name']),
-                        'salary': float(row['salary']) if not pd.isna(row['salary']) else 0.0,
-                        'ghost_type': 'legitimate'
-                    })
-                samples['legitimate'] = records
+        for ghost_type in engine.master_df['ghost_type'].unique():
+            sample = engine.master_df[engine.master_df['ghost_type'] == ghost_type].head(3)
+            samples[ghost_type] = sample[['nrc', 'full_name', 'salary']].to_dict('records')
 
         return jsonify(samples)
 
     except Exception as e:
-        import traceback
-        print(f"Error in /api/sample: {e}")
-        traceback.print_exc()
-        return jsonify({'error': str(e), 'details': traceback.format_exc()}), 500
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    # PERMANENT FIX: Use environment variable for port, default to 3006
-    # Port 3005 was conflicting with WhistlePro and other Node services
-    port = int(os.environ.get('GHOSTBUSTER_PORT', 3006))
-
     print("\n" + "=" * 60)
-    print("GhostBuster API Server - PORT CONFLICT FIXED!")
+    print("GhostBuster API Server")
     print("=" * 60)
-    print(f"\nRunning on Port: {port} (Changed from 3005 to avoid conflicts)")
     print("\nAPI Endpoints:")
     print("  POST /api/analyze/individual - Analyze single employee")
     print("  POST /api/analyze/batch      - Analyze multiple employees")
@@ -365,6 +295,7 @@ if __name__ == '__main__':
     print("  GET  /api/search?q=<query>   - Search employees")
     print("  GET  /api/sample             - Get sample data")
     print("  GET  /api/health             - Health check")
+    port = int(os.environ.get('GHOSTBUSTER_PORT', 5000))
     print(f"\nStarting server on http://localhost:{port}")
     print("=" * 60 + "\n")
 
