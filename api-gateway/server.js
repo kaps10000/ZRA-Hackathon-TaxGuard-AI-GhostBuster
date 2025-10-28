@@ -13,6 +13,7 @@ const vrtguardRoutes = require('./routes/vrtguard');
 const vrtguardDbRoutes = require('./routes/vrtguard-db');
 const anomalyTrackerRoutes = require('./routes/anomaly-tracker');
 const anomalyTrackerDbRoutes = require('./routes/anomaly-tracker-db');
+const whistleproRoutes = require('./routes/whistlepro');
 const logger = require('./utils/logger');
 const { errorHandler } = require('./middleware/errorHandler');
 const {
@@ -102,6 +103,7 @@ app.use('/api/vrtguard', vrtguardRoutes);
 app.use('/api/vrtguard-db', vrtguardDbRoutes);
 app.use('/api/anomaly-tracker', anomalyTrackerRoutes);
 app.use('/api/anomaly-tracker-db', anomalyTrackerDbRoutes);
+app.use('/api/whistlepro', whistleproRoutes);
 app.use('/api', eventRoutes);
 
 // Simple API Links Page
@@ -1084,18 +1086,25 @@ app.use('*', (req, res) => {
 app.use(errorHandler);
 
 // Start server
-app.listen(PORT, () => {
+const http = require('http');
+const { initializeWebSocket } = require('./websocket');
+
+// Create HTTP server
+const server = http.createServer(app);
+
+// Initialize WebSocket
+initializeWebSocket(server);
+
+server.listen(PORT, () => {
     logger.info('Server Started', {
         port: PORT,
         environment: process.env.NODE_ENV,
         timestamp: new Date().toISOString()
     });
     console.log(`🚀 TaxGuard API Gateway running on port ${PORT}`);
+    console.log(`📡 WebSocket endpoint: ws://localhost:${PORT}`);
     console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
     console.log(`🏥 Health Check: http://localhost:${PORT}/health`);
 });
 
-module.exports = app;
-
-// Due to the way this was built, I'll create a separate start script
-// But the WebSocket support is added via websocket.js module
+module.exports = server;
