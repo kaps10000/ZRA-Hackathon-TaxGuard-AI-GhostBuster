@@ -4,17 +4,17 @@
   "description": "GhostBuster - ZRA Ghost Employee Detection UI",
   "private": true,
   "dependencies": {
-    "@emotion/react": "^11.11.1",
-    "@emotion/styled": "^11.11.0",
-    "@mui/icons-material": "^5.15.0",
-    "@mui/material": "^5.15.0",
-    "axios": "^1.6.2",
-    "file-saver": "^2.0.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-dropzone": "^14.2.3",
-    "react-scripts": "^5.0.1",
-    "recharts": "^2.10.3"
+    "react-scripts": "5.0.1",
+    "@mui/material": "^5.15.0",
+    "@mui/icons-material": "^5.15.0",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "axios": "^1.6.2",
+    "recharts": "^2.10.3",
+    "file-saver": "^2.0.5",
+    "react-dropzone": "^14.2.3"
   },
   "scripts": {
     "start": "react-scripts start",
