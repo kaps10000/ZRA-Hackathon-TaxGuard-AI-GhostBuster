@@ -91,7 +91,7 @@ if [ ! -d "venv" ]; then
 else
     source venv/bin/activate
 fi
-PYTHONPATH=$SCRIPT_DIR/ai_risk_scoring python api/scoring_api.py > /tmp/taxguard-logs/anomaly-tracker.log 2>&1 &
+PYTHONPATH=$SCRIPT_DIR python api/scoring_api.py > /tmp/taxguard-logs/anomaly-tracker.log 2>&1 &
 echo -e "${GREEN}✅ Anomaly Tracker started (PID: $!)${NC}"
 
 # 5. Predictive Analytics
@@ -174,4 +174,26 @@ echo ""
 echo "📝 Logs are available in: /tmp/taxguard-logs/"
 echo ""
 echo "🛑 To stop all services, run: ./stop-all-services.sh"
+echo ""
+
+# Quick verification for Anomaly Tracker health and training endpoint
+echo "🔎 Verifying Anomaly Tracker service..."
+HEALTH=$(curl -s --max-time 5 http://localhost:5001/health | head -c 200)
+if [[ -n "$HEALTH" ]]; then
+  echo -e "${GREEN}✅ Anomaly Tracker health responded${NC}"
+else
+  echo -e "${YELLOW}⚠️  Anomaly Tracker health did not respond. Check /tmp/taxguard-logs/anomaly-tracker.log${NC}"
+fi
+
+# Test that /train endpoint is reachable (expect JSON error if called as GET)
+TRAIN_CHECK=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5001/train)
+if [[ "$TRAIN_CHECK" == "405" || "$TRAIN_CHECK" == "400" || "$TRAIN_CHECK" == "415" ]]; then
+  echo -e "${GREEN}✅ Training endpoint detected at /train${NC}"
+else
+  echo -e "${YELLOW}⚠️  Could not verify /train endpoint (HTTP $TRAIN_CHECK). Training tab may not work until the service is healthy.${NC}"
+fi
+
+echo ""
+echo "📍 Open the Dashboard ➜ Anomaly Tracker page to see the new 'Training Model' tab."
+echo "   The tab runs in the dashboard UI and uses the Anomaly Tracker API (port 5001)."
 echo ""

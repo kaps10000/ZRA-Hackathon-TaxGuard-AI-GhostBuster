@@ -113,6 +113,22 @@ pip install -r requirements.txt
 PYTHONPATH=$(pwd) python api/scoring_api.py &
 ```
 
+#### Training Model (Dashboard + API)
+
+- In the dashboard, open Anomaly Tracker and use the "Training Model" tab to upload a CSV, choose features/target, and train the ML model.
+- The dashboard sends training to the API Gateway which proxies the upload to Flask:
+
+```bash
+# Train via API Gateway (proxies to Flask at :5001)
+curl -X POST \
+  -F "file=@/path/to/data.csv" \
+  -F "target=label" \
+  -F 'features=["amount","transaction_count","avg_transaction"]' \
+  http://localhost:4001/api/anomaly-tracker/train
+```
+
+Dependencies for the gateway route are listed in api-gateway/package.json (`multer`, `form-data`).
+
 ### 5. Predictive Analytics (Port 3004)
 ```bash
 cd predictive_analytics

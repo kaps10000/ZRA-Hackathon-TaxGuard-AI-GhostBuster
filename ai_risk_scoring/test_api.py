@@ -7,7 +7,7 @@ import json
 from data_processing.feature_engineering import create_features, prepare_features_for_model
 import pandas as pd
 
-API_BASE = "http://127.0.0.1:5000"
+API_BASE = "http://127.0.0.1:5001"
 
 def test_health():
     """Test health endpoint"""
@@ -22,37 +22,33 @@ def test_health():
     print()
 
 def test_with_proper_features():
-    """Test with properly formatted data including sector and region"""
+    """Test by sending raw taxpayer data (server will engineer features)."""
     print("🔍 Testing with complete taxpayer data...")
-    
-    # Test data with sector and region (like training data)
+
+    # Raw test data (server expects raw and engineers features internally)
     test_data = [
         {"amount": 8500, "sector": "Finance", "region": "Lusaka"},
-        {"amount": 4000, "sector": "Retail", "region": "Ndola"}, 
+        {"amount": 4000, "sector": "Retail", "region": "Ndola"},
         {"amount": 12000, "sector": "Mining", "region": "Kitwe"}
     ]
-    
-    # Create features like in training
+
+    # Still show local engineered features for reference
     df = pd.DataFrame(test_data)
     features_df = create_features(df, group_by_taxpayer=False)
     X, _ = prepare_features_for_model(features_df, 'risk_label')
-    
-    # Convert to dict for API
-    api_data = X.to_dict('records')
-    
-    print("📊 Features created:")
+    print("📊 Locally engineered features (for reference):")
     print(f"   Columns: {list(X.columns)}")
     print(f"   Shape: {X.shape}")
     print()
-    
-    # Test ML prediction
+
+    # Test ML prediction with RAW payload
     print("🤖 Testing ML prediction...")
     response = requests.post(
         f"{API_BASE}/predict/ml",
-        json=api_data,
+        json=test_data,
         headers={'Content-Type': 'application/json'}
     )
-    
+
     print(f"Status: {response.status_code}")
     if response.status_code == 200:
         result = response.json()
