@@ -100,15 +100,6 @@ echo -e "${GREEN}✅ Blockchain dependencies installed${NC}"
 # Setup Python services with virtual environments
 echo -e "${BLUE}Setting up Python services...${NC}"
 
-# GhostBuster Backend
-cd "$SCRIPT_DIR/GhostBuster/backend"
-if [ ! -d "venv" ]; then
-    python3 -m venv venv
-    source venv/bin/activate
-    pip install flask flask-cors pandas numpy --quiet > /dev/null 2>&1
-fi
-echo -e "${GREEN}✅ GhostBuster Backend environment ready${NC}"
-
 # VRT Guard
 cd "$SCRIPT_DIR/vrt_guard"
 if [ ! -d "venv" ]; then
@@ -146,122 +137,8 @@ fi
 echo -e "${GREEN}✅ OCR AI Service environment ready${NC}"
 
 # Generate GhostBuster datasets
-echo -e "${BLUE}Setting up GhostBuster datasets...${NC}"
+echo -e "${BLUE}Generating GhostBuster datasets...${NC}"
 cd "$SCRIPT_DIR/GhostBuster/backend"
-
-# Check if generate_datasets.py exists, if not create a basic version
-if [ ! -f "generate_datasets.py" ]; then
-    echo -e "${YELLOW}⚠️  generate_datasets.py missing, creating it...${NC}"
-    cat > generate_datasets.py << 'EOF'
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-import os
-
-# Create data directory
-os.makedirs('data', exist_ok=True)
-
-print("=" * 60)
-print("GhostBuster Dataset Generator")
-print("=" * 60)
-
-# Generate master employee records
-print("Generating master employee records...")
-np.random.seed(42)
-employees = []
-ghost_types = ['LEGITIMATE'] * 7000 + ['DECEASED'] * 1000 + ['DUPLICATE'] * 800 + ['PHANTOM'] * 700 + ['OVER_AGE'] * 500
-
-for i in range(10000):
-    employees.append({
-        'employee_id': f'EMP{i+1:05d}',
-        'nrc': f'{np.random.randint(100000, 999999)}/{np.random.randint(10, 99)}/{np.random.randint(1, 2)}',
-        'name': f'Employee {i+1}',
-        'date_of_birth': (datetime.now() - timedelta(days=np.random.randint(20*365, 65*365))).strftime('%Y-%m-%d'),
-        'employment_start_date': (datetime.now() - timedelta(days=np.random.randint(30, 3650))).strftime('%Y-%m-%d'),
-        'salary': np.random.randint(3000, 50000),
-        'department': np.random.choice(['Finance', 'HR', 'IT', 'Operations', 'Sales']),
-        'ghost_type': ghost_types[i],
-        'death_date': (datetime.now() - timedelta(days=np.random.randint(1, 365))).strftime('%Y-%m-%d') if ghost_types[i] == 'DECEASED' else None
-    })
-
-df_employees = pd.DataFrame(employees)
-df_employees.to_csv('data/master_records.csv', index=False)
-print("✓ Generated 10000 master records")
-
-# Generate NAPSA contributions
-print("Generating NAPSA contribution records...")
-napsa_records = []
-for emp in employees[:8000]:  # Only legitimate + some ghosts have NAPSA records
-    for month in range(1, 13):
-        napsa_records.append({
-            'nrc': emp['nrc'],
-            'employee_id': emp['employee_id'],
-            'contribution_date': f'2024-{month:02d}-01',
-            'employee_contribution': emp['salary'] * 0.05,
-            'employer_contribution': emp['salary'] * 0.05,
-            'total_contribution': emp['salary'] * 0.10
-        })
-
-df_napsa = pd.DataFrame(napsa_records)
-df_napsa.to_csv('data/napsa_contributions.csv', index=False)
-print(f"✓ Generated {len(napsa_records)} NAPSA contribution records")
-
-# Generate Home Affairs registry
-print("Generating Home Affairs NRC registry...")
-home_affairs = []
-for emp in employees:
-    home_affairs.append({
-        'nrc': emp['nrc'],
-        'full_name': emp['name'],
-        'date_of_birth': emp['date_of_birth'],
-        'death_date': emp['death_date'],
-        'status': 'DECEASED' if emp['death_date'] else 'ALIVE'
-    })
-
-df_home_affairs = pd.DataFrame(home_affairs)
-df_home_affairs.to_csv('data/home_affairs_registry.csv', index=False)
-print("✓ Generated 10000 Home Affairs registry records")
-
-# Generate bank transactions
-print("Generating bank transaction records...")
-bank_transactions = []
-for emp in employees:
-    if emp['ghost_type'] in ['LEGITIMATE', 'DECEASED']:  # Only some employees have bank records
-        for month in range(1, 13):
-            for week in range(1, 5):
-                bank_transactions.append({
-                    'nrc': emp['nrc'],
-                    'employee_id': emp['employee_id'],
-                    'transaction_date': f'2024-{month:02d}-{week*7:02d}',
-                    'transaction_type': 'SALARY_DEPOSIT',
-                    'amount': emp['salary'],
-                    'bank_account': f'ACC{np.random.randint(100000, 999999)}'
-                })
-
-df_bank = pd.DataFrame(bank_transactions)
-df_bank.to_csv('data/bank_transactions.csv', index=False)
-print(f"✓ Generated {len(bank_transactions)} bank transaction records")
-
-print("\n" + "=" * 60)
-print("Dataset Generation Complete!")
-print("=" * 60)
-print(f"\nDatasets created in ./data/ directory:")
-print(f"  - master_records.csv ({len(employees)} records)")
-print(f"  - napsa_contributions.csv ({len(napsa_records)} records)")
-print(f"  - home_affairs_registry.csv ({len(home_affairs)} records)")
-print(f"  - bank_transactions.csv ({len(bank_transactions)} records)")
-
-print(f"\nGhost Employee Distribution:")
-print(df_employees['ghost_type'].value_counts())
-print(f"\n✓ Ready to run GhostBuster detection engine!")
-EOF
-fi
-
-# Fix app.py import if needed
-if grep -q "from flask-cors import CORS" app.py 2>/dev/null; then
-    sed -i 's/from flask-cors import CORS/from flask_cors import CORS/' app.py
-fi
-
 python3 generate_datasets.py > /dev/null 2>&1
 echo -e "${GREEN}✅ GhostBuster datasets generated${NC}"
 
@@ -292,7 +169,6 @@ echo -e "${GREEN}✅ Dashboard Frontend started (PID: $!)${NC}"
 # Start GhostBuster Backend
 echo -e "${BLUE}Starting GhostBuster Backend (Port 3006)...${NC}"
 cd "$SCRIPT_DIR/GhostBuster/backend"
-source venv/bin/activate
 GHOSTBUSTER_PORT=3006 python3 app.py > /tmp/taxguard-logs/ghostbuster-backend.log 2>&1 &
 echo -e "${GREEN}✅ GhostBuster Backend started (PID: $!)${NC}"
 
