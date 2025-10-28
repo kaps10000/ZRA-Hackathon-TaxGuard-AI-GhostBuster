@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Lock, User } from 'lucide-react'; // consistent icon set from sidebar (lucide-react)
+import { Lock, User } from 'lucide-react';
 
 const Login = ({ onLogin }) => {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
@@ -50,7 +50,7 @@ const Login = ({ onLogin }) => {
               value={credentials.username}
               onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
               required
-              className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
             />
           </div>
 
@@ -62,7 +62,7 @@ const Login = ({ onLogin }) => {
               value={credentials.password}
               onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
               required
-              className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
             />
           </div>
 
