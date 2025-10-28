@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { whistleproAPI, connectWhistleProWebSocket, disconnectWhistleProWebSocket } from '../services/api';
 
 const WhistlePro = () => {
   const [selectedCase, setSelectedCase] = useState(null);
@@ -8,18 +8,19 @@ const WhistlePro = () => {
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [realtimeConnected, setRealtimeConnected] = useState(false);
 
-  // Fetch cases from API
+  // Fetch cases from WhistlePro backend (port 3005)
   useEffect(() => {
     const fetchCases = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:4000/api/reports');
+        const response = await whistleproAPI.getCases();
         setCases(response.data.reports || []);
         setError(null);
       } catch (err) {
         console.error('Failed to fetch reports:', err);
-        setError('Unable to load reports from server');
+        setError('Unable to load reports from WhistlePro backend');
         // Fall back to mock data
         setCases(mockCases);
       } finally {
@@ -29,9 +30,46 @@ const WhistlePro = () => {
 
     fetchCases();
 
-    // Refresh every 10 seconds
-    const interval = setInterval(fetchCases, 10000);
-    return () => clearInterval(interval);
+    // Connect to real-time WebSocket
+    const socket = connectWhistleProWebSocket();
+
+    socket.on('connect', () => {
+      console.log('✅ Real-time connection established');
+      setRealtimeConnected(true);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('❌ Real-time connection lost');
+      setRealtimeConnected(false);
+    });
+
+    socket.on('connected', (data) => {
+      console.log('📡 WhistlePro real-time service ready:', data);
+    });
+
+    // Listen for new reports
+    socket.on('newReport', (data) => {
+      console.log('📢 New report received:', data.report);
+      fetchCases(); // Refresh the list
+    });
+
+    // Listen for status changes
+    socket.on('statusChanged', (data) => {
+      console.log('🔄 Status changed:', data);
+      // Update the specific case in state
+      setCases(prevCases =>
+        prevCases.map(c =>
+          c.caseId === data.caseId
+            ? { ...c, status: data.newStatus }
+            : c
+        )
+      );
+    });
+
+    // Cleanup on unmount
+    return () => {
+      disconnectWhistleProWebSocket();
+    };
   }, []);
 
   const mockCases = [
@@ -131,9 +169,12 @@ const WhistlePro = () => {
             </div>
             <div className="flex items-center space-x-2">
               {loading && <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>}
-              <span className="text-xs text-gray-500">
-                {loading ? 'Loading...' : 'Live Updates'}
-              </span>
+              <div className="flex items-center space-x-1">
+                <div className={`h-2 w-2 rounded-full ${realtimeConnected ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                <span className="text-xs text-gray-500">
+                  {realtimeConnected ? 'Live Updates Active' : 'Connecting...'}
+                </span>
+              </div>
             </div>
           </div>
           {error && (
@@ -196,11 +237,11 @@ const WhistlePro = () => {
         {/* Cases List */}
         <div className="space-y-4">
           {filteredCases.map((caseItem) => (
-            <div key={caseItem.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div key={caseItem.caseId || caseItem.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-2">
-                    <span className="font-bold text-gray-800">{caseItem.id}</span>
+                    <span className="font-bold text-gray-800">{caseItem.caseId || caseItem.id}</span>
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(caseItem.priority)}`}>
                       {caseItem.priority} Priority
                     </span>
@@ -287,7 +328,7 @@ const WhistlePro = () => {
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-800">{selectedCase.id}</h3>
+                  <h3 className="text-2xl font-bold text-gray-800">{selectedCase.caseId || selectedCase.id}</h3>
                   <p className="text-gray-600">{selectedCase.title}</p>
                 </div>
                 <button
@@ -339,14 +380,46 @@ const WhistlePro = () => {
                 </div>
 
                 {/* Evidence */}
-                <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                  <h4 className="font-semibold text-blue-800 mb-2">Evidence Provided</h4>
-                  <ul className="list-disc list-inside space-y-1">
-                    {selectedCase.evidence.map((item, idx) => (
-                      <li key={idx} className="text-sm text-blue-700">{item}</li>
-                    ))}
-                  </ul>
-                </div>
+                {selectedCase.evidence && selectedCase.evidence.length > 0 && (
+                  <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                    <h4 className="font-semibold text-blue-800 mb-2">Evidence Provided</h4>
+                    <ul className="list-disc list-inside space-y-1">
+                      {selectedCase.evidence.map((item, idx) => (
+                        <li key={idx} className="text-sm text-blue-700">{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Evidence Files (from file upload) */}
+                {selectedCase.evidenceFiles && selectedCase.evidenceFiles.length > 0 && (
+                  <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+                    <h4 className="font-semibold text-green-800 mb-2">Uploaded Evidence Files ({selectedCase.evidenceFiles.length})</h4>
+                    <div className="space-y-2">
+                      {selectedCase.evidenceFiles.map((file, idx) => (
+                        <div key={idx} className="flex items-center justify-between bg-white p-2 rounded border border-green-200">
+                          <div className="flex items-center space-x-2">
+                            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <div>
+                              <p className="text-sm font-medium text-gray-800">{file.originalName}</p>
+                              <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(2)} KB - {file.mimetype}</p>
+                            </div>
+                          </div>
+                          <a
+                            href={`http://localhost:3005${file.url}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                          >
+                            View
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Actions */}
                 <div className="flex space-x-3 pt-4">
