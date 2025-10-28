@@ -185,7 +185,7 @@ const WhistlePro = () => {
         </div>
 
         {/* Filters */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6">
           <div className="flex space-x-2">
             <button
               onClick={() => setFilter('all')}
@@ -228,10 +228,6 @@ const WhistlePro = () => {
               Resolved
             </button>
           </div>
-
-          <button className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
-            + New Report
-          </button>
         </div>
 
         {/* Cases List */}
@@ -422,16 +418,10 @@ const WhistlePro = () => {
                 )}
 
                 {/* Actions */}
-                <div className="flex space-x-3 pt-4">
-                  <button className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                    Update Status
-                  </button>
-                  <button className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
-                    Add Evidence
-                  </button>
+                <div className="flex justify-end pt-4">
                   <button
                     onClick={() => setShowDetails(false)}
-                    className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
+                    className="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400"
                   >
                     Close
                   </button>
