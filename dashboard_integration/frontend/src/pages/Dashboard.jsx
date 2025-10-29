@@ -7,7 +7,7 @@ import WhistleProPanel from '../components/WhistleProPanel';
 import GhostBusterPanel from '../components/GhostBusterPanel';
 import PredictivePanel from '../components/PredictivePanel';
 import BlockchainAudit from '../components/BlockchainAudit';
-import { Network } from 'lucide-react';
+import { Network, RefreshCcw } from 'lucide-react';
 
 const Dashboard = ({ onNavigate }) => {
   const { data, loading, error, refresh } = useDashboardData();
@@ -53,13 +53,11 @@ const Dashboard = ({ onNavigate }) => {
             <div className="flex items-center space-x-4">
               <button 
                 onClick={refresh}
-                className="bg-blue-700 hover:bg-blue-600 px-3 py-2 rounded text-sm"
+                className="bg-blue-700 flex items-center gap-2 hover:bg-blue-600 px-3 py-2 rounded text-sm"
               >
-                🔄 Refresh
+                <RefreshCcw size={18} /> Refresh
               </button>
-              <div className="text-sm">
-                <span className="text-blue-200">User:</span> John Doe (Auditor)
-              </div>
+             
             </div>
           </div>
         </div>

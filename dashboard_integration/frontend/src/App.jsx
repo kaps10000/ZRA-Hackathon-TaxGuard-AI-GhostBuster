@@ -142,7 +142,7 @@ function AppContent() {
       {/* Protected Routes */}
       <Route path="/*" element={
         <ProtectedRoute>
-          <div className="flex h-screen bg-gray-100">
+          <div className="flex h-screen bg-gray-100 overflow-hidden">
             {/* Mobile overlay */}
             {sidebarOpen && (
               <div
@@ -155,103 +155,105 @@ function AppContent() {
             <motion.aside
               animate={{ width: sidebarOpen ? 256 : 80 }}
               transition={{ duration: 0.4, ease: 'easeInOut' }}
-              className="fixed md:static inset-y-0 left-0 z-40 bg-gradient-to-b from-blue-900 to-blue-800 text-white shadow-xl flex flex-col justify-between"
+              className="fixed md:static inset-y-0 left-0 z-40 bg-gradient-to-b from-blue-900 to-blue-800 text-white shadow-xl flex flex-col h-screen"
             >
               {/* Top Section */}
-              <div className="p-4 relative">
-                {/* Always-visible toggle button */}
-                <button
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className={`absolute -right-3 top-6 z-50 bg-blue-900 border border-blue-700 hover:bg-blue-800 rounded-full p-1.5 transition-colors duration-200 shadow-md`}
-                  aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-                >
-                  {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
-                </button>
-
-                {/* Logo / Title */}
-                <motion.h1
-                  initial={false}
-                  animate={{ opacity: sidebarOpen ? 1 : 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-xl font-bold whitespace-nowrap mt-2 mb-8"
-                >
-                  {sidebarOpen && 'TaxGuard AI'}
-                </motion.h1>
-
-                {/* Navigation */}
-                <nav className="space-y-2">
-                  {navigation.map((item) => {
-                    const Icon = item.icon;
-                    const active = activePage === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => {
-                          setActivePage(item.id);
-                          if (window.innerWidth < 768) setSidebarOpen(false);
-                        }}
-                        className={`group relative flex items-center w-full rounded-lg px-3 py-2 
-                          ${sidebarOpen ? 'space-x-3' : 'justify-center'} 
-                          transition-all duration-300 ease-in-out 
-                          ${
-                            active
-                              ? 'bg-blue-700 border-l-4 border-blue-400 text-white'
-                              : 'text-blue-200 hover:bg-blue-800 hover:text-white'
-                          }`}
-                      >
-                        <Icon
-                          className={`shrink-0 transition-transform duration-300 group-hover:scale-110 ${
-                            sidebarOpen ? 'h-5 w-5' : 'h-7 w-7'
-                          }`}
-                        />
-                        <motion.span
-                          initial={false}
-                          animate={{
-                            opacity: sidebarOpen ? 1 : 0,
-                            x: sidebarOpen ? 0 : -10,
-                          }}
-                          transition={{ duration: 0.3 }}
-                          className={`text-sm font-medium whitespace-nowrap ${
-                            sidebarOpen ? 'block' : 'hidden'
-                          }`}
-                        >
-                          {item.name}
-                        </motion.span>
-                      </button>
-                    );
-                  })}
-                </nav>
-
-                {/* User info and logout */}
-                {user && (
-                  <motion.div
-                    initial={false}
-                    animate={{
-                      opacity: sidebarOpen ? 1 : 0,
-                      height: sidebarOpen ? 'auto' : 0,
-                    }}
-                    transition={{ duration: 0.3 }}
-                    className="mt-8 pt-4 border-t border-blue-800"
+              <div className="flex-1 overflow-y-auto scrollbar-hide">
+                <div className="p-4 relative min-h-full">
+                  {/* Always-visible toggle button */}
+                  <button
+                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                    className="absolute -right-3 top-6 z-52 bg-blue-900 border border-blue-700 hover:bg-blue-800 rounded-full p-1.5 transition-colors duration-200 shadow-md"
+                    aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
                   >
-                    <div className="px-3 py-2 text-sm text-blue-200">
-                      <div className="flex items-center space-x-2">
-                        <User size={16} />
-                        <span className="font-medium">{user.name || user.username}</span>
-                      </div>
-                      <div className="text-xs text-blue-300 ml-6">{user.role || 'User'}</div>
-                    </div>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-blue-200 hover:bg-red-600 hover:text-white transition-colors mt-2"
+                    {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+                  </button>
+
+                  {/* Logo / Title */}
+                  <motion.h1
+                    initial={false}
+                    animate={{ opacity: sidebarOpen ? 1 : 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="text-xl font-bold whitespace-nowrap mt-2 mb-8"
+                  >
+                    {sidebarOpen && 'TaxGuard AI'}
+                  </motion.h1>
+
+                  {/* Navigation */}
+                  <nav className="space-y-2">
+                    {navigation.map((item) => {
+                      const Icon = item.icon;
+                      const active = activePage === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setActivePage(item.id);
+                            if (window.innerWidth < 768) setSidebarOpen(false);
+                          }}
+                          className={`group relative flex items-center w-full rounded-lg px-3 py-2 
+                            ${sidebarOpen ? 'space-x-3' : 'justify-center'} 
+                            transition-all duration-300 ease-in-out 
+                            ${
+                              active
+                                ? 'bg-blue-700 border-l-4 border-blue-400 text-white'
+                                : 'text-blue-200 hover:bg-blue-800 hover:text-white'
+                            }`}
+                        >
+                          <Icon
+                            className={`shrink-0 transition-transform duration-300 group-hover:scale-110 ${
+                              sidebarOpen ? 'h-5 w-5' : 'h-7 w-7'
+                            }`}
+                          />
+                          <motion.span
+                            initial={false}
+                            animate={{
+                              opacity: sidebarOpen ? 1 : 0,
+                              x: sidebarOpen ? 0 : -10,
+                            }}
+                            transition={{ duration: 0.3 }}
+                            className={`text-sm font-medium whitespace-nowrap ${
+                              sidebarOpen ? 'block' : 'hidden'
+                            }`}
+                          >
+                            {item.name}
+                          </motion.span>
+                        </button>
+                      );
+                    })}
+                  </nav>
+
+                  {/* User info and logout */}
+                  {user && (
+                    <motion.div
+                      initial={false}
+                      animate={{
+                        opacity: sidebarOpen ? 1 : 0,
+                        height: sidebarOpen ? 'auto' : 0,
+                      }}
+                      transition={{ duration: 0.3 }}
+                      className="mt-8 pt-4 border-t border-blue-800"
                     >
-                      <LogOut size={18} />
-                      <span className="font-medium">Logout</span>
-                    </button>
-                  </motion.div>
-                )}
+                      <div className="px-3 py-2 text-sm text-blue-200">
+                        <div className="flex items-center space-x-2">
+                          <User size={16} />
+                          <span className="font-medium">{user.name || user.username}</span>
+                        </div>
+                        <div className="text-xs text-blue-300 ml-6">{user.role || 'User'}</div>
+                      </div>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-blue-200 hover:bg-red-600 hover:text-white transition-colors mt-2"
+                      >
+                        <LogOut size={18} />
+                        <span className="font-medium">Logout</span>
+                      </button>
+                    </motion.div>
+                  )}
+                </div>
               </div>
 
-              {/* Footer */}
+              {/* Footer - Fixed at bottom */}
               <motion.div
                 initial={false}
                 animate={{
@@ -259,7 +261,7 @@ function AppContent() {
                   height: sidebarOpen ? 'auto' : 0,
                 }}
                 transition={{ duration: 0.4 }}
-                className="p-4 bg-blue-950 border-t border-blue-800 overflow-hidden"
+                className="flex-shrink-0 p-4 bg-blue-950 border-t border-blue-800 overflow-hidden"
               >
                 <div className="text-xs text-blue-300">
                   <div className="font-semibold">ZRA - Zambia Revenue Authority</div>
@@ -269,14 +271,11 @@ function AppContent() {
             </motion.aside>
 
             {/* Main Content */}
-            <main className="flex-1">
-              {/* Header */}
+            <main className="flex-1 flex flex-col h-screen overflow-hidden">
+              {/* Header - Fixed */}
               <motion.header
-                animate={{ 
-                  left: sidebarOpen ? 256 : 80,
-                }}
-                transition={{ duration: 0.4, ease: 'easeInOut' }}
-                className="fixed top-0 right-0 bg-white shadow-sm border-b border-gray-200 z-10"
+                initial={false}
+                className="flex-shrink-0 bg-white shadow-sm border-b border-gray-200 z-10"
               >
                 <div className="px-6 py-4">
                   <div className="flex justify-between items-center">
@@ -304,9 +303,7 @@ function AppContent() {
                             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                             <span className="text-sm text-gray-600">System Online</span>
                           </div>
-                          <div className="text-sm text-gray-600">
-                            <span className="font-medium">User:</span> {user.name || user.username} ({user.role || 'Tax Investigator'})
-                          </div>
+                          
                         </>
                       )}
                     </div>
@@ -314,8 +311,8 @@ function AppContent() {
                 </div>
               </motion.header>
 
-              {/* Page Content */}
-              <div className="pt-[88px] p-6 overflow-y-auto h-screen mt-10">
+              {/* Page Content - Scrollable */}
+              <div className="flex-1 overflow-y-auto p-6 bg-gray-100">
                 {renderPage()}
               </div>
             </main>
