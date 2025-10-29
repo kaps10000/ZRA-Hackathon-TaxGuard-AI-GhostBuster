@@ -1,0 +1,2 @@
+claim_id,taxpayer_id,period_start,period_end,claim_date,submitted_by,net_refund_amount,output_vat,input_vat,total_sales_amount,export_sales_value,zero_rated_sales,exempt_sales,sales_invoice_count,supporting_docs_count,business_age_years
+CLM_FRAUD_001,TPIN_99999999,2025-01-01,2025-03-31,2025-04-05,Self,25000,5000,30000,100000,10000,5000,1000,3,2,0.8
