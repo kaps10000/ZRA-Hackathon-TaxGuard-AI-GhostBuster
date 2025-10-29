@@ -37,10 +37,10 @@ const OCRScanner = () => {
     }
   };
 
-  // Fetch recent scans on component mount
-  useEffect(() => {
-    fetchRecentScans();
-  }, []);
+  // Don't fetch recent scans on mount - only after a scan is initiated
+  // useEffect(() => {
+  //   fetchRecentScans();
+  // }, []);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -201,6 +201,7 @@ const OCRScanner = () => {
     setProcessing(false);
   };
 
+  // Batch save - saves all documents to BOTH database and blockchain
   const handleBatchSaveAll = async () => {
     let successCount = 0;
     let failCount = 0;
@@ -208,7 +209,8 @@ const OCRScanner = () => {
 
     for (const result of batchResults) {
       try {
-        await axios.post('http://localhost:4001/api/ocr/save', {
+        // The /api/ocr/save endpoint already saves to BOTH database and blockchain
+        const response = await axios.post('http://localhost:4001/api/ocr/save', {
           fileName: result.fileName,
           documentType: result.documentType,
           status: result.status,
@@ -223,7 +225,7 @@ const OCRScanner = () => {
         errors.push({ fileName: result.fileName, error: err.message });
         failCount++;
 
-        // Still add to recent scans even if database save failed
+        // Still add to recent scans even if save failed
         const newScan = {
           name: result.fileName,
           date: new Date().toISOString().split('T')[0],
@@ -243,12 +245,17 @@ const OCRScanner = () => {
     }
 
     if (failCount === 0) {
-      alert(`✓ Successfully saved all ${successCount} documents to database`);
+      alert(`✓ SUCCESS! All ${successCount} documents saved securely:
+
+📁 Saved to Database
+⛓️  Recorded on Blockchain
+
+All documents are now immutably recorded with full integrity protection.`);
     } else if (successCount > 0) {
-      alert(`Saved ${successCount} documents successfully.\n${failCount} failed (saved locally only).\nCheck console for details.`);
+      alert(`Saved ${successCount} documents successfully.\n${failCount} failed.\nCheck console for details.`);
       console.error('Failed documents:', errors);
     } else {
-      alert(`All ${failCount} documents failed to save to database (saved locally only).\nDatabase may be unavailable.`);
+      alert(`All ${failCount} documents failed to save.\nCheck console for details.`);
       console.error('Failed documents:', errors);
     }
   };
@@ -420,8 +427,12 @@ const OCRScanner = () => {
     setBlockchainLinked(false);
   };
 
-  const handleSaveToDatabase = async () => {
+  // Single save function - saves to BOTH database and blockchain
+  const handleSave = async () => {
     try {
+      setProcessing(true);
+
+      // The /api/ocr/save endpoint already saves to BOTH database and blockchain
       const response = await axios.post('http://localhost:4001/api/ocr/save', {
         fileName: ocrResult.fileName,
         documentType: ocrResult.documentType,
@@ -431,53 +442,26 @@ const OCRScanner = () => {
         timestamp: new Date().toISOString()
       });
 
-      alert(`Document saved to database with ID: ${response.data.id || 'OCR-' + Date.now()}`);
-
-      // Refresh recent scans from API
-      fetchRecentScans();
-    } catch (err) {
-      console.error('Failed to save to database:', err);
-      alert('Document saved locally (database connection unavailable)');
-
-      // Still add to recent scans even if database save failed
-      const newScan = {
-        name: ocrResult.fileName,
-        date: new Date().toISOString().split('T')[0],
-        status: ocrResult.status,
-        riskScore: ocrResult.riskScore,
-        company: ocrResult.extractedData.companyName,
-        summary: ocrResult.recommendation
-      };
-
-      setRecentScans([newScan, ...recentScans]);
-    }
-  };
-
-  const handleLinkToBlockchain = async () => {
-    try {
-      setProcessing(true);
-
-      // Create document hash
-      const documentHash = `0x${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
-
-      const blockchainData = {
-        documentHash: documentHash,
-        fileName: ocrResult.fileName,
-        status: ocrResult.status,
-        riskScore: ocrResult.riskScore,
-        timestamp: new Date().toISOString(),
-        action: 'OCR_SCAN_RECORDED'
-      };
-
-      await axios.post('http://localhost:4001/api/blockchain/record', blockchainData);
+      const docId = response.data.documentId || response.data.id || 'OCR-' + Date.now();
+      const txHash = response.data.txHash || 'N/A';
 
       setBlockchainLinked(true);
       setProcessing(false);
-      alert(`Document successfully linked to blockchain!\nTransaction Hash: ${documentHash}`);
+
+      // Refresh recent scans from API
+      fetchRecentScans();
+
+      alert(`✓ SUCCESS! Document saved securely:
+
+📁 Database ID: ${docId}
+⛓️  Blockchain TX: ${txHash}
+
+Your document is now immutably recorded with full integrity protection.`);
+
     } catch (err) {
-      console.error('Failed to link to blockchain:', err);
+      console.error('Failed to save:', err);
       setProcessing(false);
-      alert('Failed to link to blockchain. Please try again.');
+      alert('❌ Save failed: ' + (err.response?.data?.error || err.message) + '\n\nPlease try again.');
     }
   };
 
@@ -756,30 +740,35 @@ const OCRScanner = () => {
 
             {/* Action Buttons */}
             <div className="space-y-3">
+              {/* Single Save Button - Saves to BOTH Database & Blockchain */}
               <div className="flex space-x-3">
                 <button
-                  onClick={handleSaveToDatabase}
-                  disabled={processing}
-                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400"
-                >
-                  Save to Database
-                </button>
-                <button
-                  onClick={handleLinkToBlockchain}
+                  onClick={handleSave}
                   disabled={processing || blockchainLinked}
                   className={`flex-1 ${
                     blockchainLinked
                       ? 'bg-green-600'
-                      : 'bg-purple-600 hover:bg-purple-700'
-                  } text-white px-4 py-2 rounded-md disabled:bg-gray-400`}
+                      : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                  } text-white px-6 py-3 rounded-lg font-semibold shadow-lg flex items-center justify-center space-x-2 disabled:bg-gray-400`}
                 >
-                  {blockchainLinked ? '✓ Linked to Blockchain' : '⛓️ Link to Blockchain'}
+                  {blockchainLinked ? (
+                    <>
+                      <span>✓</span>
+                      <span>Saved to Database & Blockchain</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>💾</span>
+                      <span>⛓️</span>
+                      <span>Save to Database & Blockchain</span>
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={clearFile}
-                  className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
+                  className="bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 font-semibold"
                 >
-                  Process Another
+                  🔄 Process Another
                 </button>
               </div>
 
@@ -895,12 +884,14 @@ const OCRScanner = () => {
             {batchResults.length > 0 && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-bold text-gray-800">Processing Results</h3>
+                  <h3 className="text-xl font-bold text-gray-800">Processing Results ({batchResults.length} documents)</h3>
                   <button
                     onClick={handleBatchSaveAll}
-                    className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 shadow-lg flex items-center space-x-2"
                   >
-                    💾 Save All to Database
+                    <span>💾</span>
+                    <span>⛓️</span>
+                    <span>Save All to Database & Blockchain</span>
                   </button>
                 </div>
                 <div className="space-y-3">
@@ -1008,129 +999,6 @@ const OCRScanner = () => {
               </div>
             )}
           </>
-        )}
-
-        {/* Recent Scans */}
-        <div className="mt-8">
-          <h4 className="font-semibold text-gray-800 mb-4">Recent Scans History</h4>
-          <div className="space-y-2">
-            {recentScans.map((scan, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded hover:bg-gray-100 cursor-pointer transition-colors"
-                onClick={() => {
-                  setSelectedScan(scan);
-                  setShowScanDetails(true);
-                }}
-              >
-                <div className="flex items-center space-x-3 flex-1">
-                  <div className="text-2xl">📄</div>
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-800">{scan.name}</p>
-                    <p className="text-xs text-gray-500">{scan.company} • {scan.date}</p>
-                  </div>
-                  <div className="text-right mr-4">
-                    <p className="text-xs text-gray-600">Risk Score</p>
-                    <p className={`font-bold ${scan.status === 'CLEAR' ? 'text-green-600' : 'text-red-600'}`}>
-                      {scan.riskScore}/100
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      scan.status === 'CLEAR'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-700'
-                    }`}
-                  >
-                    {scan.status}
-                  </span>
-                  <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                    View Report →
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Scan Details Modal */}
-        {showScanDetails && selectedScan && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-800">Scan Report</h3>
-                    <p className="text-gray-600">{selectedScan.name}</p>
-                  </div>
-                  <button
-                    onClick={() => setShowScanDetails(false)}
-                    className="text-gray-400 hover:text-gray-600 text-2xl"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                {/* Status Banner */}
-                <div className={`${
-                  selectedScan.status === 'CLEAR'
-                    ? 'bg-green-50 border-green-500'
-                    : 'bg-red-50 border-red-500'
-                } border-4 rounded-lg p-6 text-center mb-6`}>
-                  <div className="text-5xl mb-2">
-                    {selectedScan.status === 'CLEAR' ? '✓' : '⚠'}
-                  </div>
-                  <h2 className={`text-3xl font-black ${
-                    selectedScan.status === 'CLEAR' ? 'text-green-700' : 'text-red-700'
-                  }`}>
-                    {selectedScan.status}
-                  </h2>
-                  <p className="text-lg font-semibold mt-2">
-                    Risk Score: <span className={selectedScan.status === 'CLEAR' ? 'text-green-600' : 'text-red-600'}>
-                      {selectedScan.riskScore}/100
-                    </span>
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-semibold mb-2">Document Information</h4>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div><span className="text-gray-600">Company:</span> <span className="font-medium">{selectedScan.company}</span></div>
-                      <div><span className="text-gray-600">Scan Date:</span> <span className="font-medium">{selectedScan.date}</span></div>
-                      <div><span className="text-gray-600">Summary:</span> <span className="font-medium">{selectedScan.summary}</span></div>
-                    </div>
-                  </div>
-
-                  <div className={`${
-                    selectedScan.status === 'CLEAR' ? 'bg-green-50' : 'bg-red-50'
-                  } p-4 rounded-lg`}>
-                    <p className="font-bold text-sm mb-2">
-                      Recommended Action: <span className={
-                        selectedScan.status === 'CLEAR' ? 'text-green-700' : 'text-red-700'
-                      }>
-                        {selectedScan.status === 'CLEAR' ? 'APPROVE' : 'HOLD_FOR_INVESTIGATION'}
-                      </span>
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      {selectedScan.status === 'CLEAR'
-                        ? 'Document appears legitimate and can be processed normally.'
-                        : 'Document has been flagged for human verification. Recommend immediate investigation.'}
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => setShowScanDetails(false)}
-                    className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
         )}
       </div>
     </div>

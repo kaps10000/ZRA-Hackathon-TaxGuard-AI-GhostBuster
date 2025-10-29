@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import './index.css';
+
+// Pages
 import Dashboard from './pages/Dashboard';
 import PredictiveAnalytics from './pages/PredictiveAnalytics';
 import VRTGuard from './pages/VRTGuard';
@@ -12,6 +15,25 @@ import BlockchainLedger from './pages/BlockchainLedger';
 import GhostBusterDetection from './pages/GhostBusterDetection';
 import AnomalyTracker from './pages/AnomalyTracker';
 import Login from './components/Login';
+
+// Icons
+import {
+  BarChart2,
+  Database,
+  ScanText,
+  Megaphone,
+  Ghost,
+  Target,
+  LineChart,
+  Shield,
+  Link2,
+  ClipboardList,
+  Menu,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  User
+} from 'lucide-react';
 
 // Protected Route Component
 function ProtectedRoute({ children }) {
@@ -30,8 +52,20 @@ function AppContent() {
   const [activePage, setActivePage] = useState('dashboard');
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= 768 : true
+  );
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+        setSidebarOpen(true);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -61,16 +95,16 @@ function AppContent() {
   }
 
   const navigation = [
-    { id: 'dashboard', name: 'Dashboard Overview', icon: '📊' },
-    { id: 'database', name: 'Database Viewer', icon: '💾' },
-    { id: 'ocr', name: 'OCR Document Scanner', icon: '📄' },
-    { id: 'whistlepro', name: 'WhistlePro Cases', icon: '📢' },
-    { id: 'ghostbuster', name: 'GhostBuster Detection', icon: '👻' },
-    { id: 'anomalytracker', name: 'Anomaly Tracker', icon: '🎯' },
-    { id: 'predictive', name: 'Predictive Analytics', icon: '📈' },
-    { id: 'vrtguard', name: 'VRT Guard', icon: '🛡️' },
-    { id: 'blockchain', name: 'Blockchain Ledger', icon: '⛓️' },
-    { id: 'cases', name: 'Past Cases', icon: '📋' },
+    { id: 'dashboard', name: 'Dashboard Overview', icon: BarChart2 },
+    { id: 'database', name: 'Database Viewer', icon: Database },
+    { id: 'ocr', name: 'OCR Document Scanner', icon: ScanText },
+    { id: 'whistlepro', name: 'WhistlePro Cases', icon: Megaphone },
+    { id: 'ghostbuster', name: 'GhostBuster Detection', icon: Ghost },
+    { id: 'anomalytracker', name: 'Anomaly Tracker', icon: Target },
+    { id: 'predictive', name: 'Predictive Analytics', icon: LineChart },
+    { id: 'vrtguard', name: 'VRT Guard', icon: Shield },
+    { id: 'blockchain', name: 'Blockchain Ledger', icon: Link2 },
+    { id: 'cases', name: 'Past Cases', icon: ClipboardList },
   ];
 
   const renderPage = () => {
@@ -109,90 +143,179 @@ function AppContent() {
       <Route path="/*" element={
         <ProtectedRoute>
           <div className="flex h-screen bg-gray-100">
-            {/* Sidebar */}
-            <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-blue-900 text-white transition-all duration-300`}>
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-8">
-                  {sidebarOpen && <h1 className="text-xl font-bold">TaxGuard AI</h1>}
-                  <button
-                    onClick={() => setSidebarOpen(!sidebarOpen)}
-                    className="text-white hover:bg-blue-800 p-2 rounded"
-                  >
-                    {sidebarOpen ? '◀' : '▶'}
-                  </button>
-                </div>
+            {/* Mobile overlay */}
+            {sidebarOpen && (
+              <div
+                className="fixed inset-0 bg-black/40 z-30 md:hidden"
+                onClick={() => setSidebarOpen(false)}
+              />
+            )}
 
+            {/* Sidebar with Framer Motion */}
+            <motion.aside
+              animate={{ width: sidebarOpen ? 256 : 80 }}
+              transition={{ duration: 0.4, ease: 'easeInOut' }}
+              className="fixed md:static inset-y-0 left-0 z-40 bg-gradient-to-b from-blue-900 to-blue-800 text-white shadow-xl flex flex-col justify-between"
+            >
+              {/* Top Section */}
+              <div className="p-4 relative">
+                {/* Always-visible toggle button */}
+                <button
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className={`absolute -right-3 top-6 z-50 bg-blue-900 border border-blue-700 hover:bg-blue-800 rounded-full p-1.5 transition-colors duration-200 shadow-md`}
+                  aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+                >
+                  {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+                </button>
+
+                {/* Logo / Title */}
+                <motion.h1
+                  initial={false}
+                  animate={{ opacity: sidebarOpen ? 1 : 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-xl font-bold whitespace-nowrap mt-2 mb-8"
+                >
+                  {sidebarOpen && 'TaxGuard AI'}
+                </motion.h1>
+
+                {/* Navigation */}
                 <nav className="space-y-2">
-                  {navigation.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => setActivePage(item.id)}
-                      className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-                        activePage === item.id
-                          ? 'bg-blue-700 text-white'
-                          : 'text-blue-200 hover:bg-blue-800 hover:text-white'
-                      }`}
-                    >
-                      <span className="text-2xl">{item.icon}</span>
-                      {sidebarOpen && <span className="font-medium">{item.name}</span>}
-                    </button>
-                  ))}
+                  {navigation.map((item) => {
+                    const Icon = item.icon;
+                    const active = activePage === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActivePage(item.id);
+                          if (window.innerWidth < 768) setSidebarOpen(false);
+                        }}
+                        className={`group relative flex items-center w-full rounded-lg px-3 py-2 
+                          ${sidebarOpen ? 'space-x-3' : 'justify-center'} 
+                          transition-all duration-300 ease-in-out 
+                          ${
+                            active
+                              ? 'bg-blue-700 border-l-4 border-blue-400 text-white'
+                              : 'text-blue-200 hover:bg-blue-800 hover:text-white'
+                          }`}
+                      >
+                        <Icon
+                          className={`shrink-0 transition-transform duration-300 group-hover:scale-110 ${
+                            sidebarOpen ? 'h-5 w-5' : 'h-7 w-7'
+                          }`}
+                        />
+                        <motion.span
+                          initial={false}
+                          animate={{
+                            opacity: sidebarOpen ? 1 : 0,
+                            x: sidebarOpen ? 0 : -10,
+                          }}
+                          transition={{ duration: 0.3 }}
+                          className={`text-sm font-medium whitespace-nowrap ${
+                            sidebarOpen ? 'block' : 'hidden'
+                          }`}
+                        >
+                          {item.name}
+                        </motion.span>
+                      </button>
+                    );
+                  })}
                 </nav>
-                
+
                 {/* User info and logout */}
-                {sidebarOpen && user && (
-                  <div className="mt-8 pt-4 border-t border-blue-800">
+                {user && (
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      opacity: sidebarOpen ? 1 : 0,
+                      height: sidebarOpen ? 'auto' : 0,
+                    }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-8 pt-4 border-t border-blue-800"
+                  >
                     <div className="px-3 py-2 text-sm text-blue-200">
-                      <div className="font-medium">{user.name || user.username}</div>
-                      <div className="text-xs text-blue-300">{user.role || 'User'}</div>
+                      <div className="flex items-center space-x-2">
+                        <User size={16} />
+                        <span className="font-medium">{user.name || user.username}</span>
+                      </div>
+                      <div className="text-xs text-blue-300 ml-6">{user.role || 'User'}</div>
                     </div>
                     <button
                       onClick={handleLogout}
                       className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-blue-200 hover:bg-red-600 hover:text-white transition-colors mt-2"
                     >
-                      <span className="text-xl">🚪</span>
+                      <LogOut size={18} />
                       <span className="font-medium">Logout</span>
                     </button>
-                  </div>
+                  </motion.div>
                 )}
               </div>
 
-              {sidebarOpen && (
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-blue-950 border-t border-blue-800">
-                  <div className="text-xs text-blue-300">
-                    <div className="font-semibold">ZRA - Zambia Revenue Authority</div>
-                    <div>GhostBuster AI System v1.0</div>
-                  </div>
+              {/* Footer */}
+              <motion.div
+                initial={false}
+                animate={{
+                  opacity: sidebarOpen ? 1 : 0,
+                  height: sidebarOpen ? 'auto' : 0,
+                }}
+                transition={{ duration: 0.4 }}
+                className="p-4 bg-blue-950 border-t border-blue-800 overflow-hidden"
+              >
+                <div className="text-xs text-blue-300">
+                  <div className="font-semibold">ZRA - Zambia Revenue Authority</div>
+                  <div>GhostBuster AI System v1.0</div>
                 </div>
-              )}
-            </aside>
+              </motion.div>
+            </motion.aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-y-auto">
+            <main className="flex-1">
               {/* Header */}
-              <header className="bg-white shadow-sm border-b border-gray-200">
+              <motion.header
+                animate={{ 
+                  left: sidebarOpen ? 256 : 80,
+                }}
+                transition={{ duration: 0.4, ease: 'easeInOut' }}
+                className="fixed top-0 right-0 bg-white shadow-sm border-b border-gray-200 z-10"
+              >
                 <div className="px-6 py-4">
                   <div className="flex justify-between items-center">
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-800">
-                        {navigation.find(nav => nav.id === activePage)?.name || 'Dashboard'}
-                      </h2>
-                      <p className="text-gray-600 mt-1">
-                        ZRA TaxGuard AI - Advanced Tax Revenue Management System
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <button
+                        className="md:hidden inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100"
+                        onClick={() => setSidebarOpen(true)}
+                        aria-label="Open sidebar"
+                      >
+                        <Menu size={20} />
+                      </button>
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-800">
+                          {navigation.find(nav => nav.id === activePage)?.name || 'Dashboard'}
+                        </h2>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Integrated Tax Fraud Detection & Analytics Platform
+                        </p>
+                      </div>
                     </div>
                     <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-sm text-gray-600">System Online</span>
-                      </div>
+                      {user && (
+                        <>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                            <span className="text-sm text-gray-600">System Online</span>
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            <span className="font-medium">User:</span> {user.name || user.username} ({user.role || 'Tax Investigator'})
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
-              </header>
+              </motion.header>
 
               {/* Page Content */}
-              <div className="p-6">
+              <div className="pt-[88px] p-6 overflow-y-auto h-screen">
                 {renderPage()}
               </div>
             </main>

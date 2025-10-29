@@ -13,7 +13,7 @@ const VRTGuard = () => {
         </div>
       </div>
       <iframe
-        src="http://localhost:5002" 
+        src="http://localhost:5002"
         className="w-full border-2 border-gray-300 rounded-lg shadow-lg"
         style={{ height: 'calc(100vh - 250px)' }}
         title="VRT Guard VAT Fraud Detection"

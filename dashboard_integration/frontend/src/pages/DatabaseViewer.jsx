@@ -10,6 +10,7 @@ const DatabaseViewer = () => {
   const [ghostDetectionCount, setGhostDetectionCount] = useState(0);
   const [vrtDetectionCount, setVrtDetectionCount] = useState(0);
   const [riskScoreCount, setRiskScoreCount] = useState(0);
+  const [blockchainTxCount, setBlockchainTxCount] = useState(0);
 
   // Mock database tables with sample data
   const mockData = {
@@ -48,7 +49,7 @@ const DatabaseViewer = () => {
     { id: 'companies', name: 'Companies', icon: '🏢', count: mockData.companies.length },
     { id: 'employees', name: 'Employees', icon: '👥', count: mockData.employees.length },
     { id: 'detections', name: 'Detections', icon: '🔍', count: mockData.detections.length },
-    { id: 'transactions', name: 'Blockchain Transactions', icon: '⛓️', count: mockData.transactions.length },
+    { id: 'transactions', name: 'Blockchain Transactions', icon: '⛓️', count: blockchainTxCount },
     { id: 'cases', name: 'Investigation Cases', icon: '📋', count: mockData.cases.length },
     { id: 'ocrDocuments', name: 'OCR Documents', icon: '📄', count: ocrDocCount },
     { id: 'ghostDetections', name: 'Ghost Detections', icon: '👻', count: ghostDetectionCount },
@@ -112,16 +113,30 @@ const DatabaseViewer = () => {
     fetchRiskScoreCount();
   }, []);
 
+  // Fetch Blockchain Transaction count on mount
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+    const fetchBlockchainTxCount = async () => {
       try {
-        switch(activeTable) {
-          case 'ocrDocuments':
-            const ocrResponse = await axios.get('http://localhost:4001/api/ocr/documents');
-            setData(ocrResponse.data.documents || []);
-            setOcrDocCount(ocrResponse.data.total || 0);
-            break;
+        const response = await axios.get('http://localhost:3001/api/events');
+        setBlockchainTxCount(response.data.count || response.data.events?.length || 0);
+      } catch (error) {
+        console.error('Error fetching Blockchain Transaction count:', error);
+        setBlockchainTxCount(0);
+      }
+    };
+    fetchBlockchainTxCount();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      switch(activeTable) {
+        case 'ocrDocuments':
+          const ocrResponse = await axios.get('http://localhost:4001/api/ocr/documents');
+          console.log('📄 OCR Documents fetched:', ocrResponse.data);
+          setData(ocrResponse.data.documents || []);
+          setOcrDocCount(ocrResponse.data.total || 0);
+          break;
 
           case 'ghostDetections':
             const ghostResponse = await axios.get('http://localhost:4001/api/ghostbuster/detections');
@@ -153,10 +168,24 @@ const DatabaseViewer = () => {
             break;
 
           case 'transactions':
-            // Fetch real blockchain transactions
+            // Fetch real blockchain transactions from blockchain service
             try {
-              const txResponse = await axios.get('http://localhost:4001/api/blockchain/transactions');
-              setData(txResponse.data.transactions || []);
+              const txResponse = await axios.get('http://localhost:3001/api/events');
+              const events = txResponse.data.events || [];
+
+              // Transform blockchain events to match database viewer format
+              const transactions = events.map(event => ({
+                id: event.eventId,
+                txHash: event.hashOfPayload,
+                action: event.eventType,
+                timestamp: new Date(event.timestamp).toLocaleString(),
+                verified: true,
+                blockNumber: event.blockIndex,
+                notes: event.notes
+              }));
+
+              setData(transactions);
+              setBlockchainTxCount(transactions.length);
             } catch (err) {
               console.error('Error fetching transactions:', err);
               setData(mockData.transactions);
@@ -219,6 +248,7 @@ const DatabaseViewer = () => {
       }
     };
 
+  useEffect(() => {
     fetchData();
   }, [activeTable]);
 
@@ -313,15 +343,23 @@ const DatabaseViewer = () => {
           ))}
         </div>
 
-        {/* Search Bar */}
-        <div className="mb-4">
+        {/* Search Bar and Refresh Button */}
+        <div className="mb-4 flex space-x-3">
           <input
             type="text"
             placeholder="Search in table..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
+          <button
+            onClick={fetchData}
+            disabled={loading}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 font-semibold flex items-center space-x-2"
+          >
+            <span>🔄</span>
+            <span>{loading ? 'Refreshing...' : 'Refresh Data'}</span>
+          </button>
         </div>
 
         {/* Table Display */}

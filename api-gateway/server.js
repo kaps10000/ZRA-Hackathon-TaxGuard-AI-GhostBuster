@@ -14,6 +14,7 @@ const vrtguardDbRoutes = require('./routes/vrtguard-db');
 const anomalyTrackerRoutes = require('./routes/anomaly-tracker');
 const anomalyTrackerDbRoutes = require('./routes/anomaly-tracker-db');
 const whistleproRoutes = require('./routes/whistlepro');
+const blockchainRoutes = require('./routes/blockchain');
 const logger = require('./utils/logger');
 const { errorHandler } = require('./middleware/errorHandler');
 const {
@@ -98,6 +99,7 @@ app.get('/metrics/json', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/ocr', ocrRoutes);
+app.use('/api/blockchain', blockchainRoutes);
 app.use('/api/ghostbuster', ghostbusterRoutes);
 app.use('/api/vrtguard', vrtguardRoutes);
 app.use('/api/vrtguard-db', vrtguardDbRoutes);
