@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const encryptionService = require('../services/encryptionService');
 const auditService = require('../services/auditService');
 const BlockchainService = require('../services/blockchainService');
+const Attachment = require('./Attachment');
 
 class Report {
   static tableName = 'reports';
@@ -36,6 +37,8 @@ class Report {
     const report = {
       case_id: caseId,
       payload_encrypted: encryptedPayload,
+      title: reportData.title || `${reportData.category} Investigation`,
+      description: reportData.description || '',
       category: reportData.category || 'general',
       status: 'pending',
       priority: reportData.priority || 'medium',
@@ -65,7 +68,20 @@ class Report {
         }
       });
 
-      // ✨ NEW: Submit to blockchain for immutable storage
+      // ✨ Link uploaded files to this report
+      try {
+        const fileIds = this.extractFileIds(reportData);
+        if (fileIds.length > 0) {
+          for (const fileId of fileIds) {
+            await Attachment.linkToReport(fileId, newReport.id);
+          }
+          console.log(`📎 Linked ${fileIds.length} file(s) to report ${caseId}`);
+        }
+      } catch (fileError) {
+        console.error('Failed to link files to report:', fileError.message);
+      }
+
+      // ✨ Submit to blockchain for immutable storage
       try {
         const blockchainResult = await BlockchainService.submitReportToBlockchain(newReport);
 
@@ -132,6 +148,8 @@ class Report {
       return {
         id: report.id,
         case_id: report.case_id,
+        title: report.title,
+        description: report.description,
         category: report.category,
         status: report.status,
         priority: report.priority,
@@ -164,6 +182,8 @@ class Report {
       let query = db(this.tableName).select(
         'id',
         'case_id',
+        'title',
+        'description',
         'category',
         'status',
         'priority',
@@ -267,6 +287,44 @@ class Report {
       };
     } catch (error) {
       throw new Error(`Failed to update report status: ${error.message}`);
+    }
+  }
+
+  /**
+   * Extract file IDs from report data (evidence field)
+   */
+  static extractFileIds(reportData) {
+    const fileIds = [];
+
+    if (reportData.evidence) {
+      // Extract from documents array
+      if (Array.isArray(reportData.evidence.documents)) {
+        fileIds.push(...reportData.evidence.documents.filter(id => id && id.startsWith('FILE-')));
+      }
+
+      // Extract from photos array
+      if (Array.isArray(reportData.evidence.photos)) {
+        fileIds.push(...reportData.evidence.photos.filter(id => id && id.startsWith('FILE-')));
+      }
+
+      // Extract from videos array
+      if (Array.isArray(reportData.evidence.videos)) {
+        fileIds.push(...reportData.evidence.videos.filter(id => id && id.startsWith('FILE-')));
+      }
+    }
+
+    return [...new Set(fileIds)]; // Remove duplicates
+  }
+
+  /**
+   * Get attachments for a report
+   */
+  static async getAttachments(reportId) {
+    try {
+      return await Attachment.findByReportId(reportId);
+    } catch (error) {
+      console.error(`Failed to get attachments for report ${reportId}:`, error);
+      return [];
     }
   }
 }

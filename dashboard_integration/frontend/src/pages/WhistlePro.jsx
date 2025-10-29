@@ -16,24 +16,24 @@ const WhistlePro = () => {
     const fetchCases = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:3005/api/reports');
+        const response = await axios.get('http://localhost:4000/api/reports');
         const apiData = response.data.data || [];
         
         // Map API data to dashboard format
         const mappedCases = apiData.map(report => ({
           id: report.case_id,
-          title: `${report.category.replace('_', ' ').toUpperCase()} Investigation`,
+          title: report.title || `${report.category.replace('_', ' ').toUpperCase()} Investigation`,
           company: 'Under Investigation',
           reportedDate: new Date(report.created_at).toISOString().split('T')[0],
           priority: report.priority.charAt(0).toUpperCase() + report.priority.slice(1),
-          status: report.status === 'under_review' ? 'Under Investigation' : 
+          status: report.status === 'under_review' ? 'Under Investigation' :
                   report.status === 'investigating' ? 'In Progress' :
                   report.status === 'closed' ? 'Resolved' :
                   report.status === 'pending' ? 'Open' : report.status,
-          category: report.category.replace('_', ' ').split(' ').map(word => 
+          category: report.category.replace('_', ' ').split(' ').map(word =>
             word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
           reporter: 'Anonymous',
-          description: `Investigation case for ${report.category.replace('_', ' ')} allegations.`,
+          description: report.description || `Investigation case for ${report.category.replace('_', ' ')} allegations.`,
           evidence: ['Encrypted report data', 'Supporting documents'],
           assignedTo: 'ZRA Investigator'
         }));
