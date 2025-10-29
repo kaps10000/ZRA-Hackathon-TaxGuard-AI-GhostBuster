@@ -1,0 +1,26 @@
+[Unit]
+Description=GhostBuster Backend Service
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/var/www/taxguard/GhostBuster/backend
+Environment="PATH=/usr/bin:/usr/local/bin"
+Environment="PORT=5001"
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=/usr/bin/python3 app.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ghostbuster
+
+# Resource limits
+MemoryLimit=300M
+CPUQuota=50%
+
+[Install]
+WantedBy=multi-user.target
