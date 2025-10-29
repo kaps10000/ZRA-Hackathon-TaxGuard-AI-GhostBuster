@@ -14,6 +14,7 @@ const securityMiddleware = require('./middleware/security');
 const healthRoutes = require('./routes/healthRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const authRoutes = require('./routes/authRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 // Initialize Express app
 const app = express();
@@ -100,6 +101,7 @@ app.use('/health', healthRoutes);
 // API routes
 app.use('/api/reports', reportRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -111,7 +113,8 @@ app.get('/', (req, res) => {
     endpoints: {
       health: '/health',
       reports: '/api/reports',
-      auth: '/api/auth'
+      auth: '/api/auth',
+      upload: '/api/upload'
     },
     documentation: '/api/docs',
     timestamp: new Date().toISOString()

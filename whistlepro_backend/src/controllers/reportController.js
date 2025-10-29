@@ -185,9 +185,29 @@ const getReports = asyncHandler(async (req, res) => {
 
   const result = await Report.list(options);
 
+  // ✨ Add attachments to each report
+  const reportsWithAttachments = await Promise.all(
+    result.reports.map(async (report) => {
+      const attachments = await Report.getAttachments(report.id);
+      return {
+        ...report,
+        attachments: attachments.map(att => ({
+          file_id: att.file_id,
+          original_name: att.original_name,
+          file_type: att.file_type,
+          file_size: att.file_size,
+          mime_type: att.mime_type,
+          uploaded_at: att.uploaded_at,
+          download_url: `/api/upload/${att.file_id}/download`,
+          preview_url: att.file_type === 'image' ? `/api/upload/${att.file_id}/download` : null
+        }))
+      };
+    })
+  );
+
   res.json({
     success: true,
-    data: result.reports,
+    data: reportsWithAttachments,
     pagination: result.pagination,
     filters: {
       status: status || 'all',
