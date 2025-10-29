@@ -1,0 +1,117 @@
+services:
+  # Database
+  - type: pserv
+    name: taxguard-db
+    env: docker
+    plan: free
+    
+  # API Gateway
+  - type: web
+    name: api-gateway
+    env: node
+    buildCommand: cd api-gateway && npm install
+    startCommand: cd api-gateway && npm start
+    envVars:
+      - key: PORT
+        value: 4001
+      - key: DATABASE_URL
+        fromDatabase:
+          name: taxguard-db
+          property: connectionString
+    
+  # Dashboard Frontend
+  - type: web
+    name: dashboard-frontend
+    env: node
+    buildCommand: cd dashboard_integration/frontend && npm install && npm run build
+    startCommand: cd dashboard_integration/frontend && npm start
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: REACT_APP_API_URL
+        value: https://api-gateway.onrender.com
+    
+  # OCR Backend
+  - type: web
+    name: ocr-backend
+    env: node
+    buildCommand: cd ocr-backend && npm install
+    startCommand: cd ocr-backend && npm start
+    envVars:
+      - key: PORT
+        value: 4000
+        
+  # OCR AI Service
+  - type: web
+    name: ocr-ai
+    env: python
+    buildCommand: cd ai-service && pip install -r requirements.txt
+    startCommand: cd ai-service && python app.py
+    envVars:
+      - key: PORT
+        value: 5000
+        
+  # GhostBuster Backend
+  - type: web
+    name: ghostbuster-backend
+    env: python
+    buildCommand: cd GhostBuster/backend && pip install -r requirements.txt
+    startCommand: cd GhostBuster/backend && python app.py
+    envVars:
+      - key: PORT
+        value: 5001
+        
+  # GhostBuster Frontend
+  - type: web
+    name: ghostbuster-frontend
+    env: node
+    buildCommand: cd GhostBuster/frontend && npm install && npm run build
+    startCommand: cd GhostBuster/frontend && npm start
+    envVars:
+      - key: PORT
+        value: 3004
+        
+  # Predictive Analytics
+  - type: web
+    name: predictive-analytics
+    env: python
+    buildCommand: cd predictive_analytics && pip install -r requirements.txt
+    startCommand: cd predictive_analytics && python app.py
+    envVars:
+      - key: PORT
+        value: 5002
+        
+  # VRT Guard
+  - type: web
+    name: vrt-guard
+    env: python
+    buildCommand: cd vrt_guard && pip install -r requirements.txt
+    startCommand: cd vrt_guard && python app.py
+    envVars:
+      - key: PORT
+        value: 5003
+        
+  # Whistlepro Backend
+  - type: web
+    name: whistlepro-backend
+    env: node
+    buildCommand: cd whistlepro_backend && npm install
+    startCommand: cd whistlepro_backend && npm start
+    envVars:
+      - key: PORT
+        value: 3005
+        
+  # Blockchain Service
+  - type: web
+    name: blockchain-service
+    env: node
+    buildCommand: cd blockchain && npm install
+    startCommand: cd blockchain && npm start
+    envVars:
+      - key: PORT
+        value: 3001
+
+databases:
+  - name: taxguard-db
+    databaseName: taxguard
+    user: taxguard_user
