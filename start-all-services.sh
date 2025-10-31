@@ -142,10 +142,10 @@ npm start > /tmp/taxguard-logs/blockchain.log 2>&1 &
 echo -e "${GREEN}✅ Blockchain Service started (PID: $!)${NC}"
 
 # 10. WhistlePro Backend
-echo "Starting WhistlePro Backend (Port 3005)..."
+echo "Starting WhistlePro Backend (Port 4000)..."
 cd "$SCRIPT_DIR/whistlepro_backend"
 npm install --silent > /dev/null 2>&1
-npm start > /tmp/taxguard-logs/whistlepro.log 2>&1 &
+PORT=4000 npm start > /tmp/taxguard-logs/whistlepro.log 2>&1 &
 echo -e "${GREEN}✅ WhistlePro Backend started (PID: $!)${NC}"
 
 echo ""
@@ -169,7 +169,7 @@ echo "  • GhostBuster Backend:   http://localhost:3005"
 echo "  • OCR AI Service:        http://localhost:8000"
 echo "  • OCR Backend:           http://localhost:5000"
 echo "  • Blockchain Service:    http://localhost:3001"
-echo "  • WhistlePro Backend:    http://localhost:3005"
+echo "  • WhistlePro Backend:    http://localhost:4000"
 echo ""
 echo "📝 Logs are available in: /tmp/taxguard-logs/"
 echo ""

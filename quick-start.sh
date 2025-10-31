@@ -84,9 +84,9 @@ PORT=3004 DISABLE_ESLINT_PLUGIN=true npm start > /tmp/taxguard-logs/ghostbuster-
 echo -e "${GREEN}✅ GhostBuster Frontend started (PID: $!)${NC}"
 
 # Start WhistlePro Backend
-echo -e "${BLUE}Starting WhistlePro Backend (Port 3005)...${NC}"
+echo -e "${BLUE}Starting WhistlePro Backend (Port 4000)...${NC}"
 cd "$SCRIPT_DIR/whistlepro_backend"
-npm start > /tmp/taxguard-logs/whistlepro.log 2>&1 &
+PORT=4000 npm start > /tmp/taxguard-logs/whistlepro.log 2>&1 &
 echo -e "${GREEN}✅ WhistlePro Backend started (PID: $!)${NC}"
 
 # Start VRT Guard
