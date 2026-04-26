@@ -20,25 +20,47 @@
 
 ---
 
-## 🚀 Quick Start (5 Minutes Setup!)
+## 🚀 Quick Start
 
-### Prerequisites
-- Node.js v18+
-- Python 3.10+
-- PostgreSQL 15+
-
-### One-Command Setup
+### First Time Setup (Complete Installation)
 
 ```bash
 # Clone the repository
 git clone <repository-url>
 cd ZRA-Hackathon-TaxGuard-AI-GhostBuster
 
-# Start all services
-./start-all-services.sh
+# Run complete setup (installs dependencies + starts services)
+./complete-setup.sh
 ```
 
-That's it! Open your browser to **http://localhost:3000**
+### Subsequent Runs (Start Services Only)
+
+```bash
+# After first setup, use this for daily startup
+./quick-start.sh
+```
+
+### Alternative: Manual Service Management
+
+```bash
+# Start all services (if dependencies already installed)
+./start-all-services.sh
+
+# Stop all services
+./stop-all-services.sh
+```
+
+**Access your dashboard at: http://localhost:3000**
+
+---
+
+## 🔧 Troubleshooting
+
+If you encounter any issues, see **[TROUBLESHOOTING_AND_SETUP.md](./TROUBLESHOOTING_AND_SETUP.md)** for:
+- Common issues and solutions
+- Detailed setup instructions
+- Service verification commands
+- Configuration details
 
 ---
 

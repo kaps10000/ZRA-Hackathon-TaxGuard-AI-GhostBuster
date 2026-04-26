@@ -1,2 +1,2 @@
 claim_id,taxpayer_id,period_start,period_end,claim_date,submitted_by,net_refund_amount,output_vat,input_vat,total_sales_amount,export_sales_value,zero_rated_sales,exempt_sales,sales_invoice_count,supporting_docs_count,business_age_years
-CLM_LEGIT_001,TPIN_12345678,2025-01-01,2025-03-31,2025-04-10,Tax Agent,50000,100000,150000,2000000,1200000,500000,50000,120,25,5.5
+CLM_LEGIT_001,TPIN_12345678,2025-01-01,2025-03-31,2025-04-10,Tax Agent,10000,100000,110000,2000000,1200000,500000,50000,120,30,5.5

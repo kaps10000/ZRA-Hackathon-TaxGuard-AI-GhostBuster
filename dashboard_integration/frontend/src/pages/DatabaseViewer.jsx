@@ -10,6 +10,8 @@ const DatabaseViewer = () => {
   const [ghostDetectionCount, setGhostDetectionCount] = useState(0);
   const [vrtDetectionCount, setVrtDetectionCount] = useState(0);
   const [riskScoreCount, setRiskScoreCount] = useState(0);
+  const [blockchainTxCount, setBlockchainTxCount] = useState(0);
+  const [casesCount, setCasesCount] = useState(0);
 
   // Mock database tables with sample data
   const mockData = {
@@ -48,8 +50,8 @@ const DatabaseViewer = () => {
     { id: 'companies', name: 'Companies', icon: '🏢', count: mockData.companies.length },
     { id: 'employees', name: 'Employees', icon: '👥', count: mockData.employees.length },
     { id: 'detections', name: 'Detections', icon: '🔍', count: mockData.detections.length },
-    { id: 'transactions', name: 'Blockchain Transactions', icon: '⛓️', count: mockData.transactions.length },
-    { id: 'cases', name: 'Investigation Cases', icon: '📋', count: mockData.cases.length },
+    { id: 'transactions', name: 'Blockchain Transactions', icon: '⛓️', count: blockchainTxCount },
+    { id: 'cases', name: 'Investigation Cases', icon: '📋', count: casesCount },
     { id: 'ocrDocuments', name: 'OCR Documents', icon: '📄', count: ocrDocCount },
     { id: 'ghostDetections', name: 'Ghost Detections', icon: '👻', count: ghostDetectionCount },
     { id: 'vrtDetections', name: 'VAT Fraud Detections', icon: '🛡️', count: vrtDetectionCount },
@@ -112,21 +114,59 @@ const DatabaseViewer = () => {
     fetchRiskScoreCount();
   }, []);
 
+  // Fetch Blockchain Transaction count on mount
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+    const fetchBlockchainTxCount = async () => {
       try {
-        switch(activeTable) {
-          case 'ocrDocuments':
-            const ocrResponse = await axios.get('http://localhost:4001/api/ocr/documents');
-            setData(ocrResponse.data.documents || []);
-            setOcrDocCount(ocrResponse.data.total || 0);
-            break;
+        const response = await axios.get('http://localhost:3001/api/events');
+        setBlockchainTxCount(response.data.count || response.data.events?.length || 0);
+      } catch (error) {
+        console.error('Error fetching Blockchain Transaction count:', error);
+        setBlockchainTxCount(0);
+      }
+    };
+    fetchBlockchainTxCount();
+  }, []);
+
+  // Fetch Investigation Cases count on mount
+  useEffect(() => {
+    const fetchCasesCount = async () => {
+      try {
+        const response = await axios.get('http://localhost:4000/api/reports');
+        setCasesCount(response.data.pagination?.total || response.data.data?.length || 0);
+      } catch (error) {
+        console.error('Error fetching Investigation Cases count:', error);
+        setCasesCount(0);
+      }
+    };
+    fetchCasesCount();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      switch(activeTable) {
+        case 'ocrDocuments':
+          const ocrResponse = await axios.get('http://localhost:4001/api/ocr/documents');
+          console.log('📄 OCR Documents fetched:', ocrResponse.data);
+          const ocrDocs = ocrResponse.data.documents || [];
+          // Show mock data if no real data to demonstrate functionality
+          setData(ocrDocs.length > 0 ? ocrDocs : [
+            { id: 1, filename: 'tax_return_2024.pdf', status: 'Processed', uploadedAt: '2025-10-28', extractedData: { amount: 50000, taxpayer: 'ABC Corp' } },
+            { id: 2, filename: 'invoice_001.pdf', status: 'Processing', uploadedAt: '2025-10-29', extractedData: null }
+          ]);
+          setOcrDocCount(ocrResponse.data.total || 2);
+          break;
 
           case 'ghostDetections':
             const ghostResponse = await axios.get('http://localhost:4001/api/ghostbuster/detections');
-            setData(ghostResponse.data.detections || []);
-            setGhostDetectionCount(ghostResponse.data.total || 0);
+            const ghostDets = ghostResponse.data.detections || [];
+            // Show mock data if no real data to demonstrate functionality
+            setData(ghostDets.length > 0 ? ghostDets : [
+              { id: 1, companyName: 'Phantom Corp', tin: '1122334455', riskScore: 92, detectedAt: '2025-10-28', status: 'Under Investigation' },
+              { id: 2, companyName: 'Shell Company Ltd', tin: '5566778899', riskScore: 85, detectedAt: '2025-10-27', status: 'Flagged' }
+            ]);
+            setGhostDetectionCount(ghostResponse.data.total || 2);
             break;
 
           case 'vrtDetections':
@@ -144,8 +184,28 @@ const DatabaseViewer = () => {
           case 'cases':
             // Fetch real cases from WhistlePro API
             try {
-              const casesResponse = await axios.get('http://localhost:4001/api/whistlepro/cases');
-              setData(casesResponse.data.cases || []);
+              const casesResponse = await axios.get('http://localhost:4000/api/reports');
+              const reports = casesResponse.data.data || [];
+
+              // Transform WhistlePro reports to match Database Viewer format
+              const cases = reports.map(report => ({
+                id: report.id,
+                caseId: report.case_id,
+                type: report.category.replace('_', ' ').split(' ').map(word =>
+                  word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+                entity: report.title || 'Anonymous Report',
+                investigator: 'ZRA Investigator',
+                status: report.status === 'under_review' ? 'Under Investigation' :
+                        report.status === 'investigating' ? 'In Progress' :
+                        report.status === 'closed' ? 'Closed' :
+                        report.status === 'pending' ? 'Open' : report.status,
+                priority: report.priority.charAt(0).toUpperCase() + report.priority.slice(1),
+                date: new Date(report.created_at).toISOString().split('T')[0],
+                description: report.description || 'No description available'
+              }));
+
+              setData(cases);
+              setCasesCount(casesResponse.data.pagination?.total || cases.length);
             } catch (err) {
               console.error('Error fetching cases:', err);
               setData(mockData.cases);
@@ -153,10 +213,24 @@ const DatabaseViewer = () => {
             break;
 
           case 'transactions':
-            // Fetch real blockchain transactions
+            // Fetch real blockchain transactions from blockchain service
             try {
-              const txResponse = await axios.get('http://localhost:4001/api/blockchain/transactions');
-              setData(txResponse.data.transactions || []);
+              const txResponse = await axios.get('http://localhost:3001/api/events');
+              const events = txResponse.data.events || [];
+
+              // Transform blockchain events to match database viewer format
+              const transactions = events.map(event => ({
+                id: event.eventId,
+                txHash: event.hashOfPayload,
+                action: event.eventType,
+                timestamp: new Date(event.timestamp).toLocaleString(),
+                verified: true,
+                blockNumber: event.blockIndex,
+                notes: event.notes
+              }));
+
+              setData(transactions);
+              setBlockchainTxCount(transactions.length);
             } catch (err) {
               console.error('Error fetching transactions:', err);
               setData(mockData.transactions);
@@ -219,6 +293,7 @@ const DatabaseViewer = () => {
       }
     };
 
+  useEffect(() => {
     fetchData();
   }, [activeTable]);
 
@@ -313,15 +388,23 @@ const DatabaseViewer = () => {
           ))}
         </div>
 
-        {/* Search Bar */}
-        <div className="mb-4">
+        {/* Search Bar and Refresh Button */}
+        <div className="mb-4 flex space-x-3">
           <input
             type="text"
             placeholder="Search in table..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
+          <button
+            onClick={fetchData}
+            disabled={loading}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 font-semibold flex items-center space-x-2"
+          >
+            <span>🔄</span>
+            <span>{loading ? 'Refreshing...' : 'Refresh Data'}</span>
+          </button>
         </div>
 
         {/* Table Display */}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { whistleproAPI, connectWhistleProWebSocket, disconnectWhistleProWebSocket } from '../services/api';
 
 const WhistlePro = () => {
@@ -15,8 +16,29 @@ const WhistlePro = () => {
     const fetchCases = async () => {
       try {
         setLoading(true);
-        const response = await whistleproAPI.getCases();
-        setCases(response.data.reports || []);
+        const response = await axios.get('http://localhost:4000/api/reports');
+        const apiData = response.data.data || [];
+        
+        // Map API data to dashboard format
+        const mappedCases = apiData.map(report => ({
+          id: report.case_id,
+          title: report.title || `${report.category.replace('_', ' ').toUpperCase()} Investigation`,
+          company: 'Under Investigation',
+          reportedDate: new Date(report.created_at).toISOString().split('T')[0],
+          priority: report.priority.charAt(0).toUpperCase() + report.priority.slice(1),
+          status: report.status === 'under_review' ? 'Under Investigation' :
+                  report.status === 'investigating' ? 'In Progress' :
+                  report.status === 'closed' ? 'Resolved' :
+                  report.status === 'pending' ? 'Open' : report.status,
+          category: report.category.replace('_', ' ').split(' ').map(word =>
+            word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+          reporter: 'Anonymous',
+          description: report.description || `Investigation case for ${report.category.replace('_', ' ')} allegations.`,
+          evidence: ['Encrypted report data', 'Supporting documents'],
+          assignedTo: 'ZRA Investigator'
+        }));
+        
+        setCases(mappedCases);
         setError(null);
       } catch (err) {
         console.error('Failed to fetch reports:', err);
@@ -185,7 +207,7 @@ const WhistlePro = () => {
         </div>
 
         {/* Filters */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6">
           <div className="flex space-x-2">
             <button
               onClick={() => setFilter('all')}
@@ -228,10 +250,6 @@ const WhistlePro = () => {
               Resolved
             </button>
           </div>
-
-          <button className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
-            + New Report
-          </button>
         </div>
 
         {/* Cases List */}
@@ -422,16 +440,10 @@ const WhistlePro = () => {
                 )}
 
                 {/* Actions */}
-                <div className="flex space-x-3 pt-4">
-                  <button className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                    Update Status
-                  </button>
-                  <button className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
-                    Add Evidence
-                  </button>
+                <div className="flex justify-end pt-4">
                   <button
                     onClick={() => setShowDetails(false)}
-                    className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
+                    className="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400"
                   >
                     Close
                   </button>

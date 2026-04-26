@@ -4,7 +4,9 @@ echo "  ZRA TAXGUARD AI - Starting ALL 11 Services"
 echo "══════════════════════════════════════════════════════════"
 echo ""
 
-cd /home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster
+# Resolve repo root dynamically (directory containing this script)
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
 
 # 0. PostgreSQL Database (5433)
 echo "[0/11] Starting PostgreSQL Database (Port 5433)..."
@@ -23,52 +25,79 @@ echo ""
 
 # 1. Dashboard Frontend (3000)
 echo "[1/11] Starting Dashboard Frontend (Port 3000)..."
-cd dashboard_integration/frontend && npm run dev > /tmp/zra-dashboard.log 2>&1 &
+cd "$SCRIPT_DIR/dashboard_integration/frontend" && npm run dev > /tmp/zra-dashboard.log 2>&1 &
 echo "  ✓ Started with PID $!"
 
 # 2. API Gateway (4001)
 echo "[2/11] Starting API Gateway (Port 4001)..."
-cd /home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/api-gateway && PORT=4001 node server.js > /tmp/zra-api-gateway.log 2>&1 &
+cd "$SCRIPT_DIR/api-gateway" && PORT=4001 node server.js > /tmp/zra-api-gateway.log 2>&1 &
 echo "  ✓ Started with PID $!"
 
 # 3. VRT Guard (5002)
 echo "[3/11] Starting VRT Guard (Port 5002)..."
-cd /home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/vrt_guard && PORT=5002 python app.py > /tmp/zra-vrt.log 2>&1 &
+cd "$SCRIPT_DIR/vrt_guard" && PORT=5002 python3 app.py > /tmp/zra-vrt.log 2>&1 &
 echo "  ✓ Started with PID $!"
 
 # 4. Anomaly Tracker (5001)
 echo "[4/11] Starting Anomaly Tracker (Port 5001)..."
-cd /home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/ai_risk_scoring && PORT=5001 python -m api.scoring_api > /tmp/zra-anomaly.log 2>&1 &
+cd "$SCRIPT_DIR/ai_risk_scoring"
+# Ensure virtual environment and dependencies
+if [ ! -d "venv" ]; then
+    echo "  Creating virtual environment..."
+    python3 -m venv venv
+    source venv/bin/activate
+    echo "  Installing dependencies..."
+    pip install -r requirements.txt > /tmp/zra-anomaly-install.log 2>&1
+    if [ $? -ne 0 ]; then
+        echo "  ⚠️ Warning: Dependency installation may have issues. Check /tmp/zra-anomaly-install.log"
+    else
+        echo "  ✓ Dependencies installed"
+    fi
+else
+    source venv/bin/activate
+    # Check if Flask is installed, if not reinstall dependencies
+    if ! python3 -c "import flask" 2>/dev/null; then
+        echo "  Missing dependencies detected, reinstalling..."
+        pip install -r requirements.txt > /tmp/zra-anomaly-install.log 2>&1
+        if [ $? -ne 0 ]; then
+            echo "  ⚠️ Warning: Dependency installation may have issues. Check /tmp/zra-anomaly-install.log"
+        else
+            echo "  ✓ Dependencies installed"
+        fi
+    fi
+fi
+# Run with correct PYTHONPATH so package imports resolve
+PYTHONPATH="$SCRIPT_DIR" PORT=5001 python3 api/scoring_api.py > /tmp/zra-anomaly.log 2>&1 &
 echo "  ✓ Started with PID $!"
 
 # 5. GhostBuster Frontend (3004)
 echo "[5/11] Starting GhostBuster Frontend (Port 3004)..."
-cd /home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/GhostBuster/frontend && PORT=3004 DISABLE_ESLINT_PLUGIN=true npm start > /tmp/zra-ghostbuster-ui.log 2>&1 &
+cd "$SCRIPT_DIR/GhostBuster/frontend" && PORT=3004 DISABLE_ESLINT_PLUGIN=true npm start > /tmp/zra-ghostbuster-ui.log 2>&1 &
 echo "  ✓ Started with PID $!"
 
 # 6. GhostBuster Backend (3006 - FIXED!)
 echo "[6/11] Starting GhostBuster Backend (Port 3006)..."
-cd /home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/GhostBuster/backend && GHOSTBUSTER_PORT=3006 python app.py > /tmp/zra-ghostbuster-api.log 2>&1 &
+cd "$SCRIPT_DIR/GhostBuster/backend" && GHOSTBUSTER_PORT=3006 python3 app.py > /tmp/zra-ghostbuster-api.log 2>&1 &
 echo "  ✓ Started with PID $!"
 
 # 7. Predictive Analytics (5003)
 echo "[7/11] Starting Predictive Analytics (Port 5003)..."
-cd /home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/predictive_analytics && python api.py > /tmp/zra-predictive.log 2>&1 &
+cd "$SCRIPT_DIR/predictive_analytics" && python3 api.py > /tmp/zra-predictive.log 2>&1 &
 echo "  ✓ Started with PID $!"
 
 # 8. Blockchain (3001)
 echo "[8/11] Starting Blockchain Service (Port 3001)..."
-cd /home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/blockchain && PORT=3001 node api/index.js > /tmp/zra-blockchain.log 2>&1 &
+cd "$SCRIPT_DIR/blockchain" && PORT=3001 node api/index.js > /tmp/zra-blockchain.log 2>&1 &
 echo "  ✓ Started with PID $!"
 
 # 9. WhistlePro (4000)
 echo "[9/11] Starting WhistlePro Backend (Port 4000)..."
-cd /home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/whistlepro_backend && PORT=4000 node src/server.js > /tmp/zra-whistlepro.log 2>&1 &
+cd "$SCRIPT_DIR/whistlepro_backend" && PORT=4000 node src/server.js > /tmp/zra-whistlepro.log 2>&1 &
 echo "  ✓ Started with PID $!"
 
 # 10. OCR AI Service (8000)
 echo "[10/11] Starting OCR AI Service (Port 8000)..."
-cd /home/kaps100/ZRA-Hackathon-TaxGuard-AI-GhostBuster/ocr-ai-service && python main.py > /tmp/zra-ocr-ai.log 2>&1 &
+cd "$SCRIPT_DIR/ocr-ai-service" && python3 main.py > /tmp/zra-ocr-ai.log 2>&1 &
 echo "  ✓ Started with PID $!"
 
 echo ""

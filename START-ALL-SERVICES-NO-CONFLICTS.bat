@@ -62,7 +62,7 @@ timeout /t 2 >nul
 
 echo [10/10] Starting OCR AI Service (Port 8000)...
 if exist "E:\ZRA PROJECT\ocr-ai-service\main.py" (
-    start "OCR AI - 8000" cmd /k "cd /d E:\ZRA PROJECT\ocr-ai-service && .\venv\Scripts\python.exe main.py"
+    start "OCR AI - 8000" cmd /k "cd /d E:\ZRA PROJECT\ocr-ai-service && python main.py"
 ) else (
     echo   OCR AI Service not found - skipping
 )
@@ -81,6 +81,8 @@ echo   Dashboard:         http://localhost:3000
 echo   GhostBuster UI:    http://localhost:3004
 echo   GhostBuster API:   http://localhost:3006/api/stats
 echo   API Gateway:       http://localhost:4001
+echo   OCR AI Service:    http://localhost:8000/docs
+echo   VRT Guard:         http://localhost:5002
 echo.
 echo Wait 60 seconds for all services to fully initialize.
 echo.

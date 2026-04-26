@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   ThemeProvider,
   createTheme,
@@ -54,7 +54,6 @@ const theme = createTheme({
 function App() {
   const [currentTab, setCurrentTab] = useState(0);
   const [results, setResults] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
@@ -135,7 +134,6 @@ function App() {
                 onAnalysisComplete={handleAnalysisComplete}
                 onError={handleError}
                 onSuccess={handleSuccess}
-                setLoading={setLoading}
               />
             )}
             {currentTab === 1 && (
@@ -143,7 +141,6 @@ function App() {
                 onAnalysisComplete={handleAnalysisComplete}
                 onError={handleError}
                 onSuccess={handleSuccess}
-                setLoading={setLoading}
               />
             )}
             {currentTab === 2 && (

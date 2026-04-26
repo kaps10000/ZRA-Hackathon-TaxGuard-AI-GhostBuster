@@ -232,10 +232,24 @@ const logSecurityEvents = (req, res, next) => {
   next();
 };
 
+/**
+ * Hash IP addresses for privacy (simpler version for global use)
+ */
+const hashIP = (req, res, next) => {
+  const originalIP = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'];
+
+  if (originalIP) {
+    req.hashedIP = encryptionService.hashSensitiveData(originalIP);
+  }
+
+  next();
+};
+
 module.exports = {
   sanitizeInput,
   preventXSS,
   scrubMetadata,
   detectAttacks,
-  logSecurityEvents
+  logSecurityEvents,
+  hashIP
 };

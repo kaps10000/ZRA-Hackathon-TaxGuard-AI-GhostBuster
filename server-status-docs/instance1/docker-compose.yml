@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-gateway.conf:/etc/nginx/nginx.conf:ro
+    restart: always
+    mem_limit: 64m
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_HOST=zra-taxguard-db.cfq8uey8mtk0.af-south-1.rds.amazonaws.com
+      - DB_PORT=5432
+      - DB_NAME=zra_taxguard
+      - DB_USER=postgres
+      - DB_PASSWORD=TaxGuardDB2024!
+      # Service URLs - will be set during deployment
+      - WHISTLEPRO_URL=http://13.245.111.92:3005
+      - OCR_BACKEND_URL=http://13.245.111.92:3002
+      - BLOCKCHAIN_API=http://13.245.111.92:3003
+      - VRT_GUARD_URL=http://13.246.7.126:5000
+      - AI_RISK_URL=http://13.246.7.126:5001
+      - ANOMALY_TRACKER_URL=http://13.246.7.126:5001
+      - PREDICTIVE_URL=http://13.246.7.126:5002
+      - OCR_AI_URL=http://13.245.4.4:5003
+      - GHOSTBUSTER_URL=http://13.245.4.4:5004
+    ports:
+      - "3000:3000"
+    restart: always
+    mem_limit: 128m
+
+  dashboard:
+    build:
+      args:
+        VITE_API_URL: "http://13.246.221.51"
+      context: ./dashboard
+      dockerfile: Dockerfile
+    environment:
+      - VITE_API_URL=http://13.246.221.51
+    ports:
+      - "8080:8080"
+    restart: always
+    mem_limit: 64m

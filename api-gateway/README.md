@@ -41,6 +41,42 @@ cd api-gateway
 npm install
 ```
 
+### Anomaly Tracker (Training Proxy)
+
+```bash
+# Train model via API Gateway (proxies to Flask at :5001)
+POST /api/anomaly-tracker/train
+Content-Type: multipart/form-data
+Fields:
+  file            # CSV file (required)
+  features        # JSON array of feature column names (optional)
+  target          # Target/label column (required)
+  learning_rate   # e.g., 0.1 (optional)
+  n_trees         # number of trees (optional)
+  n_estimators    # alias for n_trees (optional)
+  test_size       # e.g., 0.2 (optional)
+
+# Example curl
+curl -X POST \
+  -F "file=@/path/to/data.csv" \
+  -F "target=label" \
+  -F 'features=["amount","transaction_count","avg_transaction"]' \
+  http://localhost:4001/api/anomaly-tracker/train
+```
+
+#### Additional dependencies for multipart uploads
+
+This service proxies training CSV uploads to the Anomaly Tracker using multipart/form-data. We use:
+
+- `multer` for handling multipart file uploads in Express
+- `form-data` for forwarding the uploaded file and fields to the Flask service
+
+These are already listed in `package.json`. If you encounter issues, reinstall:
+
+```bash
+npm install multer form-data
+```
+
 ### Configuration
 Create `.env` file:
 ```env

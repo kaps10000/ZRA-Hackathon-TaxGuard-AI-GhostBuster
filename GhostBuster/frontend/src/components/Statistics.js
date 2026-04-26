@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Paper,
   Box,
@@ -21,11 +21,7 @@ function Statistics({ onError }) {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadStatistics();
-  }, []);
-
-  const loadStatistics = async () => {
+  const loadStatistics = useCallback(async () => {
     try {
       const response = await axios.get(`${API_BASE}/stats`);
       setStats(response.data);
@@ -34,7 +30,11 @@ function Statistics({ onError }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [onError]);
+
+  useEffect(() => {
+    loadStatistics();
+  }, [loadStatistics]);
 
   if (loading) {
     return (
